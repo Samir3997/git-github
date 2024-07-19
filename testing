@@ -1,371 +1,115 @@
- Add KLCPD Opening Fund column with formula = Opening balance + Manual Input (Exclude Treasury catergory)
+Sure, here are two multiple-choice questions based on your request:
 
-@Query("select abm from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey IN(:entityAcctMapSkey)  and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and not (abm.sendersRef like '99%' or abm.sendersRef like 'TPC%' or abm.sendersRef like 'CUS%' or abm.sendersRef like 'KTPP%' or ((abm.sendersRef LIKE 'N%' AND abm.sendersRef LIKE '%:%') and abm.senderCode like 'MBBEMYKL%'))")
-    public List<AccountBalanceManagement> getRDPAgentOutwardDrilldown(final LocalDate valueDate,
-                final List<Long> entityAcctMapSkey, final List<String> messageTypeList);
+**Question 1:**
+What is the formula to calculate the KLCPD Opening Fund column, excluding the Treasury category?
 
+A) Opening balance + Manual Input  
+B) Opening balance - Manual Input  
+C) Opening balance x Manual Input  
+D) Opening balance / Manual Input  
 
-import React from "react";
-import DrillDownModal from "../blotter/DrillDownModal.jsx";
-import ViewSummaryModal from "../blotter/ViewSummaryModal.jsx";
-import ILMNumberFormat from "../ilmcommon/ILMNumberFormat.jsx";
-import NonTreasuryMainAgentDiv from "./NonTreasuryMainAgentDiv.jsx";
-import NonTreasurySubAgentDiv from "./NonTreasurySubAgentDiv.jsx";
-import TreasuryAccountDiv from "./TreasuryAccountDiv.jsx";
-import DrillDownModalForNostro from "./DrillDownForNostro.jsx";
+**Answer: A) Opening balance + Manual Input**
 
-class NostroAccountDiv extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            klcpdOpeningFunding: null
-        };
-        this.showSummaryRef = React.createRef();
-        this.drillDownRef = React.createRef();
-        this.projectAmtDrill = React.createRef();
-        this.lineReference = React.createRef();
-        this.showDrillDown = this.showDrillDown.bind(this);
-        this.showSummary = this.showSummary.bind(this);
-        this.resetZoom = this.resetZoom.bind(this);
-        this.setKLCPDOpeningFunding = this.setKLCPDOpeningFunding.bind(this);
-    }
+**Question 2:**
+If the Opening balance for KLCPD Opening Fund is $10,000 and the Manual Input (excluding Treasury category) is $5,000, what will be the value of the KLCPD Opening Fund column?
 
-    showSummary() {
-        this.showSummaryRef.current.toggleModal();
-    }
+A) $5,000  
+B) $10,000  
+C) $15,000  
+D) $20,000  
 
-    resetZoom() {
-        this.lineReference.current.chartInstance.resetZoom();
-    }
+**Answer: C) $15,000**
 
-    showDrillDownForProjectAmount=()=>{
-        const{projectedAmount} =this.props
-        this.projectAmtDrill.current.drillDownForprojectAmount(projectedAmount);
-    }
+These questions and answers reflect the formula and an example calculation scenario based on your provided instruction.
 
 
-    showDrillDown(drillDownInd) {
-        const { timeZone, nostroAcctDetailsList, scalesVal, scaleSelected, entitySkey, currency, selectedAgent } = this.props;
-        let acctDetails = {
-            "valueDate": nostroAcctDetailsList ? nostroAcctDetailsList[0].valueDate : null,
-            "entityAcctMapSkey": selectedAgent.value == 0 ? 0 : nostroAcctDetailsList[0].entityAcctMapSkey,
-            "currencySkey": currency.value,
-            "entitySkey": entitySkey,
-            "drillDownInd": drillDownInd
-        }
-        this.drillDownRef.current.getDrillDownData(acctDetails, timeZone, scalesVal, 'Nostro Account');
-    }
-
-    setKLCPDOpeningFunding=(value)=> {
-        this.setState({ klcpdOpeningFunding: value });
-    }
-
-    render() {
-        const { eamMap, country, currency, selectedAgent, nostroAcctDetailsList, defnsData, nostroBal, nostroAcctOpeningBal,
-            manualEntryTotalAmnt, scaleSelected, fromtime, totime, trnScaleVal, selectedAgentLineData,
-            timeZone, entitySkey, summary, latestTranTime, swiftAmount ,showLongBalanceTime,triggerwebsocket,projectedAmount,openingBalDate,callBack } = this.props;
-          const { klcpdOpeningFunding } = this.state;
-          const klcpdOpeningFundingTotal=klcpdOpeningFunding==null?0.00:klcpdOpeningFunding+nostroAcctOpeningBal;
-          const minReserveBal = selectedAgent.minBalance==null?0.00:selectedAgent.minBalance;
-          const projectedAmt = projectedAmount.projectedAmount == null?0.00:projectedAmount.projectedAmount;
-          const nostroAgentName = selectedAgent.label;
-        return (
-            <div className="col-12">
-                { openingBalDate ?
-                <p className="h5">Latest MT950 received on {openingBalDate}</p>:
-                <p className="h5">Did Not receive latest MT950</p>}
-                <div className='adjacentDivs'>
-                    <div className="col-4 p-2 mbbradius font-weight-bolder" style={{ backgroundColor: "pink", marginRight: "10px" }}>Opening Balance : <a className="runningBals">
-                        <ILMNumberFormat value={nostroAcctOpeningBal} /> </a>
-                    </div>
-                    <div className="col-4 p-2 mbbradius font-weight-bolder" style={{ backgroundColor: "pink", marginRight: "10px" }}>Settled Amount : <a onClick={() => this.showDrillDown("runningbal")} className="runningBals">
-                        <ILMNumberFormat value={nostroBal} /></a>
-                    </div>
-                    <div className="col-4 p-2 mbbradius font-weight-bolder" style={{ backgroundColor: "pink", marginRight: "10px" }}>KLCPD Opening Funding : <a className="runningBals">
-                        <ILMNumberFormat value={klcpdOpeningFundingTotal} /> </a>
-                    </div>
-                </div>
-                &nbsp;
-                <div className='adjacentDivs'>
-                    <div className="col-4 p-2 mbbradius font-weight-bolder" style={{ backgroundColor: "pink", marginRight: "10px" }}>SWIFT Amount : <a onClick={() => this.showDrillDown("projectedbal")} className="runningBals">
-                        <ILMNumberFormat value={swiftAmount} /></a>
-                    </div>
-                    <div className="col-4 p-2 mbbradius font-weight-bolder" style={{ backgroundColor: "pink", marginRight: "10px" }}>Projected Amount : <a onClick={()=> this.showDrillDownForProjectAmount()} className="runningBals ">
-                        <ILMNumberFormat value={projectedAmt} /></a>
-                    </div>
-                </div>
-                <p className="h5 font-weight-bolder" style={{ marginTop :'24px'}}>Minimum Reserve Balance for {nostroAgentName} :</p>
-                <div className='adjacentDivs'>
-                <div className="col-4 p-2 mbbradius font-weight-bolder" style={{ backgroundColor: "pink", marginRight: "10px" }} ><a className="runningBals">
-                        <ILMNumberFormat value={minReserveBal} /></a>
-                    </div>
-                    </div>
-
-                {/* <div className='adjacentDivs'>
-                    <div className="mt-5 col-6">
-                        <MDBRow>
-                            <MDBCol>
-                                <ILMReacttable defn={(defnsData)} defaultPageSize={10} minRows={1} />
-                            </MDBCol>
-                        </MDBRow>
-                    </div>
-                    <div className="mt-5 col-6">
-                        <div className='adjacentDivs'>
-                            <div className="col-6 pl-0 font-weight-bolder"> Liquidity Position Management </div>
-                            <div className="col-6" style={{ textAlign: "right" }}>
-                                <button onClick={this.showSummary} className="btn btn-sm btn-primary z-depth-0 waves-effect waves-light" >View Summary</button>
-                                <button onClick={this.resetZoom} className="btn btn-sm btn-primary z-depth-0 waves-effect waves-light resetZoomBtn">Reset zoom</button>
-                            </div>
-                        </div>
-                        <div>
-                            {selectedAgentLineData.datasets.length != 0 ?
-                                <Line data={selectedAgentLineData}
-                                    options={{ responsive: true, scales: { yAxes: [{ ticks: { beginAtZero: true } }], xAxes: [{ type: 'time', time: { min: selectedAgentLineData.datasets[0].data[0], max: latestTranTime } }] }, plugins: { zoom: { pan: { enabled: true, mode: 'xy' }, zoom: { enabled: true, mode: 'xy', rangeMin: { x: selectedAgentLineData.datasets[0].data[0] }, rangeMax: { x: latestTranTime } } } } }}
-                                    ref={this.lineReference}
-                                />
-                                : null}
-                        </div>
-                    </div>
-                </div>
-                */}
-                <ViewSummaryModal ref={this.showSummaryRef} summary={summary} openingBal={{ totalAmnt: nostroAcctOpeningBal }} heading="Nostro Account" timeZone={timeZone} entitySkey={entitySkey} currency={currency} />
-                <DrillDownModal ref={this.drillDownRef}
-                    scaleSelected={scaleSelected}
-                    callBack={callBack}
-                    openingBal={{ totalAmnt: nostroAcctOpeningBal }}
-                    fromtime={fromtime}
-                    totime={totime}
-                    trncode={trnScaleVal}
-                    heading="Nostro Account" />
-                <DrillDownModalForNostro ref={this.projectAmtDrill} 
-                 selectedAgent={selectedAgent} 
-                 country ={country} 
-                 currency = {currency} 
-                 entitySkey = {entitySkey}
-                 timeZone ={timeZone}/>
-                    <TreasuryAccountDiv
-                        entitySkey={entitySkey}
-                        currency={currency}
-                        selectedAgent={selectedAgent}
-                        timeZone={timeZone}
-                        showLongBalanceTime ={showLongBalanceTime}
-                        country={country}
-                        triggerwebsocket={triggerwebsocket}
-                    /> 
-
-                {selectedAgent.typeOfNostroAgent == "Main Agent" ?
-                    <NonTreasuryMainAgentDiv
-                        country={country}
-                        entitySkey={entitySkey}
-                        currency={currency}
-                        timeZone={timeZone} 
-                        triggerwebsocket={triggerwebsocket}
-                        setKLCPDOpeningFunding={this.setKLCPDOpeningFunding}/>
-                        
-                    :
-                    selectedAgent.typeOfNostroAgent == "Sub Agent" ?
-                        <NonTreasurySubAgentDiv
-                            entityAcctMapSkey={selectedAgent.value}
-                            accountName={selectedAgent.label}
-                            timeZone={timeZone}
-                            triggerwebsocket={triggerwebsocket} 
-                            setKLCPDOpeningFunding={this.setKLCPDOpeningFunding}/>
-                        : null
-                }
-            </div>
-
-        );
-    }
-}
-
-export default NostroAccountDiv;
-
-import axios from 'axios';
-import { MDBCol, MDBRow } from 'mdbreact';
-import React from "react";
-import { BASE_URL_WEB } from "../../constants";
-import ILMNumberFormat from '../ilmcommon/ILMNumberFormat';
-import ILMReacttable from '../ilmcommon/ILMReacttable';
-import ManualInputGeneric from '../ilmcommon/ManualInputGeneric';
-import ModalPage from '../modals/alertmodal';
-import NonTreasuryAgentDrilldown from './NonTreasuryAgentDrilldown';
-import SockJsClient from 'react-stomp';
-
-class NonTreasuryMainAgentDiv extends React.Component {
-
-    constructor(props) {
-        super(props);
-        this.state = {
-            tradeDefn: { columns: [], rows: [] },
-            custodyDefn: { columns: [], rows: [] },
-            rdpDefn: { columns: [], rows: [] },
-            inwardDefn: { columns: [], rows: [] },
-            fcyNtTotalDefn: { columns: [], rows: [] },
-            deptWiseManualInputDefn: { columns: [], rows: [] },
-            fcyNtMainAgentData: {}
-        }
-        this.drillDownRef = React.createRef();
-        this.callModalRef = React.createRef();
-    }
-
-    componentDidMount() {
-        this.getFCYNTMainAgentData();
-    }
-
-    getFCYNTMainAgentData = () => {
-        const { country, entitySkey, currency, timeZone,setKLCPDOpeningFunding } = this.props;
-        axios.get(BASE_URL_WEB + `/fcyntmainagent?countrySkey=${country.value}&entitySkey=${entitySkey}&currencySkey=${currency.value}&timeZone=${timeZone}`)
-            .then(res => {
-                const filteredDeptWiseManualInput = res.data.t.deptWiseManualInput.filter(item => item.displayLabel != 'TREASURY');
-                const totalNettAmountExclTreasury = filteredDeptWiseManualInput.reduce((total, item) => total + item.fcyManualNettAmount, 0.0);
-                this.setState({ fcyNtMainAgentData: res.data.t });
-                this.setState({ tradeDefn: this.processTableData("Trade", res.data.t.trade) });
-                this.setState({ custodyDefn: this.processTableData("Custody", res.data.t.custody) });
-                this.setState({ rdpDefn: this.processTableData("RDP", res.data.t.rdp) });
-                this.setState({ inwardDefn: this.processTableData("Inward", res.data.t.inward) });
-               // this.setState({ fcyNtTotalDefn: this.processFCYNTTotalAmountTableData(res.data.t.totalFCYNTAmount) });
-                this.setState({ deptWiseManualInputDefn: this.processDeptWiseManualInputTableData(res.data.t.deptWiseManualInput) });
-                this.setState({totalNettAmountExclTreasury:totalNettAmountExclTreasury });
-                this.props.setKLCPDOpeningFunding(totalNettAmountExclTreasury);    
-            })
-            .catch(() => {
-                this.callModalRef.current.toggledData('Alert', window.systemerrorText);
-            });
-    }
-
-    processTableData = (txnTypeName, dataList) => {
-        let columns = [];
-        let rows = [];
-        columns = [
-            { Header: txnTypeName, accessor: 'displayLabel' },
-            { Header: 'Inward', accessor: 'inwardAmount' },
-            { Header: 'Outward', accessor: 'outwardAmount' },
-        ]
-        dataList.forEach(data => {
-            let row = {
-                'displayLabel': data.displayLabel,
-                'inwardAmount': this.prepareRowDataView(data, data.inwardAmount, "IN"),
-                'outwardAmount': this.prepareRowDataView(data, data.outwardAmount, "OUT"),
-            }
-            rows.push(row);
-        });
-        return { columns: columns, rows: rows };
-    }
-
-    prepareRowDataView = (data, value, inOutInd) => {
-        const divStyle = {
-            cursor: 'pointer',
-            height: '20px'
-        };
-        if (value == null) {
-            return (<ILMNumberFormat value={value} />);
-        } else {
-            return (
-                <div style={divStyle} onClick={() => this.showDrilldown(data.txnTypeCode, data.displayLabel, data.entityAcctMapSkey, inOutInd)}>
-                    <ILMNumberFormat value={value} />
-                </div>
-            );
-        }
-    }
-
-    showDrilldown = (txnTypeCode, displayLabel, entityAcctMapSkey, inOutInd) => {
-        this.drillDownRef.current.showDrilldown(txnTypeCode, displayLabel, entityAcctMapSkey, inOutInd);
-    }
-
-    // processFCYNTTotalAmountTableData = (dataList) => {
-    //     let columns = [];
-    //     let rows = [];
-    //     columns = [
-    //         { Header: 'Non Treasury Total', accessor: 'emptyLabel' },
-    //         { Header: 'Total Inward', accessor: 'inwardAmount' },
-    //         { Header: 'Total Outward', accessor: 'outwardAmount' },
-    //         { Header: 'Total Nett', accessor: 'nettAmount' }
-    //     ]
-    //     dataList.forEach(data => {
-    //         let row = {
-    //             'emptyLabel': '',
-    //             'inwardAmount': <ILMNumberFormat value={data.inwardAmount} />,
-    //             'outwardAmount': <ILMNumberFormat value={data.outwardAmount} />,
-    //             'nettAmount': <ILMNumberFormat value={data.nettAmount} />
-    //         }
-    //         rows.push(row);
-    //     });
-    //     return { columns: columns, rows: rows };
-    // }
-
-    processDeptWiseManualInputTableData = (dataList) => {
-        const columns = [
-          { Header: 'Manual Input', accessor: 'displayLabel' },
-          { Header: 'Inward', accessor: 'totalInwardManualInput' },
-          { Header: 'Outward', accessor: 'totalOutwardManualInput' },
-          {Header :'Nett' , accessor : 'NetAmount'}
-        ];
-      
-        const rows = dataList.map(data => ({
-          displayLabel: data.displayLabel,
-          totalInwardManualInput: <ILMNumberFormat value={data.fcyManualInwardAmount}/>,
-          totalOutwardManualInput: <ILMNumberFormat value={data.fcyManualOutwardAmount}/> ,
-          NetAmount  : <ILMNumberFormat value={data.fcyManualNettAmount}/>
-        }));
-      
-        return { columns: columns, rows: rows };
-      }
-      
-
-    render() {
-        const { timeZone,triggerwebsocket } = this.props;
-        const { tradeDefn, custodyDefn, rdpDefn, inwardDefn, fcyNtTotalDefn, deptWiseManualInputDefn } = this.state;
-        return (
-            <div>
-                {triggerwebsocket && ( 
-          <SockJsClient
-            url={BASE_URL_WEB + `/random`}
-            topics={['/topic/greetings']}
-            onMessage={(message) => { this.getFCYNTMainAgentData(); }}
-            onConnect={() => { console.log("Connected in NonTreasruyMainAgent"); }}
-            onDisconnect={() => { console.log("Disconnected from NonTreasruyMainAgent"); }} />
-        )}
-                <div className="mt-5 p-1" style={{ backgroundColor: "white" }} id="dataTableDiv">
-                    <p className="h4">Non Treasury</p>
-                    <MDBRow>
-                        <MDBCol>
-                            <ILMReacttable defn={tradeDefn} defaultPageSize={10} minRows={0} />
-                        </MDBCol>
-                    </MDBRow>
-                    <MDBRow>
-                        <MDBCol>
-                            <ILMReacttable defn={custodyDefn} defaultPageSize={10} minRows={0} />
-                        </MDBCol>
-                    </MDBRow>
-                    <MDBRow>
-                        <MDBCol>
-                            <ILMReacttable defn={rdpDefn} defaultPageSize={10} minRows={0} />
-                        </MDBCol>
-                    </MDBRow>
-                    <MDBRow>
-                        <MDBCol>
-                            <ILMReacttable defn={inwardDefn} defaultPageSize={10} minRows={0} />
-                        </MDBCol>
-                    </MDBRow>
-                    {/* <MDBRow>
-                        <MDBCol>
-                            <ILMReacttable defn={fcyNtTotalDefn} defaultPageSize={10} minRows={0} />
-                        </MDBCol>
-                    </MDBRow> */}
-                    <MDBRow>
-                        <MDBCol>
-                            <ILMReacttable defn={deptWiseManualInputDefn} defaultPageSize={10} minRows={0} />
-                        </MDBCol>
-                    </MDBRow>
-                </div>
-                <NonTreasuryAgentDrilldown ref={this.drillDownRef} timeZone={timeZone} />
-                <ModalPage ref={this.callModalRef} />
-            </div>
-        );
-    }
-
-}
-
-export default NonTreasuryMainAgentDiv;
 
 
+
+Sure, here are two multiple choice questions based on the provided `@Query` annotation and method:
+
+### Question 1
+What does the `@Query` annotation in the method `getRDPAgentOutwardDrilldown` filter the `sendersRef` by?
+A) Only references starting with '99'
+B) References starting with 'TPC' or 'CUS'
+C) References starting with 'KTPP' or those starting with 'N' and containing ':'
+D) References starting with 'MBBEMYKL'
+
+**Answer:**
+C) References starting with 'KTPP' or those starting with 'N' and containing ':'
+
+### Question 2
+Which of the following conditions is NOT applied in the `@Query` annotation of the `getRDPAgentOutwardDrilldown` method?
+A) The `valueDate` must match the provided parameter.
+B) The `entityAcctMapSkey` must be in the provided list.
+C) The `messageType` must be in the provided list.
+D) The `amountSign` must be '+'.
+
+**Answer:**
+D) The `amountSign` must be '+'.
+
+
+
+
+
+Sure! Here are six multiple choice questions with answers regarding `klcpdOpeningFundingTotal` in the provided React components:
+
+### Question 1
+In the `NostroAccountDiv` component, what does the `klcpdOpeningFundingTotal` represent?
+A) The sum of `klcpdOpeningFunding` and `nostroAcctOpeningBal`
+B) The difference between `klcpdOpeningFunding` and `nostroAcctOpeningBal`
+C) The product of `klcpdOpeningFunding` and `nostroAcctOpeningBal`
+D) The value of `klcpdOpeningFunding`
+
+**Answer:**
+A) The sum of `klcpdOpeningFunding` and `nostroAcctOpeningBal`
+
+### Question 2
+In the `NostroAccountDiv` component, what is the initial value of `klcpdOpeningFundingTotal` if `klcpdOpeningFunding` is `null` and `nostroAcctOpeningBal` is 5000?
+A) 5000
+B) 0
+C) 5000.00
+D) 0.00
+
+**Answer:**
+C) 5000.00
+
+### Question 3
+How is `klcpdOpeningFunding` set in the `NonTreasuryMainAgentDiv` component?
+A) Through a function called `setKLCPDOpeningFunding`
+B) Directly in the constructor
+C) Via a prop passed from `NostroAccountDiv`
+D) It is not set in the `NonTreasuryMainAgentDiv` component
+
+**Answer:**
+A) Through a function called `setKLCPDOpeningFunding`
+
+### Question 4
+In `NonTreasuryMainAgentDiv`, what is the purpose of calling `setKLCPDOpeningFunding` with `totalNettAmountExclTreasury`?
+A) To reset the state of `NostroAccountDiv`
+B) To update the `klcpdOpeningFunding` state in `NostroAccountDiv`
+C) To calculate the `klcpdOpeningFundingTotal` in `NonTreasuryMainAgentDiv`
+D) To fetch new data from the server
+
+**Answer:**
+B) To update the `klcpdOpeningFunding` state in `NostroAccountDiv`
+
+### Question 5
+Which component initializes the state for `klcpdOpeningFunding`?
+A) NonTreasuryMainAgentDiv
+B) NostroAccountDiv
+C) Both components
+D) Neither component
+
+**Answer:**
+B) NostroAccountDiv
+
+### Question 6
+How does `NonTreasuryMainAgentDiv` obtain the value for `totalNettAmountExclTreasury` which is used to set `klcpdOpeningFunding`?
+A) From a prop passed to `NonTreasuryMainAgentDiv`
+B) From a state variable in `NostroAccountDiv`
+C) By filtering and reducing `deptWiseManualInput` data
+D) By making a new axios request each time `setKLCPDOpeningFunding` is called
+
+**Answer:**
+C) By filtering and reducing `deptWiseManualInput` data
