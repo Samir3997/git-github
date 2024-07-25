@@ -1,1 +1,11 @@
 
+private String extractCounterParty(final String addtlTxInf) {
+		String bic = this.extractFromAddlTxInf(addtlTxInf, "CPRB");
+		if(bic != null) {
+			return bic;
+		} else {
+			String acctNo = this.extractFromAddlTxInf(addtlTxInf, "CPRA");
+			String bicFromAcctNo = eamRepo.findByAccountNumber(acctNo) != null ? eamRepo.findByAccountNumber(acctNo).getEntityIdentifier() : null;
+			return bicFromAcctNo;
+		}
+	}
