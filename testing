@@ -1,11 +1,69 @@
+import Player from "./Components/Player";
+import GameBoard from "./Components/GameBoard";
+import { useState } from "react";
+import Log from "./Components/Log";
+import { WINNING_COMBINATIONS } from "./winning-combinantion.js";
+const initialGameBoard = [
+  [null, null, null],
+  [null, null, null],
+  [null, null, null],
+];
+function deriveActivePlayer(gameTurns){
+  let currentPlaye='X';
+  if(gameTurns.length > 0 && gameTurns[0].player==='X'){
+    currentPlaye='O';
+  }
+  return currentPlaye;
+}
+function App() {
+  const[gameTurns,setGameTurns]=useState([]);
+  const activePlayer=deriveActivePlayer(gameTurns);
+  let gameBoard = initialGameBoard;
+  for (const turn of gameTurns) {
+    const { square, player } = turn;
+    const { row, col } = square;
+    gameBoard[row][col] = player;
+  }
+   
+  let winner;
+  for(const combinantion of WINNING_COMBINATIONS){
+    const firstSquareSymbol=gameBoard[combinantion[0].row][combinantion[0].col];
+    const secondSquareSymbol=gameBoard[combinantion[1].row][combinantion[1].col];
+    const thirdSquareSymbol=gameBoard[combinantion[2].row][combinantion[2].col];
 
-private String extractCounterParty(final String addtlTxInf) {
-		String bic = this.extractFromAddlTxInf(addtlTxInf, "CPRB");
-		if(bic != null) {
-			return bic;
-		} else {
-			String acctNo = this.extractFromAddlTxInf(addtlTxInf, "CPRA");
-			String bicFromAcctNo = eamRepo.findByAccountNumber(acctNo) != null ? eamRepo.findByAccountNumber(acctNo).getEntityIdentifier() : null;
-			return bicFromAcctNo;
-		}
-	}
+    if (
+      firstSquareSymbol &&
+      firstSquareSymbol === secondSquareSymbol &&
+      firstSquareSymbol === thirdSquareSymbol
+    ) {
+      winner = firstSquareSymbol;
+    }
+  }
+
+  function handleSelectSquare(rowIndex,colIndex){
+    setGameTurns((prevTurns) => {
+      const currentPlaye = deriveActivePlayer(prevTurns);
+      const updatedTurns=[{square:{row:rowIndex,col:colIndex},player:currentPlaye},...prevTurns,];
+      return updatedTurns;
+      });
+  }
+  return (
+    <main>
+    <div id="game-container">
+      <ol id="players" className="highlight-player">
+         <Player initialName="SAMIR" symbol="X" isActive={activePlayer==='X'}/>
+         <Player initialName="ASISH" symbol="O" isActive={activePlayer==='O'}/>
+      </ol>
+      <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard}/>
+    </div>
+    <Log turns={gameTurns}/>
+    </main>
+  
+  );
+}
+
+export default App;
+
+
+
+getting error "Uncaught SyntaxError: The requested module '/src/winning-combinantion.js?t=1722423208561' does not provide an export named 'WINNING_COMBINATIONS' (at App.jsx:5:10)"
