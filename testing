@@ -1,69 +1,12 @@
-import Player from "./Components/Player";
-import GameBoard from "./Components/GameBoard";
-import { useState } from "react";
-import Log from "./Components/Log";
-import { WINNING_COMBINATIONS } from "./winning-combinantion.js";
-const initialGameBoard = [
-  [null, null, null],
-  [null, null, null],
-  [null, null, null],
-];
-function deriveActivePlayer(gameTurns){
-  let currentPlaye='X';
-  if(gameTurns.length > 0 && gameTurns[0].player==='X'){
-    currentPlaye='O';
-  }
-  return currentPlaye;
-}
-function App() {
-  const[gameTurns,setGameTurns]=useState([]);
-  const activePlayer=deriveActivePlayer(gameTurns);
-  let gameBoard = initialGameBoard;
-  for (const turn of gameTurns) {
-    const { square, player } = turn;
-    const { row, col } = square;
-    gameBoard[row][col] = player;
-  }
-   
-  let winner;
-  for(const combinantion of WINNING_COMBINATIONS){
-    const firstSquareSymbol=gameBoard[combinantion[0].row][combinantion[0].col];
-    const secondSquareSymbol=gameBoard[combinantion[1].row][combinantion[1].col];
-    const thirdSquareSymbol=gameBoard[combinantion[2].row][combinantion[2].col];
-
-    if (
-      firstSquareSymbol &&
-      firstSquareSymbol === secondSquareSymbol &&
-      firstSquareSymbol === thirdSquareSymbol
-    ) {
-      winner = firstSquareSymbol;
-    }
-  }
-
-  function handleSelectSquare(rowIndex,colIndex){
-    setGameTurns((prevTurns) => {
-      const currentPlaye = deriveActivePlayer(prevTurns);
-      const updatedTurns=[{square:{row:rowIndex,col:colIndex},player:currentPlaye},...prevTurns,];
-      return updatedTurns;
-      });
-  }
-  return (
-    <main>
-    <div id="game-container">
-      <ol id="players" className="highlight-player">
-         <Player initialName="SAMIR" symbol="X" isActive={activePlayer==='X'}/>
-         <Player initialName="ASISH" symbol="O" isActive={activePlayer==='O'}/>
-      </ol>
-      <GameBoard onSelectSquare={handleSelectSquare} board={gameBoard}/>
-    </div>
-    <Log turns={gameTurns}/>
-    </main>
-  
-  );
-}
-
-export default App;
-
-
-
-getting error "Uncaught SyntaxError: The requested module '/src/winning-combinantion.js?t=1722423208561' does not provide an export named 'WINNING_COMBINATIONS' (at App.jsx:5:10)"
+Ref	Agent	Msg 	CCY	Amount	Net amount	Expected Result (To interface to ILM)	Remark
+	CITIUS33XXX	Camt 053	USD	1000	1000	Yes	Not interface to ILM. To check
+KTPP4146553	BARCGB22XXX	Outgoing pacs 008	GBP 	-1		Yes but not computed 	Ref start with "KTPP" (Good)
+9907427029FS	CHASUS33XXX	Incoming pacs 008	USD	2	2	Yes	Good
+SWF404622078366898	CHASUS33XXX	Incoming pacs 008	USD	3		No	To block creditor = Malayan banking berhad (Should not be interface to ILM) To check
+6bd4b62f438d430e8844e591ad91cae6	BKTRUS33XXX	Incoming pacs 008	USD	4	4	No	Negative sample (Good)
+994146553	BARCGB22XXX	Outgoing pacs 008	USD	-5	-5	No (And not populated under Trade)	Should not be interface to ILM (Good)
+247250347314PI01	CITIUS33XXX	Outgoing pacs 009	USD	-50		No	COV (Good)
+SWF104662078403702	CHASUS33XXX	Incoming pacs 009	USD	6	6	Yes	Good
+03TG2407257419111	DEUTDEFFXXX	Incoming pacs 009	EUR	7	7	Yes	Good
+OPF255001224	NWBKGB2LXXX	Incoming pacs 009	GBP 	8	8	Yes	Good
+HICL20240709412594947	CITIUS33XXX	Camt 054	USD	9		Yes but not computed 	Bcz it camt 054(Should populated under settled amount column) To check
