@@ -13,3 +13,13 @@ HICL20240709412594947	CITIUS33XXX	Camt 054	USD	9		Yes but not computed 	Bcz it c
 
 
 "MALAYAN BANKING BERHAD"
+
+
+
+<CdtrAcct>
+                <Id>
+                    <Othr>
+                        <Id>712044001147</Id>
+                    </Othr>
+                </Id>
+            </CdtrAcct>
