@@ -1,25 +1,194 @@
-Ref	Agent	Msg 	CCY	Amount	Net amount	Expected Result (To interface to ILM)	Remark
-	CITIUS33XXX	Camt 053	USD	1000	1000	Yes	Not interface to ILM. To check
-KTPP4146553	BARCGB22XXX	Outgoing pacs 008	GBP 	-1		Yes but not computed 	Ref start with "KTPP" (Good)
-9907427029FS	CHASUS33XXX	Incoming pacs 008	USD	2	2	Yes	Good
-SWF404622078366898	CHASUS33XXX	Incoming pacs 008	USD	3		No	To block creditor = Malayan banking berhad (Should not be interface to ILM) To check
-6bd4b62f438d430e8844e591ad91cae6	BKTRUS33XXX	Incoming pacs 008	USD	4	4	No	Negative sample (Good)
-994146553	BARCGB22XXX	Outgoing pacs 008	USD	-5	-5	No (And not populated under Trade)	Should not be interface to ILM (Good)
-247250347314PI01	CITIUS33XXX	Outgoing pacs 009	USD	-50		No	COV (Good)
-SWF104662078403702	CHASUS33XXX	Incoming pacs 009	USD	6	6	Yes	Good
-03TG2407257419111	DEUTDEFFXXX	Incoming pacs 009	EUR	7	7	Yes	Good
-OPF255001224	NWBKGB2LXXX	Incoming pacs 009	GBP 	8	8	Yes	Good
-HICL20240709412594947	CITIUS33XXX	Camt 054	USD	9		Yes but not computed 	Bcz it camt 054(Should populated under settled amount column) To check
-
-
-"MALAYAN BANKING BERHAD"
-
-
-
-<CdtrAcct>
-                <Id>
-                    <Othr>
-                        <Id>712044001147</Id>
-                    </Othr>
-                </Id>
-            </CdtrAcct>
+<?xml version="1.0" encoding="UTF-8" ?>
+<Saa:DataPDU
+              xmlns:Saa="urn:swift:saa:xsd:saa.2.0"
+              xmlns:Sw="urn:swift:snl:ns.Sw"
+              xmlns:SwInt="urn:swift:snl:ns.SwInt"
+              xmlns:SwGbl="urn:swift:snl:ns.SwGbl"
+              xmlns:SwSec="urn:swift:snl:ns.SwSec">
+              <Saa:Revision>2.0.15</Saa:Revision>
+              <Saa:Header>
+                             <Saa:Message>
+                             <Saa:SenderReference>OBNMAMY2KXXX054$2309085756641</Saa:SenderReference>
+                                           <Saa:MessageIdentifier>camt.054.001.08</Saa:MessageIdentifier>
+                                           <Saa:Format>MX</Saa:Format>
+                                           <Saa:SubFormat>Output</Saa:SubFormat>
+                                           <Saa:Sender>
+                                                         <Saa:DN>ou=xxx,o=bnmamy2k,o=swift</Saa:DN>
+                                                          <Saa:FullName>
+                                                                        <Saa:X1>BNMAMY2KXXX</Saa:X1>
+                                                                        <Saa:X2>xxx</Saa:X2>
+                                                          </Saa:FullName>
+                                           </Saa:Sender>
+                                           <Saa:Receiver>
+                                                         <Saa:DN>ou=xxx,o=mbbemykl,o=swift</Saa:DN>
+                                                          <Saa:FullName>
+                                                                        <Saa:X1>MBBEMYKLXXX</Saa:X1>
+                                                                        <Saa:X2>xxx</Saa:X2>
+                                                          </Saa:FullName>
+                                           </Saa:Receiver>
+                                           <Saa:InterfaceInfo>
+                                                         <Saa:MessageCreator>SWIFTNetInterface</Saa:MessageCreator>
+                                                         <Saa:MessageContext>Copy</Saa:MessageContext>
+                                                         <Saa:MessageNature>Financial</Saa:MessageNature>
+                                                         <Saa:Sumid>1B051DD2FFA8291E</Saa:Sumid>
+                                           </Saa:InterfaceInfo>
+                                           <Saa:NetworkInfo>
+                                                          <Saa:Priority>Normal</Saa:Priority>
+                                                         <Saa:IsPossibleDuplicate>false</Saa:IsPossibleDuplicate>
+                                                          <Saa:Service>bnm.rtgs!pp</Saa:Service>
+                                                          <Saa:Network>SWIFTNet</Saa:Network>
+                                                          <Saa:SessionNr>000470</Saa:SessionNr>
+                                                          <Saa:SeqNr>000002494</Saa:SeqNr>
+                                                          <Saa:SWIFTNetNetworkInfo>
+                                                                        <Saa:RequestType>camt.054.001.08</Saa:RequestType>
+                                                                        <Saa:SWIFTRef>swi00001-2023-09-08T08:54:06.52325.163768Z</Saa:SWIFTRef>
+                                                                        <Saa:SNLRef>SNL10329-2023-09-08T08:42:34.51511604.475109Z</Saa:SNLRef>
+                                                                        <Saa:Reference>c6769322-4e24-41ee-955b-0d60b7fda9a8</Saa:Reference>
+                                                                        <Saa:SnFQueueName>mbismykl_file!p</Saa:SnFQueueName>
+                                                                        <Saa:SnFInputTime>0301:2023-09-08T08:54:06</Saa:SnFInputTime>
+                                                                        <Saa:SnFDeliveryTime>2023-09-08T08:54:06Z</Saa:SnFDeliveryTime>
+                                                          </Saa:SWIFTNetNetworkInfo>
+                                           </Saa:NetworkInfo>
+                                           <Saa:SecurityInfo>
+                                                          <Saa:SWIFTNetSecurityInfo>
+                                                                        <Saa:SignerDN>cn=mxuat1,o=bnmamy2k,o=swift</Saa:SignerDN>
+                                                                        <Saa:SignatureResult>Success</Saa:SignatureResult>
+                                                                        <Saa:SignatureValue>
+                                                                                      <SwSec:Signature>
+                                                                                                     <SwSec:SignedInfo>
+                                                                                                                   <Sw:Reference>
+                                                                                                                   <Sw:DigestValue>yC0Pfh+NzXcgsmy0d5mY0qZfHXrDw5RcvhHuq5s9KRc=</Sw:DigestValue>
+                                                                                                                   </Sw:Reference>
+                                                                                                     </SwSec:SignedInfo>
+                                                                                                    <SwSec:SignatureValue>PEMF@Proc-Type: 4,MIC-ONLY
+Content-Domain: RFC822
+EntrustFile-Version: 2.0
+Originator-DN: cn=mxuat1,o=bnmamy2k,o=swift
+Orig-SN: 1650760563
+MIC-Info: SHA256, RSA,
+hr1aJjyQhZmVozH3AmHRuDmrkwk953iiNnm/yNqm1WiyfQAWAuyQ1SQYHbt5+HaW
+IXkJIvRg575G3IFM1NPJ2/2jaHybCs1rmTzzgQ3RkTw5xL4dO1kHgx98R3KjaHLd
+qA77ckQQPEjvIpeSsuidczePQ/8n5SoixtNTi1yGEz/ZEInkcsVUXe3LyjmaDM7h
+FU+20FCAn+cPdRyIpExHO2uxNmjo5yB9GyfOkBbv/RvAJxXx6Dj0vflNhl5dsNvX
+tDjbjStH5r5Icekyvgofpm7t8SF9Xdw/JEFQVybKlo0YGGWazx5f/nWgCoNPWzbU
+SOvhSP9gZxjLsXxn9hd21w==
+</SwSec:SignatureValue>
+                                                                                                     <SwSec:KeyInfo>
+                                                                                                                   <SwSec:SignDN>cn=mxuat1,o=bnmamy2k,o=swift</SwSec:SignDN>
+                                                                                                                   <SwSec:CertPolicyId>1.3.21.6.2</SwSec:CertPolicyId>
+                                                                                                     </SwSec:KeyInfo>
+                                                                                                     <SwSec:Manifest>
+                                                                                                                   <Sw:Reference>
+                                                                                                                                 <Sw:DigestRef>Sw.RequestHeader</Sw:DigestRef>
+                                                                                                                   <Sw:DigestValue>MBdWdenUxSDBxD2kP/ay88yxEE7id2V5/yTC4y99UFU=</Sw:DigestValue>
+                                                                                                                   </Sw:Reference>
+                                                                                                                   <Sw:Reference>
+                                                                                                                                 <Sw:DigestRef>Sw.RequestPayload</Sw:DigestRef>
+                                                                                                                   <Sw:DigestValue>fvxXAECs0Fcj/a+bb0sRfCqn8/y9VVYtoKCMjHU63Xw=</Sw:DigestValue>
+                                                                                                                   </Sw:Reference>
+                                                                                                                   <Sw:Reference>
+                                                                                                                                 <Sw:DigestRef>Sw.E2S</Sw:DigestRef>
+                                                                                                                   <Sw:DigestValue>aaAvA75+Xs8YwOEcaMHVEM+4eRO8kyiA86B4IdZ2pys=</Sw:DigestValue>
+                                                                                                                   </Sw:Reference>
+                                                                                                     </SwSec:Manifest>
+                                                                                      </SwSec:Signature>
+                                                                        </Saa:SignatureValue>
+                                                          </Saa:SWIFTNetSecurityInfo>
+                                           </Saa:SecurityInfo>
+                                           <Saa:ExpiryDateTime>20230928085406</Saa:ExpiryDateTime>
+                             </Saa:Message>
+              </Saa:Header>
+              <Saa:Body>
+                             <AppHdr
+              xmlns="urn:iso:std:iso:20022:tech:xsd:head.001.001.01"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+              <Fr>
+                             <FIId>
+                                           <FinInstnId>
+                                                          <BICFI>BNMAMY2K</BICFI>
+                                           </FinInstnId>
+                             </FIId>
+              </Fr>
+              <To>
+                             <FIId>
+                                           <FinInstnId>
+                                                          <BICFI>MBBEMYKL</BICFI>
+                                           </FinInstnId>
+                             </FIId>
+              </To>
+              <BizMsgIdr>2407210170491147</BizMsgIdr>
+              <MsgDefIdr>camt.054.001.08</MsgDefIdr>
+              <BizSvc>bnm.rts.pb.01</BizSvc>
+              <CreDt>2024-08-01T06:35:59Z</CreDt>
+</AppHdr>
+<Document
+              xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.08"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+              <BkToCstmrDbtCdtNtfctn>
+                             <GrpHdr>
+                                           <MsgId>2407210170491147</MsgId>
+                                           <CreDtTm>2024-08-01T14:35:59</CreDtTm>
+                             </GrpHdr>
+                             <Ntfctn>
+                                           <Id>2407210170491147</Id>
+                                           <Acct>
+                                                          <Id>
+                                                                        <Othr>
+                                                                                      <Id>MY65BNMA1554010273</Id>
+                                                                        </Othr>
+                                                          </Id>
+                                           </Acct>
+                                           <Ntry>
+                                                          <Amt Ccy="MYR">60920295.69</Amt>
+                                                          <CdtDbtInd>DBIT</CdtDbtInd>
+                                                          <Sts>
+                                                                        <Cd>BOOK</Cd>
+                                                          </Sts>
+                                                          <ValDt>
+                                                                        <DtTm>2024-08-01T14:35:00+08:00</DtTm>
+                                                          </ValDt>
+                                                          <BkTxCd>
+                                                                        <Prtry>
+                                                                                      <Cd>UNKNOWN</Cd>
+                                                                        </Prtry>
+                                                          </BkTxCd>
+                                                          <NtryDtls>
+                                                                        <TxDtls>
+                                                                                      <Refs>
+                                                                                                    <EndToEndId>RSGO240721010853</EndToEndId>
+                                                                                      </Refs>
+                                                                                      <RltdPties>
+                                                                                                     <Dbtr>
+                                                                                                                   <Pty>
+                                                                                                                                  <Id>
+                                                                                                                                                <OrgId>
+                                                                                                                                                               <AnyBIC>MBBEMYKL</AnyBIC>
+                                                                                                                                                </OrgId>
+                                                                                                                                  </Id>
+                                                                                                                   </Pty>
+                                                                                                     </Dbtr>
+                                                                                                     <DbtrAcct>
+                                                                                                                   <Id>
+                                                                                                                                 <Othr>
+                                                                                                                                                <Id>MY65BNMA1554010273</Id>
+                                                                                                                                 </Othr>
+                                                                                                                   </Id>
+                                                                                                     </DbtrAcct>
+                                                                                      </RltdPties>
+                                                                                      <RltdDts>
+                                                                                                     <IntrBkSttlmDt>2024-08-01</IntrBkSttlmDt>
+                                                                                      </RltdDts>
+                                                                                      <AddtlTxInf>/STCD/
+/TRN/MEFP1
+/PAYA/MY65BNMA1554010273
+/CPRA/MY23BNMA1554190867
+/ICRU/47540372.67
+/57A/MY65BNMA1554010273</AddtlTxInf>
+                                                                        </TxDtls>
+                                                          </NtryDtls>
+                                           </Ntry>
+                             </Ntfctn>
+              </BkToCstmrDbtCdtNtfctn>
+</Document>
+              </Saa:Body>
+</Saa:DataPDU>
