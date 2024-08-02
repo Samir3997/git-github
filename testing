@@ -1,6 +1,10 @@
- if (cDtrAcctNo != null) {
-		    EntityAccountMapDefinition eamDefnByTag59 = getEntityAcctMapDefnByAcctNum(cDtrAcctNo, currencyCode);
-		    if (eamDefnByTag59 != null && (cDtrNmAddr.contains("MALAYAN BANKING BERHAD") || cDtrNmAddr.contains("MAYBANK"))) {
-		      blockMsg = true;
-		    }
-		  }
+String dbtrBIC = null;
+		try {
+
+			dbtrBIC = Optional
+					.ofNullable(
+							mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getDbtr().getFinInstnId().getBICFI())
+					.orElse(null).toUpperCase();
+		} catch (NullPointerException e) {
+			LOGGER.warn("Creditor Identifier not found: " + e.getMessage());
+		}
