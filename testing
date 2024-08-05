@@ -23,4 +23,9 @@
                             <AnyBIC>MBBEMYKL</AnyBIC>				
                         </OrgId>				
                     </Id>				
-                </Cdtr>				
+                </Cdtr>		
+
+
+
+
+“Block message : If <Cdtr>  BIC is equal to "MBBEMYKL" or <Cdtr>  Info is contains "MAYBANK" or "MALAYAN BANKING BERHAD",”.
