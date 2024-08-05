@@ -1,10 +1,26 @@
-String dbtrBIC = null;
-		try {
+                <Cdtr>			
+                    <Nm>MAYBANK BERHAD</Nm>			
+                    <PstlAdr>			
+                        <AdrLine>MALAYSIA</AdrLine>			
+                    </PstlAdr>			
+                </Cdtr>			
+                <CdtrAcct>			
+                    <Id>			
+                        <Othr>			
+                            <Id>10945809</Id>			
+                        </Othr>			
+                    </Id>			
+                </CdtrAcct>			
 
-			dbtrBIC = Optional
-					.ofNullable(
-							mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getDbtr().getFinInstnId().getBICFI())
-					.orElse(null).toUpperCase();
-		} catch (NullPointerException e) {
-			LOGGER.warn("Creditor Identifier not found: " + e.getMessage());
-		}
+
+
+
+
+
+                <Cdtr>				
+                    <Id>				
+                        <OrgId>				
+                            <AnyBIC>MBBEMYKL</AnyBIC>				
+                        </OrgId>				
+                    </Id>				
+                </Cdtr>				
