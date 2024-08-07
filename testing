@@ -101,3 +101,47 @@ public void getFileTypeTest() {
 }
 }
 
+
+@Test
+public void writeFilesByTypeTest1() {
+    // Arrange
+    KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
+    KPlusFolder kPlusFolder = new KPlusFolder();
+    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+    
+    // Setup the mock to throw an exception when save() is called
+    doThrow(new NullPointerException()).when(folderRepo).save(kPlusFolder);
+    
+    // Act
+    folderWriter.writeFilesByType(kPlusProcessedDTO);
+    
+    // Assert
+    // You can verify that the logger was called with the expected error message
+    // This assumes you have a way to verify logger interactions; if not, this step can be skipped
+}
+
+
+
+@Rule
+public TestRule logCaptureRule = new LogCaptureRule();
+
+@Test
+public void writeFilesByTypeTest1() {
+    // Arrange
+    KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
+    KPlusFolder kPlusFolder = new KPlusFolder();
+    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+    
+    // Setup the mock to throw an exception when save() is called
+    doThrow(new NullPointerException()).when(folderRepo).save(kPlusFolder);
+    
+    // Act
+    folderWriter.writeFilesByType(kPlusProcessedDTO);
+    
+    // Assert
+    // Verify logger output
+    assertTrue(logCaptureRule.getLogs().contains("Error in k plus folder file"));
+    assertTrue(logCaptureRule.getLogs().contains("Exception while writing k plus folder file"));
+}
+
+
