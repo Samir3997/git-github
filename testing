@@ -152,3 +152,136 @@ java.lang.NullPointerException: null
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_241]
 	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_241]
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_241]
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.kplus.treasury.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
+import com.maybank.ilm.mappedsuperclass.KPlusStaticFilesCommonCols;
+
+@Entity
+@Table(name = "K_PLUS_FOLDER")
+public class KPlusFolder extends KPlusStaticFilesCommonCols{
+	
+	public KPlusFolder(String folderId, String folderShortName, String folderName, String portfolioId,
+			String folderStatus, String currencyId, String cptyId) {
+		super();
+		this.folderId = folderId;
+		this.folderShortName = folderShortName;
+		this.folderName = folderName;
+		this.portfolioId = portfolioId;
+		this.folderStatus = folderStatus;
+		this.currencyId = currencyId;
+		this.cptyId = cptyId;
+	}
+
+	public KPlusFolder() {
+		super();
+	}
+
+	@Id
+	@Column(name = "N_K_PLUS_FOLDER_SKEY")
+	@SequenceGenerator(name = "kPlusFolderSkey", sequenceName = "K_PLUS_FOLDER_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "kPlusFolderSkey")
+	private Long kPlusFolderSkey;
+	
+	@Column(name="V_FOLDER_ID")
+	private String folderId;
+	
+	@Column(name="V_FOLDER_SHORT_NAME")
+	private String folderShortName;
+	
+	@Column(name="V_FOLDER_NAME")
+	private String folderName;
+	
+	@Column(name="V_PORTFOLIO_ID")
+	private String portfolioId;
+	
+	@Column(name="V_FOLDER_STATUS")
+	private String folderStatus;
+	
+	@Column(name="V_CURRENCY_ID")
+	private String currencyId;
+	
+	@Column(name="V_COUNTER_PTY_ID")
+	private String cptyId;
+
+	public Long getkPlusFolderSkey() {
+		return kPlusFolderSkey;
+	}
+
+	public void setkPlusFolderSkey(Long kPlusFolderSkey) {
+		this.kPlusFolderSkey = kPlusFolderSkey;
+	}
+
+	public String getFolderId() {
+		return folderId;
+	}
+
+	public void setFolderId(String folderId) {
+		this.folderId = folderId;
+	}
+
+	public String getFolderShortName() {
+		return folderShortName;
+	}
+
+	public void setFolderShortName(String folderShortName) {
+		this.folderShortName = folderShortName;
+	}
+
+	public String getFolderName() {
+		return folderName;
+	}
+
+	public void setFolderName(String folderName) {
+		this.folderName = folderName;
+	}
+
+	public String getPortfolioId() {
+		return portfolioId;
+	}
+
+	public void setPortfolioId(String portfolioId) {
+		this.portfolioId = portfolioId;
+	}
+
+	public String getFolderStatus() {
+		return folderStatus;
+	}
+
+	public void setFolderStatus(String folderStatus) {
+		this.folderStatus = folderStatus;
+	}
+
+	public String getCurrencyId() {
+		return currencyId;
+	}
+
+	public void setCurrencyId(String currencyId) {
+		this.currencyId = currencyId;
+	}
+
+	public String getCptyId() {
+		return cptyId;
+	}
+
+	public void setCptyId(String cptyId) {
+		this.cptyId = cptyId;
+	}
+}
+
