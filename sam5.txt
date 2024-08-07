@@ -106,3 +106,21 @@ public class FolderWriterTest {
         assertThat(logsList.get(1).getMessage()).contains("Exception while writing k plus folder file");
     }
 }
+
+
+
+@Test
+public void writeFilesByTypeTest1() {
+	KPlusProcessedDTO kPlusProcessedDTO= new KPlusProcessedDTO();
+	KPlusFolder kPlusFolder = new KPlusFolder();
+	kPlusFolder.setFolderId("testFolderId");
+    kPlusFolder.setFolderShortName("testShortName");
+    kPlusFolder.setFolderName("testFolderName");
+    kPlusFolder.setPortfolioId("testPortfolioId");
+    kPlusFolder.setFolderStatus("testStatus");
+    kPlusFolder.setCurrencyId("USD");
+    kPlusFolder.setCptyId("testCptyId");
+    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+	when(folderRepo.save(kPlusProcessedDTO.getkPlusFolder())).thenThrow(new NullPointerException());
+	folderWriter.writeFilesByType(kPlusProcessedDTO);
+}
