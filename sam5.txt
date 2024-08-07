@@ -1,1 +1,108 @@
-Samira File 2
+@Test
+public void writeFilesByTypeTest1() {
+    // Arrange
+    KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
+    KPlusFolder kPlusFolder = new KPlusFolder();
+    // Set necessary fields to avoid null values
+    kPlusFolder.setFolderId("testFolderId");
+    kPlusFolder.setFolderShortName("testShortName");
+    kPlusFolder.setFolderName("testFolderName");
+    kPlusFolder.setPortfolioId("testPortfolioId");
+    kPlusFolder.setFolderStatus("testStatus");
+    kPlusFolder.setCurrencyId("USD");
+    kPlusFolder.setCptyId("testCptyId");
+    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+
+    // Setup the mock to throw an exception when save() is called
+    doThrow(new NullPointerException()).when(folderRepo).save(kPlusFolder);
+
+    // Act
+    folderWriter.writeFilesByType(kPlusProcessedDTO);
+
+    // Assert
+    // Optionally, verify logger output if necessary
+}
+
+
+
+
+
+
+@Override
+public void writeFilesByType(KPlusProcessedDTO kPlusProcessedDTO) {
+    try {
+        folderRepo.save(kPlusProcessedDTO.getkPlusFolder());
+    } catch (Exception e) {
+        LOGGER.info("Error in k plus folder file: {}", kPlusProcessedDTO.getkPlusFolder(), e);
+        LOGGER.error("Exception while writing k plus folder file", e);
+    }
+}
+
+
+
+
+// Set up the mock to throw an exception when save() is called
+doThrow(new NullPointerException("Test Exception")).when(folderRepo).save(any(KPlusFolder.class));
+
+
+
+
+
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class FolderWriterTest {
+
+    @InjectMocks
+    FolderWriter folderWriter;
+
+    @Mock
+    KPlusFolderRepo folderRepo;
+
+    private ListAppender<ILoggingEvent> listAppender;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        Logger logger = (Logger) LoggerFactory.getLogger(FolderWriter.class);
+        listAppender = new ListAppender<>();
+        listAppender.start();
+        logger.addAppender(listAppender);
+    }
+
+    @Test
+    public void writeFilesByTypeTest1() {
+        // Arrange
+        KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
+        KPlusFolder kPlusFolder = new KPlusFolder();
+        kPlusFolder.setFolderId("testFolderId");
+        kPlusFolder.setFolderShortName("testShortName");
+        kPlusFolder.setFolderName("testFolderName");
+        kPlusFolder.setPortfolioId("testPortfolioId");
+        kPlusFolder.setFolderStatus("testStatus");
+        kPlusFolder.setCurrencyId("USD");
+        kPlusFolder.setCptyId("testCptyId");
+        kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+
+        // Setup the mock to throw an exception when save() is called
+        doThrow(new NullPointerException("Test Exception")).when(folderRepo).save(kPlusFolder);
+
+        // Act
+        folderWriter.writeFilesByType(kPlusProcessedDTO);
+
+        // Assert
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertThat(logsList).hasSize(2);
+        assertThat(logsList.get(0).getMessage()).contains("Error in k plus folder file");
+        assertThat(logsList.get(1).getMessage()).contains("Exception while writing k plus folder file");
+    }
+}
