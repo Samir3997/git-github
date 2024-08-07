@@ -145,3 +145,10 @@ public void writeFilesByTypeTest1() {
 }
 
 
+14:35:32.313 [main] ERROR com.maybank.ilm.core.kplusmanager.writers.FolderWriter - Exception while writing k plus folder file
+java.lang.NullPointerException: null
+	at com.maybank.ilm.core.kplusmanager.writers.FolderWriter.writeFilesByType(FolderWriter.java:24) ~[classes/:?]
+	at com.maybank.ilm.junit.kplusmanager.writers.FolderWriterTest.writeFilesByTypeTest1(FolderWriterTest.java:57) ~[test-classes/:?]
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_241]
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_241]
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_241]
