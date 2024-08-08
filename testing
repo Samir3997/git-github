@@ -1,287 +1,36 @@
-package com.maybank.ilm.core.kplusmanager.writers;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.maybank.ilm.core.kplusmanager.repo.KPlusFolderRepo;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.kplus.treasury.dto.KPlusProcessedDTO;
-
-@Component
-public class FolderWriter implements KPlusFilesWriter{
-
-	private static final Logger LOGGER = LogManager.getLogger(FolderWriter.class);
-	
-	@Autowired
-	KPlusFolderRepo folderRepo;
-	
-	@Override
-	public void writeFilesByType(KPlusProcessedDTO kPlusProcessedDTO) {
-		try {
-			//folderRepo.updatePrevRecsLatestRecInd();
-			folderRepo.save(kPlusProcessedDTO.getkPlusFolder());
-		}catch(Exception e){
-			LOGGER.info("Error in k plus folder file"+kPlusProcessedDTO.getkPlusFolder());
-			LOGGER.error("Exception while writing k plus folder file", e);
-		}
-	}
-
-	@Override
-	public String getFileType() {
-		return ILMCoreConstants.FOLDERS;
-	}
-
-}
-
-
-
-package com.maybank.ilm.junit.kplusmanager.writers;
-
-import static org.mockito.Mockito.when;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.maybank.ilm.core.dao.TreasuryCashflowRepo;
-import com.maybank.ilm.core.kplusmanager.repo.KPlusFolderRepo;
-import com.maybank.ilm.core.kplusmanager.writers.FolderWriter;
-import com.maybank.ilm.entity.TreasuryCashflow;
-import com.maybank.ilm.junit.config.AbstractServiceTest;
-import com.maybank.ilm.kplus.treasury.dto.KPlusProcessedDTO;
-import com.maybank.ilm.kplus.treasury.entity.KPlusBond;
-import com.maybank.ilm.kplus.treasury.entity.KPlusFolder;
-
-public class FolderWriterTest extends AbstractServiceTest{
-@InjectMocks
-FolderWriter folderWriter;
-@Mock
-KPlusFolderRepo folderRepo;
-	
-	@Mock
-	TreasuryCashflowRepo treasuryCashflowRepo;
-	@Before
-	public void doSetup() {
-		MockitoAnnotations.initMocks(this);
-		doSetup(folderWriter);
-	}
-@Test
-public void writeFilesByTypeTest() {
-	KPlusProcessedDTO kPlusProcessedDTO= new KPlusProcessedDTO();
-	KPlusFolder kPlusFolder= new KPlusFolder();
-	List<TreasuryCashflow> kplusTransactions = new ArrayList<>();
-	TreasuryCashflow treasuryCashflow= new TreasuryCashflow();
-	treasuryCashflow.setCashAmnt(BigDecimal.ZERO);
-	kplusTransactions.add(treasuryCashflow);
-	kPlusProcessedDTO.setFileType("fileType");
-	kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
-	kPlusProcessedDTO.setKplusTransactions(kplusTransactions);
-
-	folderWriter.writeFilesByType(kPlusProcessedDTO);
-}
-@Test
-public void writeFilesByTypeTest1() {
-	KPlusProcessedDTO kPlusProcessedDTO= new KPlusProcessedDTO();
-	KPlusFolder kPlusFolder = new KPlusFolder();
-	kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
-	when(folderRepo.save(kPlusProcessedDTO.getkPlusFolder())).thenThrow(new NullPointerException());
-	folderWriter.writeFilesByType(kPlusProcessedDTO);
-}
-@Test
-public void getFileTypeTest() {
-	folderWriter.getFileType();
-}
-}
-
-
-@Test
-public void writeFilesByTypeTest1() {
-    // Arrange
-    KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
-    KPlusFolder kPlusFolder = new KPlusFolder();
-    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
-    
-    // Setup the mock to throw an exception when save() is called
-    doThrow(new NullPointerException()).when(folderRepo).save(kPlusFolder);
-    
-    // Act
-    folderWriter.writeFilesByType(kPlusProcessedDTO);
-    
-    // Assert
-    // You can verify that the logger was called with the expected error message
-    // This assumes you have a way to verify logger interactions; if not, this step can be skipped
-}
-
-
-
-@Rule
-public TestRule logCaptureRule = new LogCaptureRule();
-
-@Test
-public void writeFilesByTypeTest1() {
-    // Arrange
-    KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
-    KPlusFolder kPlusFolder = new KPlusFolder();
-    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
-    
-    // Setup the mock to throw an exception when save() is called
-    doThrow(new NullPointerException()).when(folderRepo).save(kPlusFolder);
-    
-    // Act
-    folderWriter.writeFilesByType(kPlusProcessedDTO);
-    
-    // Assert
-    // Verify logger output
-    assertTrue(logCaptureRule.getLogs().contains("Error in k plus folder file"));
-    assertTrue(logCaptureRule.getLogs().contains("Exception while writing k plus folder file"));
-}
-
-
-14:35:32.313 [main] ERROR com.maybank.ilm.core.kplusmanager.writers.FolderWriter - Exception while writing k plus folder file
-java.lang.NullPointerException: null
-	at com.maybank.ilm.core.kplusmanager.writers.FolderWriter.writeFilesByType(FolderWriter.java:24) ~[classes/:?]
-	at com.maybank.ilm.junit.kplusmanager.writers.FolderWriterTest.writeFilesByTypeTest1(FolderWriterTest.java:57) ~[test-classes/:?]
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method) ~[?:1.8.0_241]
-	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_241]
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source) ~[?:1.8.0_241]
+{1:F01MBBEMYKLAXXX3860214999}{2:O9501936240524PNBPUS3NANYC91205758342405250736N}{4:
+:20:IS0184-43-240524
+:25:2000191820359
+:28C:00102/00043
+:60M:C240524USD32579014,00
+:61:2405240524DD220000,00NTRFBPCT2405195813//2024052400513968
+BEN:EDENOR SURFACTANT (M) SDN. BHD
+:61:2405240524DD245066,44NTRFBPCT2405539132//2024052400560094
+BEN:HONG KONG HAILIANG METAL TRADI
+:61:2405240524DD258657,42NTRFKLCE2405427398//2024052400544247
+BEN:FUZHOU KUNSHANRUI TRADING CO.,
+:61:2405240524DD319478,33NTRFKLCE2405427252//2024052400531663
+BEN:CAJUN GLOBAL LLC
+:61:2405240524DD351450,00NTRFKLCE2405426615//2024052400510570
+BEN:OQ MARKETING LLC
+:61:2405240524DD450000,00NTRFBPCT2405382528//2024052400528615
+BEN:WHITE HORSE CERAMIC INDUSTRIES
+:61:2405240524DD624031,30NTRFKLCE2405427503//2024052400557883
+BEN:HUMEDICAL (S) PTE LTD
+:61:2405240524DD1161600,00NTRFBPCT2405400186//2024052400533203
+BEN:NITRON GROUP LLC
+:61:2405240524DD2500000,00NTRFKLCV2405000017//2024052400546232
+BEN:CIMB ISLAMIC BANK BERHAD
+:61:2405240524DD4400000,00NMSCINVESTMNT 052424//V041805/052424
+INVESTMENT PLACED AT  3.55000 PCT.
+:61:2405240524DD20000000,00NTRFKLCV2405000016//2024052400546227
+BEN:CIMB ISLAMIC BANK BERHAD
+:62F:C080824USD2048730,51
+:64:C240524USD2048730,51
+-}{5:{CHK:2F9899770A2B}}{S:{COP:S}}
 
 
 
 
 
-
-
-
-
-package com.maybank.ilm.kplus.treasury.entity;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-import com.maybank.ilm.mappedsuperclass.KPlusStaticFilesCommonCols;
-
-@Entity
-@Table(name = "K_PLUS_FOLDER")
-public class KPlusFolder extends KPlusStaticFilesCommonCols{
-	
-	public KPlusFolder(String folderId, String folderShortName, String folderName, String portfolioId,
-			String folderStatus, String currencyId, String cptyId) {
-		super();
-		this.folderId = folderId;
-		this.folderShortName = folderShortName;
-		this.folderName = folderName;
-		this.portfolioId = portfolioId;
-		this.folderStatus = folderStatus;
-		this.currencyId = currencyId;
-		this.cptyId = cptyId;
-	}
-
-	public KPlusFolder() {
-		super();
-	}
-
-	@Id
-	@Column(name = "N_K_PLUS_FOLDER_SKEY")
-	@SequenceGenerator(name = "kPlusFolderSkey", sequenceName = "K_PLUS_FOLDER_SEQ", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "kPlusFolderSkey")
-	private Long kPlusFolderSkey;
-	
-	@Column(name="V_FOLDER_ID")
-	private String folderId;
-	
-	@Column(name="V_FOLDER_SHORT_NAME")
-	private String folderShortName;
-	
-	@Column(name="V_FOLDER_NAME")
-	private String folderName;
-	
-	@Column(name="V_PORTFOLIO_ID")
-	private String portfolioId;
-	
-	@Column(name="V_FOLDER_STATUS")
-	private String folderStatus;
-	
-	@Column(name="V_CURRENCY_ID")
-	private String currencyId;
-	
-	@Column(name="V_COUNTER_PTY_ID")
-	private String cptyId;
-
-	public Long getkPlusFolderSkey() {
-		return kPlusFolderSkey;
-	}
-
-	public void setkPlusFolderSkey(Long kPlusFolderSkey) {
-		this.kPlusFolderSkey = kPlusFolderSkey;
-	}
-
-	public String getFolderId() {
-		return folderId;
-	}
-
-	public void setFolderId(String folderId) {
-		this.folderId = folderId;
-	}
-
-	public String getFolderShortName() {
-		return folderShortName;
-	}
-
-	public void setFolderShortName(String folderShortName) {
-		this.folderShortName = folderShortName;
-	}
-
-	public String getFolderName() {
-		return folderName;
-	}
-
-	public void setFolderName(String folderName) {
-		this.folderName = folderName;
-	}
-
-	public String getPortfolioId() {
-		return portfolioId;
-	}
-
-	public void setPortfolioId(String portfolioId) {
-		this.portfolioId = portfolioId;
-	}
-
-	public String getFolderStatus() {
-		return folderStatus;
-	}
-
-	public void setFolderStatus(String folderStatus) {
-		this.folderStatus = folderStatus;
-	}
-
-	public String getCurrencyId() {
-		return currencyId;
-	}
-
-	public void setCurrencyId(String currencyId) {
-		this.currencyId = currencyId;
-	}
-
-	public String getCptyId() {
-		return cptyId;
-	}
-
-	public void setCptyId(String cptyId) {
-		this.cptyId = cptyId;
-	}
-}
 
