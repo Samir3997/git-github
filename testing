@@ -1,7 +1,1 @@
-if (eamDefn != null && amount != null) {
-					BigDecimal closingAvlBal = amount;
-					BigDecimal closingBal = BigDecimal.ZERO;
-					if (closingAvlBal != null) {
-						String debitCreditMark = camt05300108.getBkToCstmrStmt().getStmt().get(0).getBal().get(0).getCdtDbtInd().toString();
-						closingBal = "D".equals(debitCreditMark) ? closingAvlBal.negate() : closingAvlBal;
-					}
+Unlikely argument type for equals(): LocalDate seems to be unrelated to DateAndDateTime2Choice
