@@ -1,21 +1,21 @@
 @Test
-public void blockMT103MsgITypeDebitMsgTest() {
-    // Test when BIC is exactly "MBEAMYKL"
-    FinMT103 finMT103 = new FinMT103();
-    Block4Tag50 tag50 = new Block4Tag50();
-    tag50.setBlock4Tag50aBic("MBEAMYKL123");
-    finMT103.setTags50(tag50);
+    void testSaveToAcctBalMgmtAndMapping_EntityNotFound() {
+        // Given
+        FinMT103 finMT103 = new FinMT103();
+        // Setup the FinMT103 object as required for the test.
+        // For example, set the necessary tags and fields.
+        // You can use a builder pattern or manually set the fields.
 
-    Boolean result = mt103Handler.blockMT103MsgITypeDebitMsg(finMT103, "MYR");
-    assertTrue(result, "Message should be blocked for BIC 'MBEAMYKL123'");
+        // Mock the behavior to return null for the entity definition
+        doReturn(null).when(eamRepo).findByReceiverBicAndOtherParams(anyString(), anyString(), anyString(), anyString(), anyString());
 
-    // Test when BIC is exactly "MBEAMY21"
-    tag50.setBlock4Tag50aBic("MBEAMY21ABC");
-    result = mt103Handler.blockMT103MsgITypeDebitMsg(finMT103, "MYR");
-    assertTrue(result, "Message should be blocked for BIC 'MBEAMY21ABC'");
+        // When and Then
+        // Invoke the method and expect an exception to be thrown
+        assertThrows(RuntimeException.class, () -> {
+            mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
+        });
 
-    // Test when BIC is not blocked
-    tag50.setBlock4Tag50aBic("OTHERBIC01");
-    result = mt103Handler.blockMT103MsgITypeDebitMsg(finMT103, "MYR");
-    assertFalse(result, "Message should not be blocked for BIC 'OTHERBIC01'");
-}
+        // Verify that the logger was called with the expected message
+        // If using Log4j2, you might need to configure the test to capture log output
+        // This can be done using tools like LogCaptor or a custom appender for testing
+    }
