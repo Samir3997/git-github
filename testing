@@ -1,187 +1,234 @@
-package com.maybank.ilm.junit.swiftmsghandlers;
+package com.maybank.ilm.core.swiftmsghandlers;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
-import com.maybank.ilm.core.dao.CashflowProjectionDao;
-import com.maybank.ilm.core.dao.DimDao;
+import com.jparams.object.builder.utils.ObjectUtils;
 import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.dao.FinMessageDao;
-import com.maybank.ilm.core.dao.LockConfigDao;
-import com.maybank.ilm.core.swiftmsghandlers.MT103Handler;
 import com.maybank.ilm.core.util.DateUtil;
 import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.embeddable.Block4Tag50;
-import com.maybank.ilm.embeddable.Block4Tag52;
-import com.maybank.ilm.embeddable.Block4Tag53;
-import com.maybank.ilm.embeddable.Block4Tag57;
-import com.maybank.ilm.embeddable.Block4Tag72;
-import com.maybank.ilm.embeddable.MT103Block4;
-import com.maybank.ilm.embeddable.MTBlock1;
-import com.maybank.ilm.embeddable.MTBlock2;
+import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
 import com.maybank.ilm.entity.AccountBalanceManagement;
-import com.maybank.ilm.entity.DimCurrency;
 import com.maybank.ilm.entity.EntityAccountMapDefinition;
 import com.maybank.ilm.entity.FinMT103;
-import com.maybank.ilm.junit.config.AbstractServiceTest;
 
-public class MT103HandlerTest extends AbstractServiceTest {
+@Component
+public class MT103Handler extends SwiftMsgHandlerAbstractImpl {
+	private static final Logger LOGGER = LogManager.getLogger(MT103Handler.class);
 
-    @InjectMocks
-    MT103Handler mt103Handler;
+	@Autowired
+	EntityAccountMappingRepo eamRepo;
 
-    @Mock
-    EntityAccountMappingRepo eamRepo;
-    @Mock
-    CashflowProjectionDao cfProjectionDao;
-    @Mock
-    AccountBalanceMgmtRepo mgmtRepo;
-    @Mock
-    DimDao dimDao;
-    @Mock
-    LockConfigDao lockConfigDao;
-    @Mock
-    FinMessageDao finMsgDao;
+	@Override
+	public <T> void saveToAcctBalMgmtAndMapping(T t) {
+		FinMT103 finMT103 = (FinMT103) t;
+		List<AccountBalanceManagement> allEntries = new ArrayList<>();
+		List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+		Long trackerId = finMT103.getTrackerID();
+		LocalDate valueDt = DateUtil.getDateFromString(finMT103.getBlock4().getBlock4Tag32aDate());
+		LocalDateTime businessDt = getCurrentDateTimeByZone();
+		BigDecimal amount = finMT103.getBlock4().getBlock4Tag32aSettledAmnt();
+		String senderBic = finMT103.getTags52().getBlock4Tag52aBic();
+		String receiverBic = finMT103.getTags57().getBlock4Tag57aBic();
+		String currencyCode = finMT103.getBlock4().getBlock4Tag32aCurrency();
+		String receiverEntity = null;
 
-    @Before
-    public void doSetup() {
-        MockitoAnnotations.initMocks(this);
-        doSetup(mt103Handler);
-    }
+		if (currencyCode.equals(ILMCoreConstants.MYR)) {
+			if (finMT103.getBlock2().getBlock2InOutInd().contentEquals(ILMCoreConstants.OUTPUTIND)) {
+				LOGGER.info("Inside handler for MYR and O indicator.");
+				EntityAccountMapDefinition eamDefn = findEamDefn(receiverBic, finMT103.getTags72(),
+						finMT103.getBlock1().getBlock1LogicalTerminal(), currencyCode, ILMCoreConstants.MAINACCOUNT);
+				if (eamDefn != null) {
+					receiverEntity = eamDefn.getEntityIdentifier();
+					Long entityAcctMapSkey = eamDefn.getEntityAcctMapSkey();
+					AccountBalanceManagement management = setBalanceManagement(entityAcctMapSkey, amount,
+							ILMCoreConstants.PLUS, trackerId, businessDt, valueDt, null,
+							finMT103.getBlock2MessageType(), finMT103.getTags52().getBlock4Tag52aBic(), receiverEntity,
+							getTRNCode(getNarratives(finMT103.getTags72())), finMT103.getBlock4().getBlock4Tag20(),
+							currencyCode, ILMCoreConstants.NIND);
+					allEntries.add(management);
+					String aggrInd = ILMCoreConstants.OTHERS;
+					getAggregations(allEntries, aggregations, aggrInd);
+					saveEntities(allEntries, finMT103);
+				} else {
+					LOGGER.info("Entity defination not found for {} {} {} ", receiverEntity,
+							ILMCoreConstants.MAINACCOUNT, currencyCode);
+					throwEntityNotFountException();
+				}
+			}
+		} else {
+		
+			if (finMT103.getBlock2().getBlock2InOutInd().contentEquals(ILMCoreConstants.INPUTIND)) {
+				if(blockMT103MsgITypeDebitMsg(finMT103, currencyCode)) {
+					LOGGER.info("Message is blocked");
+					throwMsgBlockedException();
+				};
+				LOGGER.info("Inside MT103 handler for Nostro {} and I indicator.", currencyCode);
+				String deductFromBIC = (finMT103.getBlock2().getBlock2ReceiverAddr()).substring(0, 8);
+				String deductFromBICAlt = finMT103.getTags53().getBlock4Tag53aBic();
+				if (deductFromBICAlt != null) {
+					deductFromBICAlt = deductFromBICAlt.substring(0, 8);
+				}
 
-    @Test
-    public void saveToAcctBalMgmtAndMappingTest() {
-        FinMT103 finMT103 = createSampleFinMT103();
-        
-        // Mock behaviors
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(any(), any(), any())).thenReturn(new EntityAccountMapDefinition());
-        when(dimDao.getCurrDetailsByCode(any())).thenReturn(new DimCurrency());
-        when(lockConfigDao.updateLockConfig(any(), any())).thenReturn(1);
-        when(mgmtRepo.saveAll(any())).thenReturn(new ArrayList<>());
-        doNothing().when(finMsgDao).saveAny(any());
+				EntityAccountMapDefinition deductFromEAM = null;
+				deductFromEAM = getDefnByEntityIDAndAcctType(deductFromBIC, ILMCoreConstants.NOSTROACCOUNT, currencyCode);
 
-        mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
+				if (Objects.isNull(deductFromEAM)) {
+					deductFromEAM = getDefnByEntityIDAndAcctType(deductFromBICAlt, ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+				}
+				
+				if (Objects.isNull(deductFromEAM)) {
+					LOGGER.info("Entity defination not found for {} {} {} {} ", deductFromBIC, deductFromBICAlt,
+							ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+					throwEntityNotFountException();
+				}
+				/*check related Ref */
+				String relatedRef =finMT103.getBlock4().getBlock4Tag20();
+				Character settled = ILMCoreConstants.NIND;
+				if(checkRelatedRefForNostro(valueDt, deductFromEAM.getEntityAcctMapSkey(), relatedRef)) {
+					settled = ILMCoreConstants.YIND;
+				}
+				
+				senderBic = (finMT103.getBlock1().getBlock1LogicalTerminal()).substring(0, 8);
+				
+				receiverBic = finMT103.getTags57().getBlock4Tag57aBic();
+				if(receiverBic == null) {
+					receiverBic = finMT103.getTags57().getBlock4Tag57dAcct();
+				}
+				receiverBic = receiverBic != null ? (receiverBic).substring(0, 8) : receiverBic;
 
-        // Add assertions to verify the interactions and state
-        // Example: verify that saveAll was called on mgmtRepo
-        verify(mgmtRepo, times(1)).saveAll(any());
-    }
+				try {
+					allEntries.add(setBalanceManagementWithSettlementInd(deductFromEAM.getEntityAcctMapSkey(), amount,
+							ILMCoreConstants.negativeSign, finMT103.getTrackerID(), businessDt, valueDt, null,
+							finMT103.getBlock2MessageType(), senderBic, receiverBic, null,
+							finMT103.getBlock4().getBlock4Tag20(), currencyCode, ILMCoreConstants.NIND ,settled));
+				} catch(Exception e){
+					LOGGER.info("Exception occured In creating management entry: " + e);
+				}
 
-    @Test
-    public void saveToAcctBalMgmtAndMappingTest2() {
-        FinMT103 finMT103 = createSampleFinMT103();
+			} else {
+				LOGGER.info("Inside MT 103 handler for Nostro {} and O indicator.", currencyCode);
+				if(blockMT103MsgOTypeCreditMsg(finMT103, currencyCode)) {
+					LOGGER.info("Message is blocked");
+					throwMsgBlockedException();
+				};
+				String creditToBIC = (finMT103.getBlock2().getBlock2MIRLogicalTerminal()).substring(0, 8);
+				String creditToBICAlt = finMT103.getTags54().getBlock4Tag54aBic();
+				String tag53aBic = finMT103.getTags53().getBlock4Tag53aBic() != null ? 
+						finMT103.getTags53().getBlock4Tag53aBic().substring(0,8) : null;
+				creditToBICAlt = creditToBICAlt != null ? creditToBICAlt.substring(0, 8) : creditToBICAlt;
 
-        // Mock behaviors
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(any(), any(), any())).thenReturn(new EntityAccountMapDefinition());
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(any(), any(), any())).thenReturn(createSampleAccountBalanceManagement());
+				EntityAccountMapDefinition creditToEAM = null;
+				creditToEAM = getDefnByEntityIDAndAcctType(creditToBICAlt, ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+				
+				if (Objects.isNull(creditToEAM)) {
+					creditToEAM = getDefnByEntityIDAndAcctType(tag53aBic, ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+				}
+				
+				if (Objects.isNull(creditToEAM)) {
+					creditToEAM = getDefnByEntityIDAndAcctType(creditToBIC, ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+				}
 
-        mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
+				if (Objects.isNull(creditToEAM)) {
+					LOGGER.info("Entity defination not found for {} {} {} {} ", creditToBIC, creditToBICAlt,
+							ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+					throwEntityNotFountException();
+				}
+				
+				/*check related Ref */
+				String relatedRef =finMT103.getBlock4().getBlock4Tag20();
+				Character settled = ILMCoreConstants.NIND;
+				if(checkRelatedRefForNostro(valueDt, creditToEAM.getEntityAcctMapSkey(), relatedRef)) {
+					settled = ILMCoreConstants.YIND;
+				}
+				
+				receiverBic = (finMT103.getBlock1().getBlock1LogicalTerminal()).substring(0, 8);
+				//Sender Bic to show on ui - Maybe Changed Later
+				senderBic = (creditToBIC != null ? creditToBIC : creditToBICAlt);
+				
+//				if (senderBic == null) {
+//					senderBic = finMT103.getTags53().getBlock4Tag53aBic();
+//				}
+				try {
+					allEntries.add(setBalanceManagementWithSettlementInd(creditToEAM.getEntityAcctMapSkey(), amount,
+							ILMCoreConstants.plusSign, finMT103.getTrackerID(), businessDt, valueDt, null,
+							finMT103.getBlock2MessageType(), senderBic, receiverBic, null,
+							finMT103.getBlock4().getBlock4Tag20(), currencyCode, ILMCoreConstants.NIND ,settled));
+				} catch(Exception e){
+					LOGGER.info("Exception occured In creating management entry: " + e);
 
-        // Add assertions to verify the interactions and state
-        // Example: verify that saveAll was called on mgmtRepo
-        verify(mgmtRepo, times(1)).saveAll(any());
-    }
+			}
+		}
+		}
+		//String aggrInd = ILMCoreConstants.OTHERS;
+		//getAggregations(allEntries, aggregations, aggrInd);
+		saveEntities(allEntries, finMT103);
+	}
+	
+	
+	private Boolean blockMT103MsgOTypeCreditMsg(FinMT103 finMT103, String currencyCode) {
+		LOGGER.info("Inside block msg method");
+		Boolean blockMsg = false;
+		String tag59AcctNo = finMT103.getTags59().getBlock4Tag59Acct();
+		String tag59aAcctNo = finMT103.getTags59().getBlock4Tag59aAcct();
+		String tag59FAcctNo = finMT103.getTags59().getBlock4Tag59fAcct();
+		String tag59aBic = finMT103.getTags59().getBlock4Tag59aBic();
+		String tag59FInfo = finMT103.getTags59().getBlock4Tag59fNumber1();
+		String tag59Info = finMT103.getTags59().getBlock4Tag59NameAddr();
+		if (tag59aAcctNo != null && tag59aBic != null) {
+			EntityAccountMapDefinition eamDefnByTag59A = getEntityAcctMapDefnByAcctNum(tag59aAcctNo, currencyCode);
+			if (eamDefnByTag59A != null && tag59aBic.substring(0, 8).compareToIgnoreCase("MBBEMYKL") == 0) {
+				blockMsg = true;
+			}
+		} else if (tag59FAcctNo != null && tag59FInfo != null) {
+			EntityAccountMapDefinition eamDefnByTag59F = getEntityAcctMapDefnByAcctNum(tag59FAcctNo, currencyCode);
+			if (eamDefnByTag59F != null
+					&& (tag59FInfo.toUpperCase().contains("MALAYAN BANKING BERHAD") || tag59FInfo.toUpperCase().contains("MAYBANK"))) {
+				blockMsg = true;
+			}
+		} else if (tag59AcctNo != null && tag59Info != null) {
+			EntityAccountMapDefinition eamDefnByTag59 = getEntityAcctMapDefnByAcctNum(tag59AcctNo, currencyCode);
+			if (eamDefnByTag59 != null
+					&& (tag59Info.toUpperCase().contains("MALAYAN BANKING BERHAD") || tag59Info.toUpperCase().contains("MAYBANK"))) {
+				blockMsg = true;
+			}
+		}
+		return blockMsg;
+	}
+	
+	private Boolean blockMT103MsgITypeDebitMsg(FinMT103 finMT103, String currencyCode) {
+		LOGGER.info("Inside block msg method");
+		Boolean blockMsg = false;
+		String tag50aBic = finMT103.getTags50().getBlock4Tag50aBic();
+		if (tag50aBic != null) {
+			blockMsg = tag50aBic.substring(0, 8).compareToIgnoreCase("MBEAMYKL") == 0 || 
+					tag50aBic.substring(0, 8).compareToIgnoreCase("MBEAMY21") == 0;
+		} 
+		return blockMsg;
+	}
 
-    @Test
-    public void getMessageTypeTest() {
-        String messageType = mt103Handler.getMessageType();
-        assertEquals(ILMCoreConstants.MESSAGETYPE103, messageType);
-    }
 
-    @Test
-    public void validateMessageTest() {
-        FinMT103 finMT103 = createSampleFinMT103();
-        
-        // Example of validating message
-        AccountBalanceMgmtDTO result = mt103Handler.validateMessage(finMT103);
+	@Override
+	public String getMessageType() {
+		return ILMCoreConstants.MESSAGETYPE103;
+	}
 
-        // Add assertions to verify the result
-        assertNotNull(result);
-    }
-
-    @Test
-    public void blockMT103MsgOTypeCreditMsgTest() throws Exception {
-        FinMT103 finMT103 = createSampleFinMT103();
-
-        // Access the private method via reflection
-        Method method = MT103Handler.class.getDeclaredMethod("blockMT103MsgOTypeCreditMsg", FinMT103.class);
-        method.setAccessible(true);
-        
-        method.invoke(mt103Handler, finMT103);
-
-        // Add assertions to verify the behavior
-    }
-
-    @Test
-    public void blockMT103MsgITypeCreditMsgTest() throws Exception {
-        FinMT103 finMT103 = createSampleFinMT103();
-
-        // Access the private method via reflection
-        Method method = MT103Handler.class.getDeclaredMethod("blockMT103MsgITypeCreditMsg", FinMT103.class);
-        method.setAccessible(true);
-        
-        method.invoke(mt103Handler, finMT103);
-
-        // Add assertions to verify the behavior
-    }
-
-    private FinMT103 createSampleFinMT103() {
-        FinMT103 finMT103 = new FinMT103();
-        MT103Block4 block4 = new MT103Block4();
-        block4.setBlock4Tag32aDate(DateUtil.getStringFromLDate(LocalDate.now(), "yyMMdd"));
-        block4.setBlock4Tag32aSettledAmnt(BigDecimal.ZERO);
-        block4.setBlock4Tag32aCurrency(ILMCoreConstants.MYR);
-        block4.setBlock4Tag20("block4tag20");
-        finMT103.setBlock4(block4);
-
-        MTBlock1 block1 = new MTBlock1();
-        block1.setBlock1LogicalTerminal("Block1LT");
-        finMT103.setBlock1(block1);
-
-        MTBlock2 block2 = new MTBlock2();
-        block2.setBlock2InOutInd(ILMCoreConstants.INPUTIND);
-        finMT103.setBlock2(block2);
-
-        Block4Tag57 tags57 = new Block4Tag57();
-        tags57.setBlock4Tag57aBic("tag57Bic");
-        finMT103.setTags57(tags57);
-
-        Block4Tag52 tags52 = new Block4Tag52();
-        tags52.setBlock4Tag52aBic("tag52Bic");
-        finMT103.setTags52(tags52);
-
-        Block4Tag50 tag50 = new Block4Tag50();
-        tag50.setBlock4Tag50aBic("tag50Bic");
-        finMT103.setTags50(tag50);
-
-        Block4Tag72 tag72 = new Block4Tag72();
-        finMT103.setTags72(tag72);
-
-        return finMT103;
-    }
-
-    private List<AccountBalanceManagement> createSampleAccountBalanceManagement() {
-        List<AccountBalanceManagement> managements = new ArrayList<>();
-        AccountBalanceManagement accountBalanceManagement = new AccountBalanceManagement();
-        accountBalanceManagement.setEntityAcctMapSkey(1L);
-        accountBalanceManagement.setCurrencyCode("MYR");
-        accountBalanceManagement.setValueDate(LocalDate.now());
-        accountBalanceManagement.setSendersRef("block4tag");
-        accountBalanceManagement.setSettlementInd('Y');
-        managements.add(accountBalanceManagement);
-        return managements;
-    }
+	@Override
+	public <T> AccountBalanceMgmtDTO validateMessage(T t) {
+		FinMT103 finMT103 = (FinMT103) t;
+		return super.validateMessage(finMT103.getTags57().getBlock4Tag57aBic(), finMT103.getTags72(),
+				finMT103.getBlock1().getBlock1LogicalTerminal(), finMT103.getBlock4().getBlock4Tag32aCurrency(),
+				finMT103.getBlock4().getBlock4Tag32aDate(), finMT103.getBlock4().getBlock4Tag20(),
+				ILMCoreConstants.MESSAGETYPE103, finMT103.getBlock4().getBlock4Tag32aSettledAmnt(), null, Boolean.TRUE);
+	}
 }
