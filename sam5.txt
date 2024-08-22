@@ -1,126 +1,122 @@
-@Test
-public void writeFilesByTypeTest1() {
-    // Arrange
-    KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
-    KPlusFolder kPlusFolder = new KPlusFolder();
-    // Set necessary fields to avoid null values
-    kPlusFolder.setFolderId("testFolderId");
-    kPlusFolder.setFolderShortName("testShortName");
-    kPlusFolder.setFolderName("testFolderName");
-    kPlusFolder.setPortfolioId("testPortfolioId");
-    kPlusFolder.setFolderStatus("testStatus");
-    kPlusFolder.setCurrencyId("USD");
-    kPlusFolder.setCptyId("testCptyId");
-    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+package com.maybank.ilm.core.swiftmsghandlers;
 
-    // Setup the mock to throw an exception when save() is called
-    doThrow(new NullPointerException()).when(folderRepo).save(kPlusFolder);
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-    // Act
-    folderWriter.writeFilesByType(kPlusProcessedDTO);
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-    // Assert
-    // Optionally, verify logger output if necessary
-}
-
-
-
-
-
-
-@Override
-public void writeFilesByType(KPlusProcessedDTO kPlusProcessedDTO) {
-    try {
-        folderRepo.save(kPlusProcessedDTO.getkPlusFolder());
-    } catch (Exception e) {
-        LOGGER.info("Error in k plus folder file: {}", kPlusProcessedDTO.getkPlusFolder(), e);
-        LOGGER.error("Exception while writing k plus folder file", e);
-    }
-}
-
-
-
-
-// Set up the mock to throw an exception when save() is called
-doThrow(new NullPointerException("Test Exception")).when(folderRepo).save(any(KPlusFolder.class));
-
-
-
-
-
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.read.ListAppender;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.springframework.beans.factory.annotation.Autowired;
 
-public class FolderWriterTest {
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.DateUtil;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.entity.FinMT103;
+
+public class MT103HandlerTest {
 
     @InjectMocks
-    FolderWriter folderWriter;
+    private MT103Handler mt103Handler;
 
     @Mock
-    KPlusFolderRepo folderRepo;
+    private EntityAccountMappingRepo eamRepo;
 
-    private ListAppender<ILoggingEvent> listAppender;
+    @Mock
+    private EntityAccountMapDefinition entityAccountMapDefinition;
+
+    @Mock
+    private FinMT103 finMT103;
 
     @BeforeEach
-    public void setup() {
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
-        Logger logger = (Logger) LoggerFactory.getLogger(FolderWriter.class);
-        listAppender = new ListAppender<>();
-        listAppender.start();
-        logger.addAppender(listAppender);
+        when(DateUtil.getDateFromString(anyString())).thenReturn(LocalDate.now());
+        when(mt103Handler.getCurrentDateTimeByZone()).thenReturn(LocalDateTime.now());
     }
 
     @Test
-    public void writeFilesByTypeTest1() {
-        // Arrange
-        KPlusProcessedDTO kPlusProcessedDTO = new KPlusProcessedDTO();
-        KPlusFolder kPlusFolder = new KPlusFolder();
-        kPlusFolder.setFolderId("testFolderId");
-        kPlusFolder.setFolderShortName("testShortName");
-        kPlusFolder.setFolderName("testFolderName");
-        kPlusFolder.setPortfolioId("testPortfolioId");
-        kPlusFolder.setFolderStatus("testStatus");
-        kPlusFolder.setCurrencyId("USD");
-        kPlusFolder.setCptyId("testCptyId");
-        kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
+    public void testSaveToAcctBalMgmtAndMappingForMYROutput() {
+        // Setup
+        when(finMT103.getBlock4().getBlock4Tag32aCurrency()).thenReturn(ILMCoreConstants.MYR);
+        when(finMT103.getBlock2().getBlock2InOutInd()).thenReturn(ILMCoreConstants.OUTPUTIND);
+        when(finMT103.getBlock4().getBlock4Tag32aSettledAmnt()).thenReturn(BigDecimal.valueOf(1000));
+        when(finMT103.getTags52().getBlock4Tag52aBic()).thenReturn("BIC1");
+        when(finMT103.getTags57().getBlock4Tag57aBic()).thenReturn("BIC2");
+        when(finMT103.getBlock4().getBlock4Tag32aDate()).thenReturn("2024-08-22");
+        when(finMT103.getBlock4().getBlock4Tag20()).thenReturn("REF123");
+        when(finMT103.getBlock2MessageType()).thenReturn("MT103");
+        when(mt103Handler.findEamDefn(anyString(), any(), anyString(), anyString(), anyString()))
+            .thenReturn(entityAccountMapDefinition);
+        when(entityAccountMapDefinition.getEntityIdentifier()).thenReturn("ENTITY123");
+        when(entityAccountMapDefinition.getEntityAcctMapSkey()).thenReturn(1L);
 
-        // Setup the mock to throw an exception when save() is called
-        doThrow(new NullPointerException("Test Exception")).when(folderRepo).save(kPlusFolder);
+        // Execute
+        mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
 
-        // Act
-        folderWriter.writeFilesByType(kPlusProcessedDTO);
-
-        // Assert
-        List<ILoggingEvent> logsList = listAppender.list;
-        assertThat(logsList).hasSize(2);
-        assertThat(logsList.get(0).getMessage()).contains("Error in k plus folder file");
-        assertThat(logsList.get(1).getMessage()).contains("Exception while writing k plus folder file");
+        // Verify
+        verify(mt103Handler).setBalanceManagement(anyLong(), any(BigDecimal.class), anyString(), anyLong(),
+                any(LocalDateTime.class), any(LocalDate.class), any(), anyString(), anyString(), anyString(),
+                anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyChar());
+        verify(mt103Handler).saveEntities(anyList(), eq(finMT103));
     }
-}
 
+    @Test
+    public void testSaveToAcctBalMgmtAndMappingForNostroInputBlocked() {
+        // Setup
+        when(finMT103.getBlock4().getBlock4Tag32aCurrency()).thenReturn("USD");
+        when(finMT103.getBlock2().getBlock2InOutInd()).thenReturn(ILMCoreConstants.INPUTIND);
+        when(finMT103.getBlock4().getBlock4Tag32aSettledAmnt()).thenReturn(BigDecimal.valueOf(1000));
+        when(finMT103.getTags53().getBlock4Tag53aBic()).thenReturn("BIC3");
+        when(finMT103.getBlock2().getBlock2ReceiverAddr()).thenReturn("BIC4ADDRESS");
+        when(mt103Handler.blockMT103MsgITypeDebitMsg(any(), anyString())).thenReturn(true);
 
+        // Execute & Verify
+        assertThrows(RuntimeException.class, () -> mt103Handler.saveToAcctBalMgmtAndMapping(finMT103));
+        verify(mt103Handler).blockMT103MsgITypeDebitMsg(any(), anyString());
+    }
 
-@Test
-public void writeFilesByTypeTest1() {
-	KPlusProcessedDTO kPlusProcessedDTO= new KPlusProcessedDTO();
-	KPlusFolder kPlusFolder = new KPlusFolder();
-	kPlusFolder.setFolderId("testFolderId");
-    kPlusFolder.setFolderShortName("testShortName");
-    kPlusFolder.setFolderName("testFolderName");
-    kPlusFolder.setPortfolioId("testPortfolioId");
-    kPlusFolder.setFolderStatus("testStatus");
-    kPlusFolder.setCurrencyId("USD");
-    kPlusFolder.setCptyId("testCptyId");
-    kPlusProcessedDTO.setkPlusFolder(kPlusFolder);
-	when(folderRepo.save(kPlusProcessedDTO.getkPlusFolder())).thenThrow(new NullPointerException());
-	folderWriter.writeFilesByType(kPlusProcessedDTO);
+    @Test
+    public void testBlockMT103MsgOTypeCreditMsg() {
+        // Setup
+        when(finMT103.getTags59().getBlock4Tag59Acct()).thenReturn("123456789");
+        when(finMT103.getTags59().getBlock4Tag59aBic()).thenReturn("MBBEMYKL");
+
+        // Execute
+        boolean result = mt103Handler.blockMT103MsgOTypeCreditMsg(finMT103, "USD");
+
+        // Verify
+        assertTrue(result);
+    }
+
+    @Test
+    public void testValidateMessage() {
+        // Setup
+        when(finMT103.getTags57().getBlock4Tag57aBic()).thenReturn("BIC2");
+        when(finMT103.getTags72()).thenReturn("TAG72");
+        when(finMT103.getBlock1().getBlock1LogicalTerminal()).thenReturn("TERM1");
+        when(finMT103.getBlock4().getBlock4Tag32aCurrency()).thenReturn("USD");
+        when(finMT103.getBlock4().getBlock4Tag32aDate()).thenReturn("2024-08-22");
+        when(finMT103.getBlock4().getBlock4Tag20()).thenReturn("REF123");
+        when(finMT103.getBlock4().getBlock4Tag32aSettledAmnt()).thenReturn(BigDecimal.valueOf(1000));
+
+        // Execute
+        AccountBalanceMgmtDTO result = mt103Handler.validateMessage(finMT103);
+
+        // Verify
+        assertNotNull(result);
+    }
 }
