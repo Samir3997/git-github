@@ -232,3 +232,258 @@ public class MT103Handler extends SwiftMsgHandlerAbstractImpl {
 				ILMCoreConstants.MESSAGETYPE103, finMT103.getBlock4().getBlock4Tag32aSettledAmnt(), null, Boolean.TRUE);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.junit.swiftmsghandlers;
+
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
+import com.maybank.ilm.core.dao.CashflowProjectionDao;
+import com.maybank.ilm.core.dao.DimDao;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.dao.FinMessageDao;
+import com.maybank.ilm.core.dao.LockConfigDao;
+import com.maybank.ilm.core.swiftmsghandlers.MT103Handler;
+import com.maybank.ilm.core.util.DateUtil;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.embeddable.Block4Tag50;
+import com.maybank.ilm.embeddable.Block4Tag52;
+import com.maybank.ilm.embeddable.Block4Tag53;
+import com.maybank.ilm.embeddable.Block4Tag57;
+import com.maybank.ilm.embeddable.Block4Tag72;
+import com.maybank.ilm.embeddable.MT103Block4;
+import com.maybank.ilm.embeddable.MTBlock1;
+import com.maybank.ilm.embeddable.MTBlock2;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.DimCurrency;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.entity.FinMT103;
+import com.maybank.ilm.junit.config.AbstractServiceTest;
+
+public class MT103HandlerTest extends AbstractServiceTest{
+	@InjectMocks
+	MT103Handler mt103Handler;
+	
+@Mock
+EntityAccountMappingRepo eamRepo;
+@Mock
+CashflowProjectionDao cfProjectionDao;
+@Mock
+AccountBalanceMgmtRepo mgmtRepo;
+@Mock
+DimDao dimDao;
+@Mock
+LockConfigDao lockConfigDao;
+@Mock
+FinMessageDao finMsgDao;
+@Before
+public void doSetup() {
+	MockitoAnnotations.initMocks(this);
+	doSetup(mt103Handler);
+}
+@Test
+public void saveToAcctBalMgmtAndMappingTest() {
+	FinMT103 finMT103 = new FinMT103();
+	finMT103.setTrackerID(2l);
+	MT103Block4 block4 = new MT103Block4();
+	String currDate = DateUtil.getStringFromLDate(LocalDate.now(), "yyMMdd");
+	block4.setBlock4Tag32aDate(currDate);
+	block4.setBlock4Tag32aSettledAmnt(BigDecimal.ZERO);
+	block4.setBlock4Tag32aCurrency(ILMCoreConstants.MYR);
+	finMT103.setBlock4(block4);
+	Block4Tag52 tags52 = new Block4Tag52();
+	tags52.setBlock4Tag52aBic("tag52");
+	finMT103.setTags52(tags52);
+	Block4Tag57 tags57 = new Block4Tag57();
+	tags57.setBlock4Tag57aBic("tag57");
+	finMT103.setTags57(tags57);
+	MTBlock2 block2 = new MTBlock2();
+    block2.setBlock2InOutInd(ILMCoreConstants.OUTPUTIND);
+//    block2.setBlock2MIRLogicalTerminal("block");
+    finMT103.setBlock2(block2);
+    MTBlock1 block1 = new MTBlock1();
+	block1.setBlock1LogicalTerminal("Block1LgogicalTerminal");
+	finMT103.setBlock1(block1);
+	
+    EntityAccountMapDefinition eamDefn = new EntityAccountMapDefinition();
+    eamDefn.setEntityAcctMapSkey(1l);
+    eamDefn.setEntityIdentifier("identifier");
+    Block4Tag72 tags72 = new Block4Tag72();
+    finMT103.setTags72(tags72);
+    DimCurrency dimCurrency = new DimCurrency();
+    dimCurrency.setCountrySkey(1l);
+    dimCurrency.setCreatedDt(LocalDate.now());
+    when(dimDao.getCurrDetailsByCode(Matchers.any())).thenReturn(dimCurrency);
+    when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(eamDefn);
+	
+    AccountBalanceManagement accountBalanceManagement = new AccountBalanceManagement();
+	accountBalanceManagement.setEntityAcctMapSkey(12l);
+	accountBalanceManagement.setAmountSign(ILMCoreConstants.PLUS);
+	accountBalanceManagement.setAmount(BigDecimal.ZERO);
+	accountBalanceManagement.setValueDate(LocalDate.now());
+	accountBalanceManagement.setBusinessDtTime(LocalDateTime.now());
+	accountBalanceManagement.setTrackerID(5l);
+	List<AccountBalanceManagement> allEntries = new ArrayList<>();
+	allEntries.add(accountBalanceManagement);
+	when(lockConfigDao.updateLockConfig(Matchers.any(), Matchers.any())).thenReturn(1);
+	List<AccountBalanceManagement> abm = new ArrayList<>();
+	 when(mgmtRepo.saveAll(Matchers.any())).thenReturn(abm);
+	 doNothing().when(finMsgDao).saveAny(Matchers.any());
+	
+	mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
+}
+
+@Test
+public void saveToAcctBalMgmtAndMappingTest2() {
+	FinMT103 finMT103 = new FinMT103();
+	finMT103.setTrackerID(2l);
+	MT103Block4 block4 = new MT103Block4();
+	String currDate = DateUtil.getStringFromLDate(LocalDate.now(), "yyMMdd");
+	block4.setBlock4Tag32aDate(currDate);
+	block4.setBlock4Tag32aSettledAmnt(BigDecimal.ZERO);
+	block4.setBlock4Tag32aCurrency("curr");
+	block4.setBlock4Tag20("blocktag");
+	finMT103.setBlock4(block4);
+	Block4Tag50 tag50 = new Block4Tag50();
+	tag50.setBlock4Tag50aBic("ABCdEFGHIJL");
+	finMT103.setTags50(tag50);
+	MTBlock2 block2 = new MTBlock2();
+    block2.setBlock2InOutInd(ILMCoreConstants.INPUTIND);
+    block2.setBlock2ReceiverAddr("Receiver");
+    finMT103.setBlock2(block2);
+    Block4Tag52 tags52 = new Block4Tag52();
+	tags52.setBlock4Tag52aBic("tag52Bic");
+	finMT103.setTags52(tags52);
+	Block4Tag57 tags57 = new Block4Tag57();
+	tags57.setBlock4Tag57aBic("tag57Bic");
+	finMT103.setTags57(tags57);
+	Block4Tag53 tags53 = new Block4Tag53();
+	tags53.setBlock4Tag53aBic("BlockBic");
+	finMT103.setTags53(tags53);
+	 MTBlock1 block1 = new MTBlock1();
+		block1.setBlock1LogicalTerminal("Block1LT");
+		finMT103.setBlock1(block1);
+	
+	EntityAccountMapDefinition eamDefn = new EntityAccountMapDefinition();
+    eamDefn.setEntityAcctMapSkey(1l);
+    DimCurrency dimCurrency = new DimCurrency();
+    dimCurrency.setCountrySkey(1l);
+    dimCurrency.setCreatedDt(LocalDate.now());
+    when(dimDao.getCurrDetailsByCode(Matchers.any())).thenReturn(dimCurrency);
+    when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(Matchers.any(), Matchers.any(), Matchers.any())).thenReturn(eamDefn);
+
+	List<AccountBalanceManagement> managements = new ArrayList<>();
+	AccountBalanceManagement accountBalanceManagement = new AccountBalanceManagement();
+	accountBalanceManagement.setEntityAcctMapSkey(1l);
+	accountBalanceManagement.setCurrencyCode("MYR");
+	accountBalanceManagement.setEntityAcctMapSkey(3l);
+	accountBalanceManagement.setValueDate(LocalDate.now());
+	accountBalanceManagement.setSendersRef("block4tag");
+	accountBalanceManagement.setSettlementInd('Y');
+	managements.add(accountBalanceManagement);
+	
+	List<String> messageTypes = new ArrayList<>(Arrays.asList("103", "200", "202" , "900" ,"910"));
+    when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(LocalDate.now(), 5l, messageTypes)).thenReturn(managements);
+	
+    EntityAccountMapDefinition deductFromEAM= new EntityAccountMapDefinition();
+    deductFromEAM.setEntityAcctMapSkey(6l);
+    finMT103.setTrackerID(2l);
+    finMT103.setBlock2MessageType("block2MessageType");
+//    List<AccountBalanceManagement> allEntries = new ArrayList<>();
+//	allEntries.add(accountBalanceManagement);
+    
+	mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
+}
+//@Test
+//public void saveToAcctBalMgmtAndMappingTest4() {
+//	FinMT103 finMT103 = new FinMT103();
+//	finMT103.setTrackerID(2l);
+//	MT103Block4 block4 = new MT103Block4();
+//	block4.setBlock4Tag32aDate("240508");
+//	block4.setBlock4Tag32aSettledAmnt(BigDecimal.ZERO);
+//	block4.setBlock4Tag32aCurrency("Z");
+//	block4.setBlock4Tag20("block4tag");
+//	finMT103.setBlock4(block4);
+//	MTBlock2 block2 = new MTBlock2();
+//    block2.setBlock2InOutInd(ILMCoreConstants.INPUTIND);
+//    block2.setBlock2ReceiverAddr("Receiver");
+//    finMT103.setBlock2(block2);
+//    Block4Tag52 tags52 = new Block4Tag52();
+//	tags52.setBlock4Tag52aBic("tag52");
+//	finMT103.setTags52(tags52);
+//	Block4Tag57 tags57 = new Block4Tag57();
+//	tags57.setBlock4Tag57aBic("tag57");
+//	finMT103.setTags57(tags57);
+//	Block4Tag53 tags53 = new Block4Tag53();
+//	tags53.setBlock4Tag53aBic("Block4Tag");
+//	finMT103.setTags53(tags53);
+//	mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
+//}
+@Test
+public void getMessageTypeTest() {
+	mt103Handler.getMessageType();
+}
+@Test
+public void validateMessageTest() {
+	FinMT103 finMT103  = new FinMT103();
+	Block4Tag57 tags57 = new Block4Tag57();
+	tags57.setBlock4Tag57aAcct("block4tag57");
+	tags57.setBlock4Tag57aBic("tag57");
+	finMT103.setTags57(tags57);
+	
+	Block4Tag72 tags72 = new Block4Tag72();
+	finMT103.setTags72(tags72);
+	
+	MTBlock1 block1 = new MTBlock1();
+	block1.setBlock1LogicalTerminal("Block1LT");
+	finMT103.setBlock1(block1);
+	
+	MT103Block4 block4 = new MT103Block4();
+	block4.setBlock4Tag32aCurrency("MYR");
+	finMT103.setBlock4(block4);
+	String currDate = DateUtil.getStringFromLDate(LocalDate.now(), "yyMMdd");
+	block4.setBlock4Tag32aDate(currDate);
+	finMT103.setBlock4(block4);
+	block4.setBlock4Tag20("block4tag20");
+	finMT103.setBlock4(block4);
+	block4.setBlock4Tag32aSettledAmnt(null);
+	finMT103.setBlock4(block4);
+	
+	mt103Handler.validateMessage(finMT103);
+	
+}
+}
