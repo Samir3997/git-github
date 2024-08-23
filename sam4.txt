@@ -18,3 +18,6 @@ public class MXMsgHandlerConcreteImpl extends MXMsgHandlerAbstractImpl {
     // You can add more specific methods or override existing ones if needed
     
 }
+
+
+eq(Collections.singletonList(new AccountBalanceManagement()))
