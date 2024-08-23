@@ -304,3 +304,106 @@ class MXMsgHandlerTest {
     }
 }
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.*;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.MockitoAnnotations;
+
+class MXMsgHandlerTest {
+
+    private MXMsgHandler mxMsgHandler;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+        mxMsgHandler = spy(new MXMsgHandler()); // Use spy to partially mock the class
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgs() {
+        // Prepare MTField instances
+        MTField field1 = new MTField();
+        field1.setFieldName("70E_NARRATIVE_qualifier");
+        field1.setFieldValue("Narrative1");
+
+        MTField field2 = new MTField();
+        field2.setFieldName("70E_NARRATIVE_2_qualifier");
+        field2.setFieldValue("Narrative2");
+
+        MTField field3 = new MTField();
+        field3.setFieldName("70E_NARRATIVE_3_qualifier");
+        field3.setFieldValue("Narrative3");
+
+        // Prepare MTSequence instance
+        MTSequence sequence = new MTSequence();
+        sequence.setSeqName("seqName");
+        sequence.setMtFields(Arrays.asList(field1, field2, field3));
+
+        List<MTSequence> sequences = Collections.singletonList(sequence);
+
+        // Mock the getRequiredFieldValWithType method
+        doReturn("Narrative1").when(mxMsgHandler).getRequiredFieldValWithType(sequences, "seqName", "qualifier", "70E_NARRATIVE_qualifier");
+        doReturn("Narrative2").when(mxMsgHandler).getRequiredFieldValWithType(sequences, "seqName", "qualifier", "70E_NARRATIVE_2_qualifier");
+        doReturn("Narrative3").when(mxMsgHandler).getRequiredFieldValWithType(sequences, "seqName", "qualifier", "70E_NARRATIVE_3_qualifier");
+        doReturn(null).when(mxMsgHandler).getRequiredFieldValWithType(sequences, "seqName", "qualifier", "70E_NARRATIVE_4_qualifier");
+        // Add more mock returns if needed for additional indexes
+
+        // Call the method to test
+        List<String> narratives = mxMsgHandler.getNarrativesForSeqMsgs(sequences, "qualifier", "seqName");
+
+        // Assert the results
+        List<String> expectedNarratives = Arrays.asList("Narrative1", "Narrative2", "Narrative3", null, null, null, null, null, null);
+        assertEquals(expectedNarratives, narratives);
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgsNoMatchingFields() {
+        // Prepare MTSequence instance with no matching fields
+        MTSequence sequence = new MTSequence();
+        sequence.setSeqName("seqName");
+        sequence.setMtFields(Collections.emptyList());
+
+        List<MTSequence> sequences = Collections.singletonList(sequence);
+
+        // Mock the getRequiredFieldValWithType method
+        doReturn(null).when(mxMsgHandler).getRequiredFieldValWithType(sequences, "seqName", "qualifier", "70E_NARRATIVE_qualifier");
+        doReturn(null).when(mxMsgHandler).getRequiredFieldValWithType(sequences, "seqName", "qualifier", "70E_NARRATIVE_2_qualifier");
+        // Add more mock returns if needed for additional indexes
+
+        // Call the method to test
+        List<String> narratives = mxMsgHandler.getNarrativesForSeqMsgs(sequences, "qualifier", "seqName");
+
+        // Assert the results
+        List<String> expectedNarratives = Arrays.asList(null, null, null, null, null, null, null, null, null);
+        assertEquals(expectedNarratives, narratives);
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgsEmptySequences() {
+        // Define empty sequences
+        List<MTSequence> sequences = Collections.emptyList();
+
+        // Call the method to test
+        List<String> narratives = mxMsgHandler.getNarrativesForSeqMsgs(sequences, "qualifier", "seqName");
+
+        // Assert the results
+        List<String> expectedNarratives = Arrays.asList(null, null, null, null, null, null, null, null, null);
+        assertEquals(expectedNarratives, narratives);
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgsNullSequences() {
+        // Call the method with null sequences
+        List<String> narratives = mxMsgHandler.getNarrativesForSeqMsgs(null, "qualifier", "seqName");
+
+        // Assert the results
+        List<String> expectedNarratives = Arrays.asList(null, null, null, null, null, null, null, null, null);
+        assertEquals(expectedNarratives, narratives);
+    }
+}
