@@ -1,1 +1,53 @@
-Hello World,First Modified.it is modified
+import static org.mockito.Mockito.*;
+
+@Test
+void testSaveToAcctBalMgmtAndMapping() {
+    // Mock the root object
+    MxCamt05400108 camt05400108 = mock(MxCamt05400108.class);
+
+    // Mock the BkToCstmrDbtCdtNtfctn
+    MxCamt05400108.BkToCstmrDbtCdtNtfctn ntfctn = mock(MxCamt05400108.BkToCstmrDbtCdtNtfctn.class);
+    List<MxCamt05400108.Ntfctn> ntfctnList = List.of(mock(MxCamt05400108.Ntfctn.class));
+    when(camt05400108.getBkToCstmrDbtCdtNtfctn()).thenReturn(ntfctn);
+    when(ntfctn.getNtfctn()).thenReturn(ntfctnList);
+
+    MxCamt05400108.Ntfctn ntfctnEntry = ntfctnList.get(0);
+
+    // Mock the Ntry list inside Ntfctn
+    List<MxCamt05400108.Ntry> ntryList = List.of(mock(MxCamt05400108.Ntry.class));
+    when(ntfctnEntry.getNtry()).thenReturn(ntryList);
+
+    MxCamt05400108.Ntry ntry = ntryList.get(0);
+
+    // Mock the Amt class inside Ntry
+    MxCamt05400108.Amt amt = mock(MxCamt05400108.Amt.class);
+    when(ntry.getAmt()).thenReturn(amt);
+    when(amt.getCcy()).thenReturn("MYR");  // Set the currency code
+    when(amt.getValue()).thenReturn(BigDecimal.valueOf(1000));  // Set the amount value
+
+    // Mock the CdtDbtInd class inside Ntry
+    MxCamt05400108.CdtDbtInd cdtDbtInd = mock(MxCamt05400108.CdtDbtInd.class);
+    when(ntry.getCdtDbtInd()).thenReturn(cdtDbtInd);
+    when(cdtDbtInd.value()).thenReturn("DBIT");  // Set the debit/credit indicator
+
+    // Mock the NtryDtls class
+    MxCamt05400108.NtryDtls ntryDtls = mock(MxCamt05400108.NtryDtls.class);
+    List<MxCamt05400108.TxDtls> txDtlsList = List.of(mock(MxCamt05400108.TxDtls.class));
+    when(ntry.getNtryDtls()).thenReturn(List.of(ntryDtls));
+    when(ntryDtls.getTxDtls()).thenReturn(txDtlsList);
+
+    MxCamt05400108.TxDtls txDtls = txDtlsList.get(0);
+    when(txDtls.getAddtlTxInf()).thenReturn("TRN/1234567890/ICRU/500");
+
+    // Mock EntityAccountMapDefinition
+    EntityAccountMapDefinition eamDefn = mock(EntityAccountMapDefinition.class);
+    when(eamRepo.findByAccountNumber(anyString())).thenReturn(eamDefn);
+    when(eamDefn.getEntityAcctMapSkey()).thenReturn(1L);
+
+    // Call the method to test
+    handler.saveToAcctBalMgmtAndMapping(camt05400108, 12345L);
+
+    // Verify interactions and assert results
+    verify(eamRepo, times(1)).findByAccountNumber(anyString());
+    // Add more verifications and assertions as necessary
+}
