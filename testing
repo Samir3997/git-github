@@ -1,292 +1,712 @@
-package com.maybank.ilm.core.swiftmsghandlers;
+package com.maybank.ilm.entity;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.CollectionUtils;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.maybank.ilm.core.util.QueryConstants;
+
+@Entity
+@Table(name = "PRC_ACCOUNT_BALANCE_MGMT")
+@NamedQueries({
+	@NamedQuery(name = "GETOPENINGBAL", query = QueryConstants.GETOPENINGBAL),
+	@NamedQuery(name = "GETOPENINGBALSG", query = QueryConstants.GETOPENINGBALSG),
+	@NamedQuery(name = "GETCOUNTOFTRANSCSAFTERMT940", query = "SELECT COUNT(abm) FROM AccountBalanceManagement abm WHERE businessDtTime > :businessDt940 AND valueDate =:valueDt AND entityAcctMapSkey =:entityAcctMapSkey AND messageType NOT IN (:msgTypes)"),
+	@NamedQuery(name = "GETFUTUREDATEDTRANSACS", query = "SELECT new com.maybank.ilm.dto.BlotterParamsDTO(entityAcctMapSkey, SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END)) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND currencyCode = 'MYR' GROUP BY entityAcctMapSkey"),
+	@NamedQuery(name = "GETNOSTROFUTUREDATEDTRANSACS", query = "SELECT new com.maybank.ilm.dto.BlotterParamsDTO(entityAcctMapSkey, SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END)) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND currencyCode != 'MYR' AND messageType NOT IN (:msgTypes) GROUP BY entityAcctMapSkey"),
+	@NamedQuery(name = "GETMGMTSWITHRELATEDREF900", query = QueryConstants.GETMGMTSWITHRELATEDREF900),
+	@NamedQuery(name = "GETPROJECTEDBALANCE", query = "SELECT SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND entityAcctMapSkey IN (:eamSkeys) AND messageType IN (:msgTypes)"),
+	//@NamedQuery(name="GETSINGLEDAYSENTPAYMENTS",query=QueryConstants.GETSINGLEDAYSENTPAYMENTS),
+	//@NamedQuery(name="GETSINGLEDAYRECIEVEDPAYMENTS",query=QueryConstants.GETSINGLEDAYRECIEVEDPAYMENTS),
+	//@NamedQuery(name="GETPASTPERIODRECIEVEDPAYMENTS",query=QueryConstants.GETPASTPERIODRECIEVEDPAYMENTS),
+	//@NamedQuery(name="GETPASTPERIODSENTPAYMENTS",query=QueryConstants.GETPASTPERIODSENTPAYMENTS)
+})
+public class AccountBalanceManagement {
+
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+	}
+	
+
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd, Character settlementInd) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+		this.settlementInd = settlementInd;
+	}
+
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd, Character settlementInd, String actualMessageType ) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+		this.settlementInd = settlementInd;
+		this.actualMessageType = actualMessageType;
+	}
+	
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String counterParty, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd, Character settlementInd, String actualMessageType ) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.counterParty = counterParty;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+		this.settlementInd = settlementInd;
+		this.actualMessageType = actualMessageType;
+	}
+
+	public AccountBalanceManagement() {
+		super();
+	}
+
+	@Id
+	@Column(name = "N_ACCOUNT_BALANCE_MGMT_SKEY")
+	@SequenceGenerator(name = "acctBalMgmtSkey", sequenceName = "PRC_ACCOUNT_BALANCE_MGMT_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "acctBalMgmtSkey")
+	private Long acctBalMgmtSkey;
+	
+	@Column(name = "N_ENTITY_ACCT_MAP_SKEY")
+	private Long entityAcctMapSkey;
+	
+	@Column(name = "N_AMOUNT")
+	private BigDecimal amount;
+	
+	@Column(name = "V_AMOUNT_SIGN")
+	private String amountSign;
+	
+	@Column(name = "N_TRACKER_ID")
+	private Long trackerID;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss a")
+	@Column(name = "D_BUSINESS_DT")
+	private LocalDateTime businessDtTime;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	@Column(name = "D_VALUE_DT")
+	private LocalDate valueDate;
+	
+	@Column(name = "D_TRANSACTION_DT")
+	private LocalDate transactionDt;
+	
+	@Column(name = "V_MESSAGE_TYPE")
+	
+	private String messageType;
+	@Column(name = "V_SENDER_CODE")
+	private String senderCode;
+	
+	@Column(name = "V_RECEIVER_CODE")
+	private String receiverCode;
+	
+	@Column(name = "V_COUNTER_PARTY")
+	private String counterParty;
+	
+	@Column(name = "V_TRN_CODE")
+	private String trnCode;
+	
+	@Column(name = "V_SENDERS_REFERENCE")
+	private String sendersRef;
+	
+	@Column(name = "V_CURRENCY_CODE")
+	private String currencyCode;
+	
+	@Column(name = "F_K_REDEMPTION_IND")
+	private Character kRedemptionInd;
+	
+	@Column(name = "F_SETTLEMENT_IND")
+	private Character settlementInd;
+	
+	@Column(name = "V_ACTUAL_MESSAGE_TYPE")
+	private String actualMessageType;
+	
+	@Transient
+	private Character isSRR;
+	
+	@Transient
+	private String detailsOfCharges;
+	
+	@Transient
+	private BigDecimal sendersCharges;
+	
+	@Transient
+	private BigDecimal receiversCharges;
+	
+	@Transient
+	private String senderToReceiverInfo;
+
+	@Transient
+	private String relatedReference;
+	
+	public Long getAcctBalMgmtSkey() {
+		return acctBalMgmtSkey;
+	}
+
+	public void setAcctBalMgmtSkey(Long acctBalMgmtSkey) {
+		this.acctBalMgmtSkey = acctBalMgmtSkey;
+	}
+
+	public Long getEntityAcctMapSkey() {
+		return entityAcctMapSkey;
+	}
+
+	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
+		this.entityAcctMapSkey = entityAcctMapSkey;
+	}
+
+	public BigDecimal getAmount() {
+		return amount;
+	}
+
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
+
+	public String getAmountSign() {
+		return amountSign;
+	}
+
+	public void setAmountSign(String amountSign) {
+		this.amountSign = amountSign;
+	}
+
+	public Long getTrackerID() {
+		return trackerID;
+	}
+
+	public void setTrackerID(Long trackerID) {
+		this.trackerID = trackerID;
+	}
+
+	public LocalDateTime getBusinessDtTime() {
+		return businessDtTime;
+	}
+
+	public void setBusinessDtTime(LocalDateTime businessDtTime) {
+		this.businessDtTime = businessDtTime;
+	}
+
+	public LocalDate getValueDate() {
+		return valueDate;
+	}
+
+	public void setValueDate(LocalDate valueDate) {
+		this.valueDate = valueDate;
+	}
+
+	public LocalDate getTransactionDt() {
+		return transactionDt;
+	}
+
+	public void setTransactionDt(LocalDate transactionDt) {
+		this.transactionDt = transactionDt;
+	}
+
+	public String getMessageType() {
+		return messageType;
+	}
+
+	public void setMessageType(String messageType) {
+		this.messageType = messageType;
+	}
+
+	public String getSenderCode() {
+		return senderCode;
+	}
+
+	public void setSenderCode(String senderCode) {
+		this.senderCode = senderCode;
+	}
+
+	public String getReceiverCode() {
+		return receiverCode;
+	}
+
+	public void setReceiverCode(String receiverCode) {
+		this.receiverCode = receiverCode;
+	}
+	
+	public String getCounterParty() {
+		return counterParty;
+	}
+
+	public void setCounterParty(String counterParty) {
+		this.counterParty = counterParty;
+	}
+
+	public String getTrnCode() {
+		return trnCode;
+	}
+
+	public void setTrnCode(String trnCode) {
+		this.trnCode = trnCode;
+	}
+
+	public String getSendersRef() {
+		return sendersRef;
+	}
+
+	public void setSendersRef(String sendersRef) {
+		this.sendersRef = sendersRef;
+	}
+
+	public String getCurrencyCode() {
+		return currencyCode;
+	}
+
+	public void setCurrencyCode(String currencyCode) {
+		this.currencyCode = currencyCode;
+	}
+	
+	public Character getkRedemptionInd() {
+		return kRedemptionInd;
+	}
+
+	public void setkRedemptionInd(Character kRedemptionInd) {
+		this.kRedemptionInd = kRedemptionInd;
+	}
+
+	public Character getIsSRR() {
+		return isSRR;
+	}
+
+	public void setIsSRR(Character isSRR) {
+		this.isSRR = isSRR;
+	}
+	
+	public Character getSettlementInd() {
+		return settlementInd;
+	}
+
+	public void setSettlementInd(Character settlementInd) {
+		this.settlementInd = settlementInd;
+	}
+
+	public String getDetailsOfCharges() {
+		return detailsOfCharges;
+	}
+
+	public void setDetailsOfCharges(String detailsOfCharges) {
+		this.detailsOfCharges = detailsOfCharges;
+	}
+
+	public BigDecimal getSendersCharges() {
+		return sendersCharges;
+	}
+
+	public void setSendersCharges(BigDecimal sendersCharges) {
+		this.sendersCharges = sendersCharges;
+	}
+
+	public BigDecimal getReceiversCharges() {
+		return receiversCharges;
+	}
+
+	public void setReceiversCharges(BigDecimal receiversCharges) {
+		this.receiversCharges = receiversCharges;
+	}
+
+	public String getSenderToReceiverInfo() {
+		return senderToReceiverInfo;
+	}
+
+	public void setSenderToReceiverInfo(String senderToReceiverInfo) {
+		this.senderToReceiverInfo = senderToReceiverInfo;
+	}
+
+	public String getRelatedReference() {
+		return relatedReference;
+	}
+
+	public void setRelatedReference(String relatedReference) {
+		this.relatedReference = relatedReference;
+	}
+
+	public String getActualMessageType() {
+		return actualMessageType;
+	}
+
+	public void setActualMessageType(String actualMessageType) {
+		this.actualMessageType = actualMessageType;
+	}
+
+
+	@Override
+	public String toString() {
+		return "AccountBalanceManagement [acctBalMgmtSkey=" + acctBalMgmtSkey + ", entityAcctMapSkey="
+				+ entityAcctMapSkey + ", amount=" + amount + ", amountSign=" + amountSign + ", trackerID=" + trackerID
+				+ ", businessDtTime=" + businessDtTime + ", valueDate=" + valueDate + ", transactionDt=" + transactionDt
+				+ ", messageType=" + messageType + ", senderCode=" + senderCode + ", receiverCode=" + receiverCode
+				+ ", counterParty=" + counterParty + ", trnCode=" + trnCode + ", sendersRef=" + sendersRef
+				+ ", currencyCode=" + currencyCode + ", kRedemptionInd=" + kRedemptionInd + ", settlementInd="
+				+ settlementInd + ", actualMessageType=" + actualMessageType + ", isSRR=" + isSRR
+				+ ", detailsOfCharges=" + detailsOfCharges + ", sendersCharges=" + sendersCharges
+				+ ", receiversCharges=" + receiversCharges + ", senderToReceiverInfo=" + senderToReceiverInfo
+				+ ", relatedReference=" + relatedReference + "]";
+	}
+
+	
+}
+
+
+
+
+
+
+package com.maybank.ilm.core.util;
+
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.TimeZone;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 
-import com.maybank.ilm.core.dao.AccountBalanceAggrRepo;
-import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
-import com.maybank.ilm.core.dao.CashflowProjectionDao;
-import com.maybank.ilm.core.dao.DimDao;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.dao.FinMessageDao;
-import com.maybank.ilm.core.dao.KAccountConfigRepo;
-import com.maybank.ilm.core.dao.LockConfigDao;
-import com.maybank.ilm.core.dao.LockConfigRepo;
-import com.maybank.ilm.core.service.EntityAccountMappingService;
-import com.maybank.ilm.core.service.IlmAbstractMessageHandler;
-import com.maybank.ilm.core.util.ConversionUtil;
-import com.maybank.ilm.core.util.DateUtil;
-import com.maybank.ilm.core.util.ExceptionUtil;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
-import com.maybank.ilm.dto.KAccountRedemptionDTO;
-import com.maybank.ilm.embeddable.Block4Tag72;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
-import com.maybank.ilm.entity.DimCurrency;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.entity.FinMT940;
-import com.maybank.ilm.entity.KAccountConfiguration;
-import com.maybank.ilm.entity.MTField;
-import com.maybank.ilm.entity.MTSequence;
-import com.maybank.ilm.utility.exception.ExceptionConstants;
-import com.maybank.ilm.utility.exception.ILMException;
+public class DateUtil {
 
-public abstract class MXMsgHandlerAbstractImpl extends IlmAbstractMessageHandler implements MXMessageHandler{
-	
-	private static final Logger LOGGER = LogManager.getLogger(MXMsgHandlerAbstractImpl.class);
-	
-	@Autowired
-	private EntityAccountMappingService entityAcctMapService;
-	
-	@Autowired
-	private FinMessageDao finMsgDao;
-	
-	@Autowired
-	private CashflowProjectionDao cfProjectionDao;
-	
-	@Autowired
-	private AccountBalanceMgmtRepo mgmtRepo;
-	
-	@Autowired
-	private AccountBalanceAggrRepo aggrRepo;
-	
-	@Autowired
-	private EntityAccountMappingRepo eamRepo;
-	
-	@Autowired
-	private KAccountConfigRepo kAccountConfigRepo;
-	
-	@Autowired
-	private DimDao dimDao;
-	
-	@Autowired
-	private LockConfigDao lockConfigDao;
-	
-	@Autowired
-	private LockConfigRepo lockConfigRepo;
-	
-	public final EntityAccountMapDefinition getDefnByEntityIDAndAcctType(String entityID, String acctType, String currencyCode) {
-		EntityAccountMapDefinition definition = null;
-		DimCurrency dimCurrency = getDimCurrency(currencyCode);
-		if(dimCurrency != null)
-			definition = eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(entityID, acctType, dimCurrency.getCurrencySkey());
-		return definition;
-	}
-	
-	public final EntityAccountMapDefinition getEntityAcctMapDefnByAcctNum(String acctNum, String currencyCode) {
-		EntityAccountMapDefinition definition = null;
-		DimCurrency dimCurrency = getDimCurrency(currencyCode);
-		if(dimCurrency != null)
-			definition = entityAcctMapService.getEntityAcctMapDefnByAcctNum(acctNum, dimCurrency.getCurrencySkey());
-		return definition;
-	}
+	private static final Logger logger = LogManager.getLogger(DateUtil.class.getName());
 
-	private DimCurrency getDimCurrency(String currencyCode) {
-		return dimDao.getCurrDetailsByCode(currencyCode);
-	}
-	
-	public final String getAmntSign(String dcMark){
-		if(dcMark.contentEquals("C")) {
-			return "+";
-		}else if(dcMark.contentEquals("D")) {
-			return "-";
-		}
-		return null;
-	}
-	
-	public final <T> void saveAny(T t){
-		finMsgDao.saveAny(t);
-	}
-	
-	public final void saveAcctBalManagements(List<AccountBalanceManagement> balanceManagements) {
-		mgmtRepo.saveAll(balanceManagements);
-	}
-
-	public final void saveAcctBalAggregations(List<AccountBalanceAggregation> aggregations) {
-		aggrRepo.saveAll(aggregations);
-	}
-	
-	public final LocalDateTime getCurrentDateTimeByZone() {
-		String configValue = cfProjectionDao.getConfigValue("ILM_TIMEZONE");
-		return DateUtil.getCurrentDateTimeByZone(configValue);
-	}	
-	
-	public void throwCoverMgsException() {
-		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.COVERMSGBLOCKED);
-	}
 	/**
-	 * @param narratives
-	 * 
-	 * It will return the TRN CODE value 
-	 * 
-	 * Please use TRN as constant
-	 * 
-	 * @return
+	 * Instantiates a new date utils.
 	 */
-	public final String getTRNCode(List<String> narratives){ 
-		Predicate<String> naratives=(narative)->{			
-			return !StringUtils.isEmpty(narative) && narative.split("/").length > 1 ?narative.split("/")[1].contentEquals("TRN"):false;
-		};
-		List<String> replacedNarratives = new ArrayList<>();
-		narratives.forEach(narr -> {    //CONVERTING DOUBLE SLASHES TO SINGLE SLASH
-				if(narr!=null) {
-					String narrFirstRepl = narr.replace("//", "-");
-					String narrSecondRepl = narrFirstRepl.replace("-", "/");
-					replacedNarratives.add(narrSecondRepl);
-				}
-		});
-		Optional<String> trnCode=replacedNarratives.stream().filter(naratives).map(it->
-			it.split("/")[2]).findFirst();
-		return trnCode.isPresent()?trnCode.get():null;
+	private DateUtil() {
+		throw new AssertionError("Instantiating utility class.");
+	}
+
+	public static LocalDate getDateFromString(String dateString) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
+		}
+		return localDate;
+	}
+	
+	public static LocalDate getDateFromStringWithFormat(String dateString, String format) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
+		}
+		return localDate;
+	}
+	
+	public static LocalDate getDateFromStringWithFormatSimpleDate(String dateString, String format) {
+		LocalDate localDate = null;
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+			Date date = dateFormat.parse(dateString);
+			localDate = convertToLocalDate(date);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
+		}
+		return localDate;
+	}
+	
+	public static LocalDateTime getDateTimeFromStringWithFormat(String dateString, String format) {
+		LocalDateTime localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			localDate = LocalDateTime.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateTimeFromStringWithFormat" + exception);
+		}
+		return localDate;
+	}
+
+	public static LocalDate getDateFromStringYYYYMMDD(String dateString) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
+		}
+		return localDate;
+	}
+
+	public static LocalDateTime convertLdatetoLdatetime(LocalDate date, String hourmin) {
+		String hour = hourmin.substring(0, 2);
+		String minute = hourmin.substring(2, 4);
+		return date.atTime(Integer.parseInt(hour), Integer.parseInt(minute));
+	}
+
+	public static LocalDate convertToLocalDate(Date dateToConvert) {
+		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+	
+	public static LocalDateTime convertToLocalDateTime(Date dateToConvert) {
+		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	}
+
+	public static LocalDateTime getCurrentDateTimeByZone(String zone) {
+		ZoneId zid = null;
+		if (zone != null) {
+			zid = ZoneId.of(zone);
+		}
+		return zid != null ? LocalDateTime.now(zid) : null;
+	}
+
+	public static String getTimeFromTimeStamp(LocalDateTime dateTime) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
+		return formatter.format(dateTime);
+	}
+
+	public static LocalDateTime getlocalDateTimeFromString(String date) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d yyyy h:mma");
+		LocalDateTime dateTime = LocalDateTime.parse(StringUtils.normalizeSpace(date), formatter);
+		return dateTime;
+	}
+
+	public static Integer daysBetween(LocalDate startDate, LocalDate endDate) {
+		Long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+		return daysBetween.intValue();
+	}
+
+	public static int getDiffOfDatesInDays(LocalDate fromDate, LocalDate toDate) {
+		Period period = Period.between(fromDate, toDate);
+		return period.getDays();
+	}
+
+	public static void main(String[] args) {
+		LocalDate localDate=LocalDate.of(9999, 12, 31);
+		System.out.println(localDate);
+	}
+	
+	public static Long getSkeyFromLocalDate(LocalDate localDate) {
+		String formattedString = null;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+			formattedString = localDate.format(formatter);
+		}catch (Exception e) {
+			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return Long.parseLong(formattedString);
+
+	}
+	
+	public static Long getSkeyFromLocalDateTime(LocalDateTime localDateTime, String format) {
+		String formattedString = null;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+			formattedString = localDateTime.format(formatter);
+		}catch (Exception e) {
+			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return Long.parseLong(formattedString);
+
+	}
+	
+	public static LocalDateTime getDateTimeFromSkey(Long dateSkey, String format) {
+		LocalDateTime localDateTime = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			String dateString = Long.toString(dateSkey);
+			localDateTime = LocalDateTime.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
+		}
+		return localDateTime;
+	}
+	
+	public static LocalTime getLocalTimeFromSkey(Long timeSkey, String format) {
+		LocalTime localTime = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			String timeString = Long.toString(timeSkey);
+			String finalTimeString = null;
+			if(timeString.length() == 5) {
+				finalTimeString = "0"+timeString;
+			}else {
+				finalTimeString = timeString;
+			}
+			localTime = LocalTime.parse(finalTimeString, stringformatter);
+		} catch (Exception exception) {
+			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
+		}
+		return localTime;
+	}
+	
+	public static LocalDateTime getLocalDateTimeFromLongFiles(Long dateModified) {
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+		return getDateTimeFromStringWithFormat(sdf.format(dateModified), "dd-MM-yyyy HH:mm:ss");
+	}
+	
+	public static String getDateFormatYYYYMMDD(LocalDate localDate) {		
+		return localDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+	}
+	
+	public static LocalDate convertJulianSkeyToLocalDate(String skey) {
+		LocalDate localDate = null;
+		try {
+			if(skey != null && !skey.contentEquals("0")) {
+				Date date = new SimpleDateFormat("yyyyDDD").parse(skey);
+				localDate = convertToLocalDate(date);
+			}
+		}catch (Exception e) {
+			logger.error(String.format("Error while  convertJulianSkeyToLocalDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return localDate;
+	}
+	
+	public static String getStringFromLDate(LocalDate ldate, String format) {
+		String formattedString = null;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+			formattedString = ldate.format(formatter);
+		}catch (Exception e) {
+			logger.error(String.format("Error while  getStringFromLDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return formattedString;
 	}
 	
 	/**
-	 * @param narratives
-	 * 
-	 * It will return the TRN CODE value for 566
-	 * 
-	 * Please use TRN as constant
-	 * 
-	 * @return
+	 * Find if the given date is before the current date.
 	 */
-	public final String getTRNCode566(List<String> narratives){ 	//COMBINE BOTH TRN METHODS. MAKE GENERIC
-		Predicate<String> naratives=(narative)->{			
-			return !StringUtils.isEmpty(narative) && narative.split("/").length > 1 ?narative.split("/")[0].contentEquals("TRN"):false;
-		};
-		List<String> replacedNarratives = new ArrayList<>();
-		narratives.forEach(narr -> {    //CONVERTING DOUBLE SLASHES TO SINGLE SLASH
-				if(narr!=null) {
-					String narrFirstRepl = narr.replace("//", "-");
-					String narrSecondRepl = narrFirstRepl.replace("-", "/");
-					replacedNarratives.add(narrSecondRepl);
-				}
-		});
-		Optional<String> trnCode=replacedNarratives.stream().filter(naratives).map(it->
-			it.split("/")[1]).findFirst();
-		return trnCode.isPresent()?trnCode.get():null;
-	}
-	
-	public final List<String> getNarratives(Block4Tag72 tag72){
-		List<String> narratives = new ArrayList<>();
-		narratives.add(tag72.getBlock4Tag72Nar1());
-		narratives.add(tag72.getBlock4Tag72Nar2());
-		narratives.add(tag72.getBlock4Tag72Nar3());
-		narratives.add(tag72.getBlock4Tag72Nar4());
-		narratives.add(tag72.getBlock4Tag72Nar5());
-		narratives.add(tag72.getBlock4Tag72Nar6());
-		return narratives;
-	}
-	
-	public final AccountBalanceAggregation getLastUpdatedAcctBalAggr(Long entityAcctMapSkey, LocalDate valueDt) {
-		return finMsgDao.getLastUpdatedAcctBalAggr(entityAcctMapSkey, valueDt, ILMCoreConstants.OTHERS);
-	}
-	
-		
-	public final String getRequiredFieldValWithType(List<MTSequence> mtSequences, String seqName, String qualifier, String fieldName) {
-		String reqFieldValue = null;
-		if(mtSequences != null) {
-			List<MTSequence> filteredSeqs = mtSequences.stream().filter(it -> it.getSeqName().contentEquals(seqName)).collect(Collectors.toList());
-			if(filteredSeqs != null) {
-				for(MTSequence sequence : filteredSeqs) {
-					Predicate<MTField> isFieldValueNotNull = mt -> mt.getFieldValue() != null;
-					Predicate<MTField> isFieldValueEqual = it -> it.getFieldValue().contentEquals(qualifier);
-					if(sequence != null) {
-						List<MTField> filteredFields = sequence.getMtFields().stream().filter(isFieldValueNotNull.and(isFieldValueEqual)).collect(Collectors.toList());
-						if(CollectionUtils.isNotEmpty(filteredFields)) {
-							Optional<MTField> mtFieldOptional= sequence.getMtFields().stream().filter(it -> it.getFieldName().contentEquals(fieldName)).findFirst();
-							if(mtFieldOptional.isPresent()) {
-								MTField mtField = mtFieldOptional.get();
-								reqFieldValue = mtField.getFieldValue();
-							}
-						}
-					}
-				}
-			}
-		}	
-		return reqFieldValue;
-	}
-	
-	public final String getRequiredFieldWithOutQualifier(List<MTSequence> mtSequences, String seqName, String fieldName) {
-		String reqFieldValue = null;
-		if(mtSequences != null) {
-			List<MTSequence> filteredSeqs = mtSequences.stream().filter(it -> it.getSeqName().contentEquals(seqName)).collect(Collectors.toList());
-			if(filteredSeqs != null) {
-				for(MTSequence sequence : filteredSeqs) { 
-					if(sequence != null) {
-						List<MTField> filteredFields = sequence.getMtFields().stream().filter(it -> it.getFieldName().contentEquals(fieldName)).collect(Collectors.toList());
-						if(CollectionUtils.isNotEmpty(filteredFields)) {
-							Optional<MTField> mtFieldOptional= sequence.getMtFields().stream().filter(it -> it.getFieldName().contentEquals(fieldName)).findFirst();
-							if(mtFieldOptional.isPresent()) {
-								MTField mtField = mtFieldOptional.get();
-								reqFieldValue = mtField.getFieldValue();
-							}
-						}
-					}
-				}
-			}
-		}	
-		return reqFieldValue;
-	}
-	
-	public final List<String> getNarrativesForSeqMsgs(List<MTSequence> mtSequences, String qualifier, String seqName){
-		List<String> narratives = new ArrayList<>();
-		narratives.add(getRequiredFieldValWithType(mtSequences, seqName, qualifier, "70E_NARRATIVE_"+qualifier));
-		for(int index=2; index<10; index++) {
-			String fieldName = "70E_NARRATIVE_"+index+"_"+qualifier;
-			narratives.add(getRequiredFieldValWithType(mtSequences, seqName, qualifier, fieldName));
-		}
-		return narratives;
-	}
-	
-	public final void getAggregations(List<AccountBalanceManagement> allEntries, List<AccountBalanceAggregation> aggregations, String aggrInd) {
-		if(CollectionUtils.isNotEmpty(allEntries)) {
-			Map<Long, List<AccountBalanceManagement>> groupedMgmtsMap = allEntries.stream().collect(Collectors.groupingBy(p -> p.getEntityAcctMapSkey()));
-			for(Long skey : groupedMgmtsMap.keySet()) {
-				List<AccountBalanceManagement> managements = groupedMgmtsMap.get(skey);
-				BigDecimal tamount = BigDecimal.ZERO;
-				BigDecimal inFlow = BigDecimal.ZERO;
-				BigDecimal outFlow = BigDecimal.ZERO;
-				for(AccountBalanceManagement management : managements) {
-					BigDecimal amount = management.getAmount();
-					BigDecimal amntWithSign = management.getAmountSign().contentEquals(ILMCoreConstants.PLUS) ? amount : amount.multiply(new BigDecimal(-1));
-					if(amntWithSign.compareTo(BigDecimal.ZERO) > 0) {
-						inFlow = inFlow.add(amntWithSign);
-					}else if(amntWithSign.compareTo(BigDecimal.ZERO) < 0) {
-						outFlow =outFlow.add(amntWithSign);
-					}
-					tamount = tamount.add(amntWithSign);
-				}
-				AccountBalanceManagement balMgmt =  managements.get(0);
-				String tamountSign = tamount.signum() >= 0 ? ILMCoreConstants.PLUS : ILMCoreConstants.MINUS;
-				if(DateUtil.findDtEqualsCurrenctDt(balMgmt.getValueDate())){
-					lockDBAndAggregate(balMgmt, balMgmt.getValueDate() , tamount, tamountSign, inFlow, outFlow, aggrInd, aggregations);
-				}
-				else if(balMgmt.getMessageType().equals(ILMCoreConstants.MESSAGETYPE192) || balMgmt.getMessageType().equals(ILMCoreConstants.MESSAGETYPE292)) {
-					lockDBAndAggregate(balMgmt, LocalDate.now() , tamount, tamountSign, inFlow, outFlow, aggrInd, aggregations);
-				}
+	public static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
+		Boolean pastDt = Boolean.FALSE;
+		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
+		if(currentDtTime != null && localDate != null) {
+			LocalDate currentDt = currentDtTime.toLocalDate();
+			if(localDate.isBefore(currentDt)) {
+				pastDt = Boolean.TRUE;
 			}
 		}
+		return pastDt;
 	}
 	
-	public final void lockDBAndAggregate(AccountBalanceManagement balMgmt, LocalDate valueDt , BigDecimal tamount, String tamountSign, 
+	/**
+	 * Find if the given date is equal to the current date.
+	 */
+	public static Boolean findDtEqualsCurrenctDt(LocalDate localDate) {
+		Boolean sameDt = Boolean.FALSE;
+		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
+		if(currentDtTime != null && localDate != null) {
+			LocalDate currentDt = currentDtTime.toLocalDate();
+			if(localDate.isEqual(currentDt)) {
+				sameDt = Boolean.TRUE;
+			}
+		}
+		return sameDt;
+	}
+	
+	/**
+	 * Find if date is not Saturday or Sunday
+	 */
+	
+	public static Boolean isWeekend(LocalDate date) {
+		DayOfWeek dayOfWeek = DayOfWeek.of(date.get(ChronoField.DAY_OF_WEEK));
+		return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY ;
+	}
+	
+	
+	/**
+	 * find no of business days
+	 */
+	public static long noOfBusinessDays(LocalDate fromDate , LocalDate toDate) {
+		long days = ChronoUnit.DAYS.between(fromDate, toDate)+1 ;
+		long weekDays = 0;
+		for(int day = 0 ; day < days ; day++ ) {
+			LocalDate date = fromDate.plusDays(day);
+			if(!isWeekend(date)) {
+				weekDays+=1;
+			}
+		}
+		return weekDays;
+	}
+	
+	
+	 
+}
+
+
+
+
+public final void lockDBAndAggregate(AccountBalanceManagement balMgmt, LocalDate valueDt , BigDecimal tamount, String tamountSign, 
 			BigDecimal inFlow, BigDecimal outFlow, String aggrInd, List<AccountBalanceAggregation> aggregations) {
 		try {
 			while(true) {
@@ -314,432 +734,3 @@ public abstract class MXMsgHandlerAbstractImpl extends IlmAbstractMessageHandler
 				
 			}
 		}
-		catch(Exception e){
-			LOGGER.error("Exception in saving to Aggregation Table"+ e.getMessage());
-			lockConfigDao.releaseLockConfig("AGGR_LOCK");
-		}
-		catch(Error e){
-			LOGGER.error("Error in saving to Aggregation Table"+ e.getMessage());
-			lockConfigDao.releaseLockConfig("AGGR_LOCK");
-		}
-	}
-	
-	
-	public final Boolean checkRelatedRefOfMT910(LocalDate valueDate, Long entityAcctMapSkey, String relatedRef) {
-		List<String> messageTypes = new ArrayList<>(Arrays.asList("102", "103", "202", "203"));
-		List<AccountBalanceManagement> managements = mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, messageTypes);
-		return managements.stream().anyMatch(p -> p.getSendersRef().contentEquals(relatedRef));
-	}
-	
-	public final Optional<AccountBalanceManagement> checkRelatedRefOfCamt054(LocalDate valueDate, String relatedRef, String currencyCode) {
-		List<String> messageTypes = new ArrayList<>(Arrays.asList("202"));
-		List<AccountBalanceManagement> managements = mgmtRepo.findRelatedMgmtEntryBySenderRefAndMsgType(relatedRef, currencyCode, messageTypes, valueDate);
-		return managements.stream().findFirst();
-	}
-	
-	public final boolean checkRelatedRefForNostro(LocalDate valueDate, Long entityAcctMapSkey, String relatedRef) {
-		List<String> messageTypes = new ArrayList<>(Arrays.asList("103", "200", "202" , "900" ,"910"));
-		Boolean foundRelatedRefTrans = false;
-		List<AccountBalanceManagement> managements = mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, messageTypes);
-		List<AccountBalanceManagement> matchedMgmts = managements.stream().filter(p -> (p.getSendersRef() != null && p.getSendersRef().contentEquals(relatedRef))).collect(Collectors.toList());
-		if(CollectionUtils.isNotEmpty(matchedMgmts)) {
-			matchedMgmts.forEach(p -> p.setSettlementInd(ILMCoreConstants.YIND));
-			mgmtRepo.saveAll(matchedMgmts);
-			foundRelatedRefTrans = true;
-		}
-		return foundRelatedRefTrans;
-	}
-	
-	public final Long checkForIntraBankTransactions(String counterBic, String currencyCode){
-		Long entityAcctMapSkey = null;
-		EntityAccountMapDefinition defn = getDefnByEntityIDAndAcctType(counterBic, ILMCoreConstants.MAINACCOUNT, currencyCode);
-		if(defn != null) {
-			entityAcctMapSkey = defn.getEntityAcctMapSkey();
-		}
-		return entityAcctMapSkey;
-	}
-	
-	@Override
-	public AccountBalanceManagement setBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd, String... stringArgs) {
-		return new AccountBalanceManagement(entityAcctMapSkey,amount, amountSign,
-				 trackerID, businessDtTime,  valueDate,  transactionDt,
-				 messageType,  senderCode,  receiverCode,  trnCode,  sendersRef,
-				 currencyCode, kRedemptionInd);
-	}
-	
-	@Override
-	public AccountBalanceManagement setBalanceManagementWithSettlementInd(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd,Character settlementInd , String... stringArgs) {
-		return new AccountBalanceManagement(entityAcctMapSkey,amount, amountSign,
-				 trackerID, businessDtTime,  valueDate,  transactionDt,
-				 messageType,  senderCode,  receiverCode,  trnCode,  sendersRef,
-				 currencyCode, kRedemptionInd , settlementInd);
-	}
-	
-	
-	public final <T> void  saveAllEntities(List<AccountBalanceManagement> balanceManagements, List<AccountBalanceAggregation> aggregations, T t) {
-		saveAcctBalManagements(balanceManagements);
-		saveAcctBalAggregations(aggregations);
-		saveAny(t);
-	}
-	
-	public final <T> void  saveEntities(List<AccountBalanceManagement> balanceManagements, T t) {
-		saveAcctBalManagements(balanceManagements);
-		saveAny(t);
-	}
-	
-	public final <T> void  saveEntitiesForMX(List<AccountBalanceManagement> balanceManagements) {
-		saveAcctBalManagements(balanceManagements);
-	}
-	
-	public final Map<Long, BigDecimal> getKAccountRedemptionEntries(Long countrySkey, Long entitySkey, Long currSkey, 
-			LocalDate valueDt, BigDecimal msgAmnt, Long mainAcctEamSkey, Long kAcctEamSkey) {
-		Map<Long, BigDecimal> amountsMap = new HashMap<>();
-		if(kAcctEamSkey!=null) {
-			List<KAccountConfiguration> kAcctConfigs = kAccountConfigRepo.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(countrySkey, entitySkey, currSkey, valueDt, valueDt);
-			AccountBalanceAggregation latestKAcctAggr = getLastUpdatedAcctBalAggr(kAcctEamSkey, valueDt);
-			KAccountRedemptionDTO kAccountRedemptionDTO = new KAccountRedemptionDTO(null, msgAmnt);
-			if(latestKAcctAggr != null) {
-				BigDecimal kAcctOutstandBal = latestKAcctAggr.getTotalAmnt(); 
-				if(CollectionUtils.isNotEmpty(kAcctConfigs) && kAcctOutstandBal != BigDecimal.ZERO) {
-					KAccountConfiguration reqConfig = kAcctConfigs.get(0);
-					BigDecimal trancheSize = reqConfig.getTrancheSize();
-					if(msgAmnt.compareTo(trancheSize) < 0) {
-						AccountBalanceAggregation aggregation = getLastUpdatedAcctBalAggr(mainAcctEamSkey, valueDt);
-						BigDecimal aggrBal = aggregation.getTotalAmnt().add(msgAmnt);
-						amntGreaterThanTranche(aggrBal, kAccountRedemptionDTO, trancheSize, kAcctOutstandBal);
-					}else{
-						amntGreaterThanTranche(msgAmnt, kAccountRedemptionDTO, trancheSize, kAcctOutstandBal);
-					}
-				}
-			}
-			amountsMap.put(mainAcctEamSkey, kAccountRedemptionDTO.getMainAcctBal());
-			amountsMap.put(kAcctEamSkey, kAccountRedemptionDTO.getNewKAcctOutstandBalMgmt());
-		}
-		return amountsMap;
-	}
-	
-	private void amntGreaterThanTranche(BigDecimal msgAmnt, KAccountRedemptionDTO kAccountRedemptionDTO, BigDecimal trancheSize, BigDecimal kAcctOutstandBal ) {
-		if(msgAmnt.compareTo(trancheSize) >= 0 && msgAmnt.compareTo(kAcctOutstandBal) < 0){
-			int multiple = msgAmnt.divide(trancheSize, 2, RoundingMode.HALF_UP).intValue();
-			BigDecimal totalTranches = trancheSize.multiply(new BigDecimal(multiple));
-			kAccountRedemptionDTO.setNewKAcctOutstandBalMgmt(totalTranches.negate());
-			kAccountRedemptionDTO.setMainAcctBal(msgAmnt.add(totalTranches.negate()));
-		}else if(msgAmnt.compareTo(kAcctOutstandBal) >= 0){
-			BigDecimal negKAcctBal = kAcctOutstandBal.negate();
-			kAccountRedemptionDTO.setNewKAcctOutstandBalMgmt(negKAcctBal);
-			kAccountRedemptionDTO.setMainAcctBal(msgAmnt.add(negKAcctBal));
-		}
-	}
-	
-	public String  getCurrencyByTag62For940And950(FinMT940 finMT940) {
-		String currencyCode = finMT940.getTags62().getBlock4Tag62FCurrency();
-		if(currencyCode == null) {
-			currencyCode = finMT940.getTags62().getBlock4Tag62MCurrency();
-		}
-		if(Objects.isNull(currencyCode)) {
-			LOGGER.info("Exception in MT940Handler getCurrDetailsByCode "+currencyCode);
-			ILMException ilmException=ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.NO_MAIL_EXECPTION_BY_CURRENCY);
-			ExceptionUtil.setExceptionObject(ilmException,"CurrencyCode",currencyCode);
-			throw ilmException;
-		}
-		return currencyCode;
-	}
-	
-	public String findTreasuryRefFromMsg(String sendersRef, String relatedRef) { //Initially written for MT545. To find the reference for KTPP, DV, N & FX
-		String ref = "";
-		if(!Objects.isNull(relatedRef)) {
-			if( relatedRef.startsWith("KTPP") || relatedRef.startsWith("DV") || relatedRef.startsWith("N") || relatedRef.startsWith("FX")) {
-				ref = relatedRef;
-			}else {
-				ref = sendersRef;
-			}
-		}else {
-			ref = sendersRef;
-		}
-		return ref;
-	}
-	
-	public void throwEntityNotFountException() {
-		throw  ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.ENTITYACCOUNTNOTMAPPING);
-	}
-	
-	public void throwMsgBlockedException() {
-		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.MSGBLOCKED);
-	}
-	
-	/**
-	 * This method is written to find the entity account definition,
-	 * if 57A of MT103 or 58A of MT202 is null or correspondng eam defn is null.
-	 * Param block4ReceiverBIC indicates 57A of MT103 or 58A of MT202
-	 */
-	public EntityAccountMapDefinition findEamDefn(String block4ReceiverBIC, Block4Tag72 tag72, String block1LT, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefn = null;
-		if(block4ReceiverBIC != null) {
-			EntityAccountMapDefinition eamDefnByBlock4 = getDefnByEntityIDAndAcctType(block4ReceiverBIC, accountName, currencyCode);
-			if(eamDefnByBlock4 != null) {
-				eamDefn = eamDefnByBlock4;
-				LOGGER.info("Entity Account Map definition found by block4ReceiverBIC {} {} {} ", accountName, block4ReceiverBIC, currencyCode);
-			}else {
-				eamDefn = findEamDefnByTag72orBlock1LT(tag72, block1LT, currencyCode, accountName);
-			}
-		}else {
-			eamDefn = findEamDefnByTag72orBlock1LT(tag72, block1LT, currencyCode, accountName);
-		}
-		return eamDefn;
-	}
-	
-	private EntityAccountMapDefinition findEamDefnByTag72orBlock1LT(Block4Tag72 tag72, String block1LT, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefn = null;
-		EntityAccountMapDefinition eamDefnByTag72 = findEamDefnByTag72(tag72, currencyCode, accountName);
-		EntityAccountMapDefinition eamDefnByLT = findEamDefnByBlock1LogicalTerminal(block1LT, currencyCode, accountName);
-		if(eamDefnByTag72 != null) {
-			eamDefn = eamDefnByTag72;
-		}else {
-			eamDefn = eamDefnByLT;
-		}
-		return eamDefn;
-	}
-	
-	/**
-	 * This method is written to find the entity account definition by tag 72 field,
-	 * if any of the narratives contain CPRB string then the next string is the bic code 
-	 * Example - /CPRO/BNMAMYKL/CPRB/MBBEMYKL
-	 */
-	private EntityAccountMapDefinition findEamDefnByTag72(Block4Tag72 tag72, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefnByTag72 = null;
-		String bicCode = getBicCodeFromTag72(tag72);
-		if(bicCode != null) {
-			eamDefnByTag72 = getDefnByEntityIDAndAcctType(bicCode, accountName, currencyCode);
-			LOGGER.info("Entity Account Map definition found by Tag 72 {} {} {} ", accountName, bicCode, currencyCode);
-		}
-		return eamDefnByTag72;
-	}
-	
-	public String getBicCodeFromTag72(Block4Tag72 tag72) {
-		String bicCode = null;
-		if(tag72 != null) {
-			List<String> narratives = getNarratives(tag72);
-			for(String narr : narratives) {
-				if(narr != null && narr.contains("CPRB")) {
-					String[] narrSplit = narr.split("/");
-					for (int index = 0; index < narrSplit.length; index++) {
-						if(narrSplit[index].contentEquals("CPRB")) {
-							int indPlus = index + 1;
-							if(indPlus < narrSplit.length) {
-								bicCode = narrSplit[indPlus];
-							}
-						}
-					}
-				}
-			}
-		}
-		return bicCode;
-	}
-	
-	/**
-	 * This method is written to find the entity account definition by Block 1 Logical Terminal,
-	 * Example - MBBEMYKL - Case when block1LT lenght is equal to 8 charactes - No truncate is applied
-	 * Example - MBBEMYKLAXXX - Case when block1LT lenght is greater than 8 charactes - Only first 8 characters are picked.
-	 */
-	private EntityAccountMapDefinition findEamDefnByBlock1LogicalTerminal(String block1LT, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefnByBlock1LT = null;
-		if(block1LT != null && block1LT.length() == 8) {
-			eamDefnByBlock1LT = getDefnByEntityIDAndAcctType(block1LT, accountName, currencyCode);
-			LOGGER.info("Entity Account Map definition found by Block 1 Logical Terminal {} {} {} ", accountName, block1LT, currencyCode);
-		}else if(block1LT != null && block1LT.length() > 8) {
-			String truncatedBlock1LT = block1LT.substring(0, 8);
-			eamDefnByBlock1LT = getDefnByEntityIDAndAcctType(truncatedBlock1LT, accountName, currencyCode);
-			LOGGER.info("Entity Account Map definition found by Block 1 Logical Terminal Truncated {} {} {} ", accountName, truncatedBlock1LT, currencyCode);
-		}
-		return eamDefnByBlock1LT;
-	}
-	
-	//SENDERS REF NULL CHECK - PENDING AND TEST 204 CURRENCY CODE PART
-	public AccountBalanceMgmtDTO validateMessage(String entityType, Block4Tag72 tag72, String block1LT, String currencyCode, String valueDt, 
-			String sendersRef, String messageType, BigDecimal amount, String acctNum, Boolean eamByBic) {
-		String message = null;
-		AccountBalanceMgmtDTO mgmtDTO = new AccountBalanceMgmtDTO();
-		EntityAccountMapDefinition eamDefn = null;
-		if(eamByBic) {
-			eamDefn = findEamDefn(entityType, tag72, block1LT, currencyCode, ILMCoreConstants.MAINACCOUNT);
-		}else {
-			eamDefn = getEntityAcctMapDefnByAcctNum(acctNum, currencyCode);
-		}
-		if(Objects.isNull(eamDefn)) {
-			message = "No definition is found for Entity Type, Currency code or Account Type.";
-		}else if (Objects.isNull(valueDt)) {
-			message = "Value Date not found.";
-		}else if(validateValueDate(valueDt)) {
-			message = "Value Date is a past date. This processor allows only present and future dates.";
-		}else if(checkUniquenessOfMessage(sendersRef, valueDt, messageType)) {
-			message = "Message already exists.";
-		}else {
-			message = "Validated Successfully.";
-			if (eamDefn != null) {
-				mgmtDTO = new AccountBalanceMgmtDTO(amount, DateUtil.getDateFromString(valueDt), messageType, sendersRef, currencyCode, eamDefn.getEntityIdentifier());
-			}
-		}
-		mgmtDTO.setMessageForUI(message);
-		return mgmtDTO;
-	}
-	
-	private Boolean validateValueDate(String valueDt) {
-		LocalDate valueDate = DateUtil.getDateFromString(valueDt);
-		return DateUtil.findDtBeforeCurrenctDt(valueDate);
-	}
-	
-	private Boolean checkUniquenessOfMessage(String sendersRef, String valueDt, String messageType) {
-		Boolean notUnique = Boolean.FALSE;
-		LocalDate valueDate = DateUtil.getDateFromString(valueDt);
-		List<AccountBalanceManagement> existingMgmts = mgmtRepo.findByValueDateAndSendersRefAndMessageType(valueDate, sendersRef, messageType);
-		if(CollectionUtils.isNotEmpty(existingMgmts)) {
-			notUnique = Boolean.TRUE;
-		}
-		return notUnique;
-	}
-	
-	public BigDecimal getTotalAmountForMT535(List<MTSequence> sequences) {
-		List<MTSequence> multiplePaymentSeqs = sequences.stream().filter(it -> it.getSeqName().contentEquals("B1"))
-				.collect(Collectors.toList());
-		BigDecimal totalAmnt = BigDecimal.ZERO;
-		for (MTSequence sequence : multiplePaymentSeqs) {
-			String fieldAmnt = getRequiredFieldValWithType(new ArrayList<MTSequence>(Arrays.asList(sequence)), "B1", "AVAI", "93B_BALANCE_AMOUNT_AVAI");
-			if(!Objects.isNull(fieldAmnt)) {
-				BigDecimal amount = ConversionUtil.convertStrToBigDecimal(fieldAmnt);
-				totalAmnt = totalAmnt.add(amount);
-			}
-		}
-		return totalAmnt;
-	}
-	public String removeXFromBIC(String bic) {
-		Integer length = bic.length();
-		for (int i = length; i > 8; i--) {
-			if (bic.charAt(bic.length() - 1) == 'X') {
-				bic = bic.substring(0, bic.length() - 1);
-			}
-		}
-		return bic;
-	}
-}
-
-
-
-
-
-
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-class MXMsgHandlerTest {
-
-    private MXMsgHandler mxMsgHandler;
-
-    @BeforeEach
-    void setUp() {
-        mxMsgHandler = new MXMsgHandler(); // Assuming this is how the instance is created
-    }
-
-    @Test
-    void testGetRequiredFieldValWithType() {
-        // Create MTField instances
-        MTField field1 = new MTField();
-        field1.setFieldName("fieldName1");
-        field1.setFieldValue("value1");
-        field1.setFieldType("type1");
-
-        MTField field2 = new MTField();
-        field2.setFieldName("fieldName2");
-        field2.setFieldValue("value2");
-        field2.setFieldType("type2");
-
-        // Create MTSequence instances
-        MTSequence sequence1 = new MTSequence();
-        sequence1.setSeqName("seqName1");
-        sequence1.setMtFields(Arrays.asList(field1, field2));
-
-        MTSequence sequence2 = new MTSequence();
-        sequence2.setSeqName("seqName2");
-        sequence2.setMtFields(Collections.singletonList(field2));
-
-        List<MTSequence> sequences = Arrays.asList(sequence1, sequence2);
-
-        // Define input parameters
-        String seqName = "seqName1";
-        String qualifier = "value1";
-        String fieldName = "fieldName1";
-
-        // Call the method to test
-        String result = mxMsgHandler.getRequiredFieldValWithType(sequences, seqName, qualifier, fieldName);
-
-        // Assert the result
-        assertEquals("value1", result);
-    }
-
-    @Test
-    void testGetRequiredFieldValWithTypeNoMatch() {
-        // Create MTField instances
-        MTField field1 = new MTField();
-        field1.setFieldName("fieldName1");
-        field1.setFieldValue("value1");
-        field1.setFieldType("type1");
-
-        // Create MTSequence instances
-        MTSequence sequence1 = new MTSequence();
-        sequence1.setSeqName("seqName1");
-        sequence1.setMtFields(Collections.singletonList(field1));
-
-        List<MTSequence> sequences = Collections.singletonList(sequence1);
-
-        // Define input parameters that do not match
-        String seqName = "seqName1";
-        String qualifier = "nonMatchingValue";
-        String fieldName = "fieldName1";
-
-        // Call the method to test
-        String result = mxMsgHandler.getRequiredFieldValWithType(sequences, seqName, qualifier, fieldName);
-
-        // Assert the result
-        assertNull(result);
-    }
-
-    @Test
-    void testGetRequiredFieldValWithTypeEmptySequences() {
-        // Define empty sequences
-        List<MTSequence> sequences = Collections.emptyList();
-
-        // Define input parameters
-        String seqName = "seqName1";
-        String qualifier = "value1";
-        String fieldName = "fieldName1";
-
-        // Call the method to test
-        String result = mxMsgHandler.getRequiredFieldValWithType(sequences, seqName, qualifier, fieldName);
-
-        // Assert the result
-        assertNull(result);
-    }
-
-    @Test
-    void testGetRequiredFieldValWithTypeNullSequences() {
-        // Call the method with null sequences
-        String result = mxMsgHandler.getRequiredFieldValWithType(null, "seqName1", "value1", "fieldName1");
-
-        // Assert the result
-        assertNull(result);
-    }
-}
-
