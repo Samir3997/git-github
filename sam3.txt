@@ -1,2 +1,2 @@
-My FirstBranch first file
-I modified in master branch
+org.mockito.exceptions.misusing.NotAMockException: 
+Argument passed to when() is not a mock!
