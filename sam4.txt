@@ -21,3 +21,18 @@ public class MXMsgHandlerConcreteImpl extends MXMsgHandlerAbstractImpl {
 
 
 eq(Collections.singletonList(new AccountBalanceManagement()))
+
+
+
+
+MTSequence sequence1 = new MTSequence();
+    sequence1.setSeqName("seqNameValue");
+    sequence1.setQualifier("qualifierValue");
+    sequence1.setFieldName("fieldNameValue");
+
+    MTSequence sequence2 = new MTSequence();
+    sequence2.setSeqName("anotherSeqName");
+    sequence2.setQualifier("anotherQualifier");
+    sequence2.setFieldName("anotherFieldName");
+
+    List<MTSequence> sequences = Arrays.asList(sequence1, sequence2);
