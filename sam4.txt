@@ -1,38 +1,185 @@
-package com.maybank.ilm.core.swiftmsghandlers;
+package com.maybank.ilm.entity;
 
-import org.springframework.stereotype.Component;
+import java.util.List;
 
-@Component
-public class MXMsgHandlerConcreteImpl extends MXMsgHandlerAbstractImpl {
-    
-    // No additional methods are required unless you want to override any existing methods
-    // For example, if there are specific logging or behavior required
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
-    @Override
-    public void throwCoverMgsException() {
-        // If specific behavior is needed for this method in the concrete implementation,
-        // it can be overridden here. Otherwise, the implementation in the abstract class will be used.
-        super.throwCoverMgsException();
-    }
-    
-    // You can add more specific methods or override existing ones if needed
-    
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
+
+@Entity
+@Table(name = "PRC_MT_SEQUENCE")
+public class MTSequence {
+
+	@Id
+	@Column(name = "N_MT_SEQUENCE_SKEY")
+	@SequenceGenerator(name = "mtSeqSkey", sequenceName = "PRC_MT_SEQUENCE_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mtSeqSkey")
+	private Long mtSeqSkey;
+	
+	@Column(name = "N_MT_SKEY")
+	private Long mtSkey;
+	
+	@Column(name = "V_SEQUENCE_NAME")
+	private String seqName;
+	
+	@ManyToOne(fetch = FetchType.LAZY, optional=true)
+	@JoinColumn(name="N_PARENT_SEQ_SKEY")
+	private MTSequence parentSeq;
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@JoinColumn(name = "N_MT_SEQUENCE_SKEY")
+	private List<MTField> mtFields;
+	
+	@OneToMany(mappedBy = "parentSeq", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<MTSequence> mtSequences;
+
+	public Long getMtSeqSkey() {
+		return mtSeqSkey;
+	}
+
+	public void setMtSeqSkey(Long mtSeqSkey) {
+		this.mtSeqSkey = mtSeqSkey;
+	}
+
+	public Long getMtSkey() {
+		return mtSkey;
+	}
+
+	public void setMtSkey(Long mtSkey) {
+		this.mtSkey = mtSkey;
+	}
+
+	public String getSeqName() {
+		return seqName;
+	}
+
+	public void setSeqName(String seqName) {
+		this.seqName = seqName;
+	}
+
+	public List<MTField> getMtFields() {
+		return mtFields;
+	}
+
+	public void setMtFields(List<MTField> mtFields) {
+		this.mtFields = mtFields;
+	}
+
+	public List<MTSequence> getMtSequences() {
+		return mtSequences;
+	}
+
+	public void setMtSequences(List<MTSequence> mtSequences) {
+		this.mtSequences = mtSequences;
+	}
+
+	public MTSequence getParentSeq() {
+		return parentSeq;
+	}
+
+	public void setParentSeq(MTSequence parentSeq) {
+		this.parentSeq = parentSeq;
+	}
+
+	@Override
+	public String toString() {
+		return "MTSequence [mtSeqSkey=" + mtSeqSkey + ", mtSkey=" + mtSkey + ", seqName=" + seqName + ", parentSeq="
+				+ parentSeq + ", mtFields=" + mtFields + ", mtSequences=" + mtSequences + "]";
+	}	
 }
 
 
-eq(Collections.singletonList(new AccountBalanceManagement()))
 
 
+package com.maybank.ilm.entity;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
-MTSequence sequence1 = new MTSequence();
-    sequence1.setSeqName("seqNameValue");
-    sequence1.setQualifier("qualifierValue");
-    sequence1.setFieldName("fieldNameValue");
+@Entity
+@Table(name = "PRC_MT_FIELD")
+public class MTField {
 
-    MTSequence sequence2 = new MTSequence();
-    sequence2.setSeqName("anotherSeqName");
-    sequence2.setQualifier("anotherQualifier");
-    sequence2.setFieldName("anotherFieldName");
+	@Id
+	@Column(name = "N_MT_FIELD_SKEY")
+	@SequenceGenerator(name = "mtFieldSkey", sequenceName = "PRC_MT_FIELD_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mtFieldSkey")
+	private Long mtFieldSkey;
+	
+	@Column(name = "N_MT_SEQUENCE_SKEY")
+	private Long mtSeqSkey;
+	
+	@Column(name = "V_FIELD_NAME")
+	private String fieldName;
+	
+	@Column(name = "V_FIELD_VALUE")
+	private String fieldValue;
+	
+	@Column(name = "V_FIELD_TYPE")
+	private String fieldType;
 
-    List<MTSequence> sequences = Arrays.asList(sequence1, sequence2);
+	public Long getMtFieldSkey() {
+		return mtFieldSkey;
+	}
+
+	public void setMtFieldSkey(Long mtFieldSkey) {
+		this.mtFieldSkey = mtFieldSkey;
+	}
+
+	public Long getMtSeqSkey() {
+		return mtSeqSkey;
+	}
+
+	public void setMtSeqSkey(Long mtSeqSkey) {
+		this.mtSeqSkey = mtSeqSkey;
+	}
+
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	public void setFieldName(String fieldName) {
+		this.fieldName = fieldName;
+	}
+
+	public String getFieldValue() {
+		return fieldValue;
+	}
+
+	public void setFieldValue(String fieldValue) {
+		this.fieldValue = fieldValue;
+	}
+
+	public String getFieldType() {
+		return fieldType;
+	}
+
+	public void setFieldType(String fieldType) {
+		this.fieldType = fieldType;
+	}
+
+	@Override
+	public String toString() {
+		return "MTField [mtFieldSkey=" + mtFieldSkey + ", mtSeqSkey=" + mtSeqSkey + ", fieldName=" + fieldName
+				+ ", fieldValue=" + fieldValue + ", fieldType=" + fieldType + "]";
+	}
+}
