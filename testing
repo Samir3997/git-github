@@ -1,736 +1,207 @@
-package com.maybank.ilm.entity;
+package com.maybank.ilm.core.swiftmsghandlers;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-import javax.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.maybank.ilm.core.util.QueryConstants;
-
-@Entity
-@Table(name = "PRC_ACCOUNT_BALANCE_MGMT")
-@NamedQueries({
-	@NamedQuery(name = "GETOPENINGBAL", query = QueryConstants.GETOPENINGBAL),
-	@NamedQuery(name = "GETOPENINGBALSG", query = QueryConstants.GETOPENINGBALSG),
-	@NamedQuery(name = "GETCOUNTOFTRANSCSAFTERMT940", query = "SELECT COUNT(abm) FROM AccountBalanceManagement abm WHERE businessDtTime > :businessDt940 AND valueDate =:valueDt AND entityAcctMapSkey =:entityAcctMapSkey AND messageType NOT IN (:msgTypes)"),
-	@NamedQuery(name = "GETFUTUREDATEDTRANSACS", query = "SELECT new com.maybank.ilm.dto.BlotterParamsDTO(entityAcctMapSkey, SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END)) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND currencyCode = 'MYR' GROUP BY entityAcctMapSkey"),
-	@NamedQuery(name = "GETNOSTROFUTUREDATEDTRANSACS", query = "SELECT new com.maybank.ilm.dto.BlotterParamsDTO(entityAcctMapSkey, SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END)) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND currencyCode != 'MYR' AND messageType NOT IN (:msgTypes) GROUP BY entityAcctMapSkey"),
-	@NamedQuery(name = "GETMGMTSWITHRELATEDREF900", query = QueryConstants.GETMGMTSWITHRELATEDREF900),
-	@NamedQuery(name = "GETPROJECTEDBALANCE", query = "SELECT SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND entityAcctMapSkey IN (:eamSkeys) AND messageType IN (:msgTypes)"),
-	//@NamedQuery(name="GETSINGLEDAYSENTPAYMENTS",query=QueryConstants.GETSINGLEDAYSENTPAYMENTS),
-	//@NamedQuery(name="GETSINGLEDAYRECIEVEDPAYMENTS",query=QueryConstants.GETSINGLEDAYRECIEVEDPAYMENTS),
-	//@NamedQuery(name="GETPASTPERIODRECIEVEDPAYMENTS",query=QueryConstants.GETPASTPERIODRECIEVEDPAYMENTS),
-	//@NamedQuery(name="GETPASTPERIODSENTPAYMENTS",query=QueryConstants.GETPASTPERIODSENTPAYMENTS)
-})
-public class AccountBalanceManagement {
-
-	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd) {
-		super();
-		this.entityAcctMapSkey = entityAcctMapSkey;
-		this.amount = amount;
-		this.amountSign = amountSign;
-		this.trackerID = trackerID;
-		this.businessDtTime = businessDtTime;
-		this.valueDate = valueDate;
-		this.transactionDt = transactionDt;
-		this.messageType = messageType;
-		this.senderCode = senderCode;
-		this.receiverCode = receiverCode;
-		this.trnCode = trnCode;
-		this.sendersRef = sendersRef;
-		this.currencyCode = currencyCode;
-		this.kRedemptionInd = kRedemptionInd;
-	}
-	
-
-	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd, Character settlementInd) {
-		super();
-		this.entityAcctMapSkey = entityAcctMapSkey;
-		this.amount = amount;
-		this.amountSign = amountSign;
-		this.trackerID = trackerID;
-		this.businessDtTime = businessDtTime;
-		this.valueDate = valueDate;
-		this.transactionDt = transactionDt;
-		this.messageType = messageType;
-		this.senderCode = senderCode;
-		this.receiverCode = receiverCode;
-		this.trnCode = trnCode;
-		this.sendersRef = sendersRef;
-		this.currencyCode = currencyCode;
-		this.kRedemptionInd = kRedemptionInd;
-		this.settlementInd = settlementInd;
-	}
-
-	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd, Character settlementInd, String actualMessageType ) {
-		super();
-		this.entityAcctMapSkey = entityAcctMapSkey;
-		this.amount = amount;
-		this.amountSign = amountSign;
-		this.trackerID = trackerID;
-		this.businessDtTime = businessDtTime;
-		this.valueDate = valueDate;
-		this.transactionDt = transactionDt;
-		this.messageType = messageType;
-		this.senderCode = senderCode;
-		this.receiverCode = receiverCode;
-		this.trnCode = trnCode;
-		this.sendersRef = sendersRef;
-		this.currencyCode = currencyCode;
-		this.kRedemptionInd = kRedemptionInd;
-		this.settlementInd = settlementInd;
-		this.actualMessageType = actualMessageType;
-	}
-	
-	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String counterParty, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd, Character settlementInd, String actualMessageType ) {
-		super();
-		this.entityAcctMapSkey = entityAcctMapSkey;
-		this.amount = amount;
-		this.amountSign = amountSign;
-		this.trackerID = trackerID;
-		this.businessDtTime = businessDtTime;
-		this.valueDate = valueDate;
-		this.transactionDt = transactionDt;
-		this.messageType = messageType;
-		this.senderCode = senderCode;
-		this.receiverCode = receiverCode;
-		this.counterParty = counterParty;
-		this.trnCode = trnCode;
-		this.sendersRef = sendersRef;
-		this.currencyCode = currencyCode;
-		this.kRedemptionInd = kRedemptionInd;
-		this.settlementInd = settlementInd;
-		this.actualMessageType = actualMessageType;
-	}
-
-	public AccountBalanceManagement() {
-		super();
-	}
-
-	@Id
-	@Column(name = "N_ACCOUNT_BALANCE_MGMT_SKEY")
-	@SequenceGenerator(name = "acctBalMgmtSkey", sequenceName = "PRC_ACCOUNT_BALANCE_MGMT_SEQ", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "acctBalMgmtSkey")
-	private Long acctBalMgmtSkey;
-	
-	@Column(name = "N_ENTITY_ACCT_MAP_SKEY")
-	private Long entityAcctMapSkey;
-	
-	@Column(name = "N_AMOUNT")
-	private BigDecimal amount;
-	
-	@Column(name = "V_AMOUNT_SIGN")
-	private String amountSign;
-	
-	@Column(name = "N_TRACKER_ID")
-	private Long trackerID;
-	
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss a")
-	@Column(name = "D_BUSINESS_DT")
-	private LocalDateTime businessDtTime;
-	
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-	@Column(name = "D_VALUE_DT")
-	private LocalDate valueDate;
-	
-	@Column(name = "D_TRANSACTION_DT")
-	private LocalDate transactionDt;
-	
-	@Column(name = "V_MESSAGE_TYPE")
-	
-	private String messageType;
-	@Column(name = "V_SENDER_CODE")
-	private String senderCode;
-	
-	@Column(name = "V_RECEIVER_CODE")
-	private String receiverCode;
-	
-	@Column(name = "V_COUNTER_PARTY")
-	private String counterParty;
-	
-	@Column(name = "V_TRN_CODE")
-	private String trnCode;
-	
-	@Column(name = "V_SENDERS_REFERENCE")
-	private String sendersRef;
-	
-	@Column(name = "V_CURRENCY_CODE")
-	private String currencyCode;
-	
-	@Column(name = "F_K_REDEMPTION_IND")
-	private Character kRedemptionInd;
-	
-	@Column(name = "F_SETTLEMENT_IND")
-	private Character settlementInd;
-	
-	@Column(name = "V_ACTUAL_MESSAGE_TYPE")
-	private String actualMessageType;
-	
-	@Transient
-	private Character isSRR;
-	
-	@Transient
-	private String detailsOfCharges;
-	
-	@Transient
-	private BigDecimal sendersCharges;
-	
-	@Transient
-	private BigDecimal receiversCharges;
-	
-	@Transient
-	private String senderToReceiverInfo;
-
-	@Transient
-	private String relatedReference;
-	
-	public Long getAcctBalMgmtSkey() {
-		return acctBalMgmtSkey;
-	}
-
-	public void setAcctBalMgmtSkey(Long acctBalMgmtSkey) {
-		this.acctBalMgmtSkey = acctBalMgmtSkey;
-	}
-
-	public Long getEntityAcctMapSkey() {
-		return entityAcctMapSkey;
-	}
-
-	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
-		this.entityAcctMapSkey = entityAcctMapSkey;
-	}
-
-	public BigDecimal getAmount() {
-		return amount;
-	}
-
-	public void setAmount(BigDecimal amount) {
-		this.amount = amount;
-	}
-
-	public String getAmountSign() {
-		return amountSign;
-	}
-
-	public void setAmountSign(String amountSign) {
-		this.amountSign = amountSign;
-	}
-
-	public Long getTrackerID() {
-		return trackerID;
-	}
-
-	public void setTrackerID(Long trackerID) {
-		this.trackerID = trackerID;
-	}
-
-	public LocalDateTime getBusinessDtTime() {
-		return businessDtTime;
-	}
-
-	public void setBusinessDtTime(LocalDateTime businessDtTime) {
-		this.businessDtTime = businessDtTime;
-	}
-
-	public LocalDate getValueDate() {
-		return valueDate;
-	}
-
-	public void setValueDate(LocalDate valueDate) {
-		this.valueDate = valueDate;
-	}
-
-	public LocalDate getTransactionDt() {
-		return transactionDt;
-	}
-
-	public void setTransactionDt(LocalDate transactionDt) {
-		this.transactionDt = transactionDt;
-	}
-
-	public String getMessageType() {
-		return messageType;
-	}
-
-	public void setMessageType(String messageType) {
-		this.messageType = messageType;
-	}
-
-	public String getSenderCode() {
-		return senderCode;
-	}
-
-	public void setSenderCode(String senderCode) {
-		this.senderCode = senderCode;
-	}
-
-	public String getReceiverCode() {
-		return receiverCode;
-	}
-
-	public void setReceiverCode(String receiverCode) {
-		this.receiverCode = receiverCode;
-	}
-	
-	public String getCounterParty() {
-		return counterParty;
-	}
-
-	public void setCounterParty(String counterParty) {
-		this.counterParty = counterParty;
-	}
-
-	public String getTrnCode() {
-		return trnCode;
-	}
-
-	public void setTrnCode(String trnCode) {
-		this.trnCode = trnCode;
-	}
-
-	public String getSendersRef() {
-		return sendersRef;
-	}
-
-	public void setSendersRef(String sendersRef) {
-		this.sendersRef = sendersRef;
-	}
-
-	public String getCurrencyCode() {
-		return currencyCode;
-	}
-
-	public void setCurrencyCode(String currencyCode) {
-		this.currencyCode = currencyCode;
-	}
-	
-	public Character getkRedemptionInd() {
-		return kRedemptionInd;
-	}
-
-	public void setkRedemptionInd(Character kRedemptionInd) {
-		this.kRedemptionInd = kRedemptionInd;
-	}
-
-	public Character getIsSRR() {
-		return isSRR;
-	}
-
-	public void setIsSRR(Character isSRR) {
-		this.isSRR = isSRR;
-	}
-	
-	public Character getSettlementInd() {
-		return settlementInd;
-	}
-
-	public void setSettlementInd(Character settlementInd) {
-		this.settlementInd = settlementInd;
-	}
-
-	public String getDetailsOfCharges() {
-		return detailsOfCharges;
-	}
-
-	public void setDetailsOfCharges(String detailsOfCharges) {
-		this.detailsOfCharges = detailsOfCharges;
-	}
-
-	public BigDecimal getSendersCharges() {
-		return sendersCharges;
-	}
-
-	public void setSendersCharges(BigDecimal sendersCharges) {
-		this.sendersCharges = sendersCharges;
-	}
-
-	public BigDecimal getReceiversCharges() {
-		return receiversCharges;
-	}
-
-	public void setReceiversCharges(BigDecimal receiversCharges) {
-		this.receiversCharges = receiversCharges;
-	}
-
-	public String getSenderToReceiverInfo() {
-		return senderToReceiverInfo;
-	}
-
-	public void setSenderToReceiverInfo(String senderToReceiverInfo) {
-		this.senderToReceiverInfo = senderToReceiverInfo;
-	}
-
-	public String getRelatedReference() {
-		return relatedReference;
-	}
-
-	public void setRelatedReference(String relatedReference) {
-		this.relatedReference = relatedReference;
-	}
-
-	public String getActualMessageType() {
-		return actualMessageType;
-	}
-
-	public void setActualMessageType(String actualMessageType) {
-		this.actualMessageType = actualMessageType;
-	}
-
-
-	@Override
-	public String toString() {
-		return "AccountBalanceManagement [acctBalMgmtSkey=" + acctBalMgmtSkey + ", entityAcctMapSkey="
-				+ entityAcctMapSkey + ", amount=" + amount + ", amountSign=" + amountSign + ", trackerID=" + trackerID
-				+ ", businessDtTime=" + businessDtTime + ", valueDate=" + valueDate + ", transactionDt=" + transactionDt
-				+ ", messageType=" + messageType + ", senderCode=" + senderCode + ", receiverCode=" + receiverCode
-				+ ", counterParty=" + counterParty + ", trnCode=" + trnCode + ", sendersRef=" + sendersRef
-				+ ", currencyCode=" + currencyCode + ", kRedemptionInd=" + kRedemptionInd + ", settlementInd="
-				+ settlementInd + ", actualMessageType=" + actualMessageType + ", isSRR=" + isSRR
-				+ ", detailsOfCharges=" + detailsOfCharges + ", sendersCharges=" + sendersCharges
-				+ ", receiversCharges=" + receiversCharges + ", senderToReceiverInfo=" + senderToReceiverInfo
-				+ ", relatedReference=" + relatedReference + "]";
-	}
-
-	
-}
-
-
-
-
-
-
-package com.maybank.ilm.core.util;
-
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-public class DateUtil {
+import com.maybank.ilm.core.dao.DimDao;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.ConversionUtil;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.entity.FinMT103;
+import com.prowidesoftware.swift.model.mx.MxCamt05400108;
+import com.prowidesoftware.swift.model.mx.dic.EntryTransaction10;
 
-	private static final Logger logger = LogManager.getLogger(DateUtil.class.getName());
+@Component
+public class MXcamt05400108Handler extends MXMsgHandlerAbstractImpl {
+	private static final Logger LOGGER = LogManager.getLogger(MXcamt05400108Handler.class);
+
+	@Autowired
+	private EntityAccountMappingRepo eamRepo;
+
+	@Autowired
+	private DimDao dimDao;
 
 	/**
-	 * Instantiates a new date utils.
+	 * Instantiates a new MX camt05400108 parser.
+	 *
 	 */
-	private DateUtil() {
-		throw new AssertionError("Instantiating utility class.");
-	}
-
-	public static LocalDate getDateFromString(String dateString) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
+	@Transactional
+	@Override
+	public <T> void saveToAcctBalMgmtAndMapping(T t, Long trackerId) {
+		MxCamt05400108 camt05400108 = (MxCamt05400108) t;
+		String actualMessageType = camt05400108.getMxId().toString();
+		String currencyCode = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy();
+		String amountSign = "";
+		String messageType ="";
+		String counterParty = "";
+		BigDecimal amount = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getValue();
+		String creditDebitInd = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getCdtDbtInd().value();
+		LocalDateTime businessDtTime = LocalDateTime.now();
+		String senderCode = camt05400108.getAppHdr().from().substring(0, 8);
+		String receiverCode = camt05400108.getAppHdr().to().substring(0, 8);
+		final EntryTransaction10 txDtls = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls().get(0).getTxDtls().get(0);
+		if(creditDebitInd.contentEquals(ILMCoreConstants.DBIT)) {
+			amountSign = ILMCoreConstants.MINUS;
+			messageType = ILMCoreConstants.MESSAGETYPE900;
+			counterParty = this.extractCounterParty(txDtls.getAddtlTxInf());
+		} else {
+			amountSign = ILMCoreConstants.PLUS;
+			messageType = ILMCoreConstants.MESSAGETYPE910;
 		}
-		return localDate;
-	}
-	
-	public static LocalDate getDateFromStringWithFormat(String dateString, String format) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
-		}
-		return localDate;
-	}
-	
-	public static LocalDate getDateFromStringWithFormatSimpleDate(String dateString, String format) {
-		LocalDate localDate = null;
-		try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
-			Date date = dateFormat.parse(dateString);
-			localDate = convertToLocalDate(date);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
-		}
-		return localDate;
-	}
-	
-	public static LocalDateTime getDateTimeFromStringWithFormat(String dateString, String format) {
-		LocalDateTime localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			localDate = LocalDateTime.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateTimeFromStringWithFormat" + exception);
-		}
-		return localDate;
-	}
-
-	public static LocalDate getDateFromStringYYYYMMDD(String dateString) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
-		}
-		return localDate;
-	}
-
-	public static LocalDateTime convertLdatetoLdatetime(LocalDate date, String hourmin) {
-		String hour = hourmin.substring(0, 2);
-		String minute = hourmin.substring(2, 4);
-		return date.atTime(Integer.parseInt(hour), Integer.parseInt(minute));
-	}
-
-	public static LocalDate convertToLocalDate(Date dateToConvert) {
-		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	}
-	
-	public static LocalDateTime convertToLocalDateTime(Date dateToConvert) {
-		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-	}
-
-	public static LocalDateTime getCurrentDateTimeByZone(String zone) {
-		ZoneId zid = null;
-		if (zone != null) {
-			zid = ZoneId.of(zone);
-		}
-		return zid != null ? LocalDateTime.now(zid) : null;
-	}
-
-	public static String getTimeFromTimeStamp(LocalDateTime dateTime) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
-		return formatter.format(dateTime);
-	}
-
-	public static LocalDateTime getlocalDateTimeFromString(String date) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d yyyy h:mma");
-		LocalDateTime dateTime = LocalDateTime.parse(StringUtils.normalizeSpace(date), formatter);
-		return dateTime;
-	}
-
-	public static Integer daysBetween(LocalDate startDate, LocalDate endDate) {
-		Long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-		return daysBetween.intValue();
-	}
-
-	public static int getDiffOfDatesInDays(LocalDate fromDate, LocalDate toDate) {
-		Period period = Period.between(fromDate, toDate);
-		return period.getDays();
-	}
-
-	public static void main(String[] args) {
-		LocalDate localDate=LocalDate.of(9999, 12, 31);
-		System.out.println(localDate);
-	}
-	
-	public static Long getSkeyFromLocalDate(LocalDate localDate) {
-		String formattedString = null;
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-			formattedString = localDate.format(formatter);
-		}catch (Exception e) {
-			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return Long.parseLong(formattedString);
-
-	}
-	
-	public static Long getSkeyFromLocalDateTime(LocalDateTime localDateTime, String format) {
-		String formattedString = null;
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-			formattedString = localDateTime.format(formatter);
-		}catch (Exception e) {
-			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return Long.parseLong(formattedString);
-
-	}
-	
-	public static LocalDateTime getDateTimeFromSkey(Long dateSkey, String format) {
-		LocalDateTime localDateTime = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			String dateString = Long.toString(dateSkey);
-			localDateTime = LocalDateTime.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
-		}
-		return localDateTime;
-	}
-	
-	public static LocalTime getLocalTimeFromSkey(Long timeSkey, String format) {
-		LocalTime localTime = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			String timeString = Long.toString(timeSkey);
-			String finalTimeString = null;
-			if(timeString.length() == 5) {
-				finalTimeString = "0"+timeString;
-			}else {
-				finalTimeString = timeString;
+		List<AccountBalanceManagement> allEntries = new ArrayList<>();
+		List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+		if(currencyCode.equals(ILMCoreConstants.MYR)) {
+			String sendersRef = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0)
+					.getNtryDtls().get(0).getTxDtls().get(0).getRefs().getEndToEndId();
+			LocalDate valueDate = LocalDate
+					.parse(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls()
+							.get(0).getTxDtls().get(0).getRltdDts().getIntrBkSttlmDt().toString());
+			final String accountNo = this.extractAccountNumber(camt05400108, creditDebitInd, txDtls, currencyCode, valueDate);
+			final EntityAccountMapDefinition eamDefnIn = getEntityAcctMapDefnByAcctNum(accountNo, currencyCode);
+			if (eamDefnIn != null) {
+				LOGGER.info("Entity account mapping found for {}", accountNo);
+				Long entityAcctMapSkey = eamDefnIn.getEntityAcctMapSkey();
+				final String addtlTxInf = txDtls.getAddtlTxInf();
+				final String trnCode = this.extractFromAddlTxInf(addtlTxInf,"TRN");
+				System.out.println(trnCode);
+				AccountBalanceManagement mgmt = new AccountBalanceManagement(entityAcctMapSkey, amount, amountSign, trackerId,
+						businessDtTime, valueDate, null, messageType, senderCode, receiverCode, counterParty, trnCode, sendersRef,
+						currencyCode, null,null,actualMessageType);
+				System.out.println(mgmt);
+				allEntries.add(mgmt);
+				createEntriesForICRU(allEntries,mgmt,camt05400108,addtlTxInf);
+			} else {
+				LOGGER.info("Entity defination not found for {} {} {} ", accountNo,
+						ILMCoreConstants.MAINACCOUNT, currencyCode);
+				throwEntityNotFountException();
 			}
-			localTime = LocalTime.parse(finalTimeString, stringformatter);
-		} catch (Exception exception) {
-			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
-		}
-		return localTime;
-	}
-	
-	public static LocalDateTime getLocalDateTimeFromLongFiles(Long dateModified) {
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-		return getDateTimeFromStringWithFormat(sdf.format(dateModified), "dd-MM-yyyy HH:mm:ss");
-	}
-	
-	public static String getDateFormatYYYYMMDD(LocalDate localDate) {		
-		return localDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-	}
-	
-	public static LocalDate convertJulianSkeyToLocalDate(String skey) {
-		LocalDate localDate = null;
-		try {
-			if(skey != null && !skey.contentEquals("0")) {
-				Date date = new SimpleDateFormat("yyyyDDD").parse(skey);
-				localDate = convertToLocalDate(date);
-			}
-		}catch (Exception e) {
-			logger.error(String.format("Error while  convertJulianSkeyToLocalDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return localDate;
-	}
-	
-	public static String getStringFromLDate(LocalDate ldate, String format) {
-		String formattedString = null;
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-			formattedString = ldate.format(formatter);
-		}catch (Exception e) {
-			logger.error(String.format("Error while  getStringFromLDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return formattedString;
-	}
-	
-	/**
-	 * Find if the given date is before the current date.
-	 */
-	public static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
-		Boolean pastDt = Boolean.FALSE;
-		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-		if(currentDtTime != null && localDate != null) {
-			LocalDate currentDt = currentDtTime.toLocalDate();
-			if(localDate.isBefore(currentDt)) {
-				pastDt = Boolean.TRUE;
+			
+		}else {
+			LOGGER.info("creditDebitIndicator: {}", creditDebitInd);
+			LOGGER.info("Inside MXcamt05400108Handler for Nostro {}.", currencyCode);
+			EntityAccountMapDefinition eamDefn = getDefnByEntityIDAndAcctType(senderCode,
+					ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+			if (eamDefn != null) {
+				LocalDate valueDate=LocalDate.parse(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getValDt().getDt().toString());
+				String sendersRef=camt05400108.getBkToCstmrDbtCdtNtfctn().getGrpHdr().getMsgId();
+				Long entityAcctMapSkey = eamDefn.getEntityAcctMapSkey();
+				Character settled = ILMCoreConstants.NIND;
+				if (checkRelatedRefForNostro(valueDate, entityAcctMapSkey, sendersRef)) {
+					settled = ILMCoreConstants.YIND;
+				}
+				AccountBalanceManagement mgmt = new AccountBalanceManagement(entityAcctMapSkey, amount, amountSign,
+						trackerId, businessDtTime, valueDate, null, messageType, senderCode, receiverCode, null,
+						sendersRef, currencyCode, ILMCoreConstants.NIND, settled, actualMessageType);
+				allEntries.add(mgmt);
+
+			} else {
+				LOGGER.info("Entity defination not found for {} {} {} ", senderCode, ILMCoreConstants.NOSTROACCOUNT,
+						currencyCode);
+				throwEntityNotFountException();
 			}
 		}
-		return pastDt;
+		String aggrInd = ILMCoreConstants.OTHERS;
+		getAggregations(allEntries, aggregations, aggrInd);
+		saveEntitiesForMX(allEntries);
+		
 	}
 	
-	/**
-	 * Find if the given date is equal to the current date.
-	 */
-	public static Boolean findDtEqualsCurrenctDt(LocalDate localDate) {
-		Boolean sameDt = Boolean.FALSE;
-		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-		if(currentDtTime != null && localDate != null) {
-			LocalDate currentDt = currentDtTime.toLocalDate();
-			if(localDate.isEqual(currentDt)) {
-				sameDt = Boolean.TRUE;
-			}
+	private void createEntriesForICRU(List<AccountBalanceManagement> icruEntries, AccountBalanceManagement mgmt, MxCamt05400108 camt05400108, String addtlTxInf) {
+		String sIcruAmnt = this.extractFromAddlTxInf(addtlTxInf, "ICRU");
+		if (sIcruAmnt != null) {
+			AccountBalanceManagement kAcctEntry = setICRUEntry(camt05400108, sIcruAmnt,mgmt, ILMCoreConstants.KACCOUNT);
+			icruEntries.add(kAcctEntry);
 		}
-		return sameDt;
 	}
 	
-	/**
-	 * Find if date is not Saturday or Sunday
-	 */
-	
-	public static Boolean isWeekend(LocalDate date) {
-		DayOfWeek dayOfWeek = DayOfWeek.of(date.get(ChronoField.DAY_OF_WEEK));
-		return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY ;
-	}
-	
-	
-	/**
-	 * find no of business days
-	 */
-	public static long noOfBusinessDays(LocalDate fromDate , LocalDate toDate) {
-		long days = ChronoUnit.DAYS.between(fromDate, toDate)+1 ;
-		long weekDays = 0;
-		for(int day = 0 ; day < days ; day++ ) {
-			LocalDate date = fromDate.plusDays(day);
-			if(!isWeekend(date)) {
-				weekDays+=1;
-			}
+	private AccountBalanceManagement setICRUEntry(MxCamt05400108 camt05400108, String sIcruAmnt, AccountBalanceManagement mgmt, String acctName) {
+		BigDecimal icruAmnt = ConversionUtil.convertStrToBigDecimal(sIcruAmnt);
+		String  entityBic = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls()
+						.get(0).getTxDtls().get(0).getRltdPties().getDbtr().getPty().getId().getOrgId().getAnyBIC();
+		EntityAccountMapDefinition eamDefn = getDefnByEntityIDAndAcctType(entityBic, acctName, ILMCoreConstants.MYR);
+		AccountBalanceManagement icruEntry = null;
+		if(eamDefn != null) {
+			icruEntry = new AccountBalanceManagement(eamDefn.getEntityAcctMapSkey(), icruAmnt, ILMCoreConstants.PLUS, mgmt.getTrackerID(),
+					getCurrentDateTimeByZone(), mgmt.getValueDate(), null, mgmt.getMessageType(), entityBic, null, null, mgmt.getTrnCode(), mgmt.getSendersRef(),
+					ILMCoreConstants.MYR, null,null,camt05400108.getMxId().toString());
+		}else {
+			LOGGER.info("Entity defination not found for {} {} {}", entityBic, acctName, ILMCoreConstants.MYR);
 		}
-		return weekDays;
+		
+		return icruEntry;
+	}
+
+	private String extractAccountNumber(final MxCamt05400108 camt05400108, final String creditDebitInd, final EntryTransaction10 txDtls
+			, final String currencyCode, final LocalDate valueDate) {
+		if(creditDebitInd.contentEquals(ILMCoreConstants.DBIT)) {
+			return /*this.checkRelatedRefOfCamt054(valueDate, txDtls.getRefs().getEndToEndId(), currencyCode)
+			.map(mgmt -> {
+				return this.getDefnByEntityIDAndAcctType(txDtls.getRltdPties().getDbtr().getPty().getId().getOrgId().getAnyBIC()
+						, ILMCoreConstants.SRRACCOUNT, currencyCode).getAccountNumber();
+			})
+			.orElseGet(() -> {
+				return txDtls.getRltdPties().getDbtrAcct().getId().getOthr().getId();
+			});*/Optional.ofNullable( 
+					Optional.ofNullable(this.extractFromAddlTxInf(txDtls.getAddtlTxInf(), "PAYA"))
+			.orElseGet(() ->  this.getDefnByEntityIDAndAcctType(this.extractFromAddlTxInf(txDtls.getAddtlTxInf(), "PAYB")
+					, ILMCoreConstants.MAINACCOUNT, currencyCode).getAccountNumber()))
+			.orElseGet(() -> txDtls.getRltdPties().getDbtrAcct().getId().getOthr().getId());
+			
+		} else {
+			return Optional.ofNullable(this.extractFromAddlTxInf(txDtls.getAddtlTxInf(), "CPRA"))
+			.orElseGet(() -> camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getAcct().getId().getOthr().getId());
+		}
+	}
+
+	private String extractFromAddlTxInf(final String addtlTxInf,final String ind) {
+		final List<String> segs = Arrays.asList(addtlTxInf.split("/"));
+		final Integer index = segs.indexOf(ind);
+		if(index != -1) {
+			final String result = StringUtils.trimToNull(segs.get(index + 1));
+			LOGGER.info("AddtlTxInf {} {}", ind, result);
+			return result;
+		}
+		return null;
 	}
 	
-	
-	 
+	private String extractCounterParty(final String addtlTxInf) {
+		String bic = this.extractFromAddlTxInf(addtlTxInf, "CPRB");
+		if(bic != null) {
+			return bic;
+		} else {
+			String acctNo = this.extractFromAddlTxInf(addtlTxInf, "CPRA");
+			String bicFromAcctNo = eamRepo.findByAccountNumber(acctNo) != null ? eamRepo.findByAccountNumber(acctNo).getEntityIdentifier() : null;
+			return bicFromAcctNo;
+		}
+	}
+
+	@Override
+	public String getMessageType() {
+		return ILMCoreConstants.MXTYPECAMT05400108;
+	}
+
+	@Override
+	public <T> AccountBalanceMgmtDTO validateMessage(T t) {
+		FinMT103 finMT103 = (FinMT103) t;
+		return super.validateMessage(finMT103.getTags57().getBlock4Tag57aBic(), finMT103.getTags72(),
+				finMT103.getBlock1().getBlock1LogicalTerminal(), finMT103.getBlock4().getBlock4Tag32aCurrency(),
+				finMT103.getBlock4().getBlock4Tag32aDate(), finMT103.getBlock4().getBlock4Tag20(),
+				ILMCoreConstants.MESSAGETYPE103, finMT103.getBlock4().getBlock4Tag32aSettledAmnt(), null, Boolean.TRUE);
+	}
 }
-
-
-
-
-public final void lockDBAndAggregate(AccountBalanceManagement balMgmt, LocalDate valueDt , BigDecimal tamount, String tamountSign, 
-			BigDecimal inFlow, BigDecimal outFlow, String aggrInd, List<AccountBalanceAggregation> aggregations) {
-		try {
-			while(true) {
-				int count = lockConfigDao.updateLockConfig("AGGR_LOCK", balMgmt.getTrackerID());
-				LOGGER.info("inside lockDBAggr count is "+count);
-				if(count>0) {
-					aggregations.add(super.aggregateBalance(balMgmt.getEntityAcctMapSkey(), balMgmt.getValueDate(), tamount.abs(), 
-							tamountSign, balMgmt.getBusinessDtTime(), inFlow, outFlow, aggrInd, balMgmt.getTrackerID()));
-					if (lockConfigRepo.findByLockName("AGGR_LOCK").getLockNumber().compareTo(balMgmt.getTrackerID()) == 0) {
-						LOGGER.info("TrackerID matched");
-						aggrRepo.saveAll(aggregations);
-						lockConfigDao.releaseLockConfig("AGGR_LOCK");
-						LOGGER.info("Saved Aggr and Locktable released");
-						break;
-					}
-					else {
-						continue;
-					}
-				}
-				else {
-					LOGGER.info("count is NOT greater than 0 -- sleep and continue");
-					Thread.sleep(100);
-					continue;
-				}
-				
-			}
-		}
