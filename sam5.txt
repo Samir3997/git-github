@@ -1,21 +1,191 @@
-@Test
-    void testSaveToAcctBalMgmtAndMapping_EntityNotFound() {
-        // Given
-        FinMT103 finMT103 = new FinMT103();
-        // Setup the FinMT103 object as required for the test.
-        // For example, set the necessary tags and fields.
-        // You can use a builder pattern or manually set the fields.
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-        // Mock the behavior to return null for the entity definition
-        doReturn(null).when(eamRepo).findByReceiverBicAndOtherParams(anyString(), anyString(), anyString(), anyString(), anyString());
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 
-        // When and Then
-        // Invoke the method and expect an exception to be thrown
-        assertThrows(RuntimeException.class, () -> {
-            mt103Handler.saveToAcctBalMgmtAndMapping(finMT103);
-        });
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-        // Verify that the logger was called with the expected message
-        // If using Log4j2, you might need to configure the test to capture log output
-        // This can be done using tools like LogCaptor or a custom appender for testing
+import com.maybank.ilm.core.dao.*;
+import com.maybank.ilm.core.service.EntityAccountMappingService;
+import com.maybank.ilm.core.util.DateUtil;
+import com.maybank.ilm.core.util.ExceptionUtil;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.KAccountRedemptionDTO;
+import com.maybank.ilm.entity.*;
+
+public class MXMsgHandlerAbstractImplTest {
+
+    @InjectMocks
+    private MXMsgHandlerAbstractImpl mxMsgHandler;
+
+    @Mock
+    private EntityAccountMappingService entityAcctMapService;
+
+    @Mock
+    private FinMessageDao finMsgDao;
+
+    @Mock
+    private CashflowProjectionDao cfProjectionDao;
+
+    @Mock
+    private AccountBalanceMgmtRepo mgmtRepo;
+
+    @Mock
+    private AccountBalanceAggrRepo aggrRepo;
+
+    @Mock
+    private EntityAccountMappingRepo eamRepo;
+
+    @Mock
+    private KAccountConfigRepo kAccountConfigRepo;
+
+    @Mock
+    private DimDao dimDao;
+
+    @Mock
+    private LockConfigDao lockConfigDao;
+
+    @Mock
+    private LockConfigRepo lockConfigRepo;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
+
+    @Test
+    void testGetDefnByEntityIDAndAcctType() {
+        DimCurrency dimCurrency = new DimCurrency();
+        dimCurrency.setCurrencySkey(1L);
+        when(dimDao.getCurrDetailsByCode("USD")).thenReturn(dimCurrency);
+        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("entityId", "acctType", 1L))
+            .thenReturn(new EntityAccountMapDefinition());
+
+        EntityAccountMapDefinition result = mxMsgHandler.getDefnByEntityIDAndAcctType("entityId", "acctType", "USD");
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testGetEntityAcctMapDefnByAcctNum() {
+        DimCurrency dimCurrency = new DimCurrency();
+        dimCurrency.setCurrencySkey(1L);
+        when(dimDao.getCurrDetailsByCode("USD")).thenReturn(dimCurrency);
+        when(entityAcctMapService.getEntityAcctMapDefnByAcctNum("acctNum", 1L))
+            .thenReturn(new EntityAccountMapDefinition());
+
+        EntityAccountMapDefinition result = mxMsgHandler.getEntityAcctMapDefnByAcctNum("acctNum", "USD");
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void testGetAmntSign() {
+        assertEquals("+", mxMsgHandler.getAmntSign("C"));
+        assertEquals("-", mxMsgHandler.getAmntSign("D"));
+        assertNull(mxMsgHandler.getAmntSign("X"));
+    }
+
+    @Test
+    void testSaveAny() {
+        mxMsgHandler.saveAny(new Object());
+        verify(finMsgDao, times(1)).saveAny(any());
+    }
+
+    @Test
+    void testSaveAcctBalManagements() {
+        mxMsgHandler.saveAcctBalManagements(Collections.singletonList(new AccountBalanceManagement()));
+        verify(mgmtRepo, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    void testSaveAcctBalAggregations() {
+        mxMsgHandler.saveAcctBalAggregations(Collections.singletonList(new AccountBalanceAggregation()));
+        verify(aggrRepo, times(1)).saveAll(anyList());
+    }
+
+    @Test
+    void testGetCurrentDateTimeByZone() {
+        when(cfProjectionDao.getConfigValue("ILM_TIMEZONE")).thenReturn("GMT");
+        LocalDateTime dateTime = mxMsgHandler.getCurrentDateTimeByZone();
+        assertNotNull(dateTime);
+    }
+
+    @Test
+    void testThrowCoverMgsException() {
+        Exception e = assertThrows(ILMException.class, () -> mxMsgHandler.throwCoverMgsException());
+        assertEquals(ExceptionConstants.FAILED, e.getMessage());
+    }
+
+    @Test
+    void testGetTRNCode() {
+        List<String> narratives = Arrays.asList("/CPRO/BNMAMYKL/TRN/1234");
+        String trnCode = mxMsgHandler.getTRNCode(narratives);
+        assertEquals("1234", trnCode);
+    }
+
+    @Test
+    void testGetTRNCode566() {
+        List<String> narratives = Arrays.asList("/CPRO/BNMAMYKL/TRN/1234");
+        String trnCode = mxMsgHandler.getTRNCode566(narratives);
+        assertEquals("1234", trnCode);
+    }
+
+    @Test
+    void testGetNarratives() {
+        Block4Tag72 tag72 = new Block4Tag72();
+        tag72.setBlock4Tag72Nar1("narr1");
+        tag72.setBlock4Tag72Nar2("narr2");
+        List<String> narratives = mxMsgHandler.getNarratives(tag72);
+        assertEquals(Arrays.asList("narr1", "narr2", null, null, null, null), narratives);
+    }
+
+    @Test
+    void testGetLastUpdatedAcctBalAggr() {
+        when(finMsgDao.getLastUpdatedAcctBalAggr(anyLong(), any(LocalDate.class), anyString()))
+            .thenReturn(new AccountBalanceAggregation());
+        AccountBalanceAggregation result = mxMsgHandler.getLastUpdatedAcctBalAggr(1L, LocalDate.now());
+        assertNotNull(result);
+    }
+
+    @Test
+    void testGetRequiredFieldValWithType() {
+        List<MTSequence> sequences = Arrays.asList(new MTSequence());
+        String result = mxMsgHandler.getRequiredFieldValWithType(sequences, "seqName", "qualifier", "fieldName");
+        assertNull(result);
+    }
+
+    @Test
+    void testGetRequiredFieldWithOutQualifier() {
+        List<MTSequence> sequences = Arrays.asList(new MTSequence());
+        String result = mxMsgHandler.getRequiredFieldWithOutQualifier(sequences, "seqName", "fieldName");
+        assertNull(result);
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgs() {
+        List<MTSequence> sequences = Arrays.asList(new MTSequence());
+        List<String> narratives = mxMsgHandler.getNarrativesForSeqMsgs(sequences, "qualifier", "seqName");
+        assertNotNull(narratives);
+    }
+
+    @Test
+    void testGetAggregations() {
+        List<AccountBalanceManagement> allEntries = Arrays.asList(new AccountBalanceManagement());
+        List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+        mxMsgHandler.getAggregations(allEntries, aggregations, "aggrInd");
+        assertFalse(aggregations.isEmpty());
+    }
+
+    @Test
+    void testLockDBAndAggregate() throws InterruptedException {
+        when(lockConfigDao.updateLockConfig(anyString(), anyLong())).thenReturn(1);
+        when(lockConfigRepo.findByLockName(anyString())).thenReturn(new LockConfig());
+        mxMsgHandler.lockDBAndAggregate(new AccountBalanceManagement(), LocalDate.now(), Big
