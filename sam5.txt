@@ -189,3 +189,118 @@ public class MXMsgHandlerAbstractImplTest {
         when(lockConfigDao.updateLockConfig(anyString(), anyLong())).thenReturn(1);
         when(lockConfigRepo.findByLockName(anyString())).thenReturn(new LockConfig());
         mxMsgHandler.lockDBAndAggregate(new AccountBalanceManagement(), LocalDate.now(), Big
+
+
+
+
+
+
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+class MXMsgHandlerTest {
+
+    private MXMsgHandler mxMsgHandler;
+
+    @BeforeEach
+    void setUp() {
+        mxMsgHandler = new MXMsgHandler(); // Assuming this is how the instance is created
+    }
+
+    @Test
+    void testGetRequiredFieldWithOutQualifier() {
+        // Create MTField instances
+        MTField field1 = new MTField();
+        field1.setFieldName("fieldName1");
+        field1.setFieldValue("value1");
+        field1.setFieldType("type1");
+
+        MTField field2 = new MTField();
+        field2.setFieldName("fieldName2");
+        field2.setFieldValue("value2");
+        field2.setFieldType("type2");
+
+        // Create MTSequence instances
+        MTSequence sequence1 = new MTSequence();
+        sequence1.setSeqName("seqName1");
+        sequence1.setMtFields(Arrays.asList(field1, field2));
+
+        MTSequence sequence2 = new MTSequence();
+        sequence2.setSeqName("seqName2");
+        sequence2.setMtFields(Collections.singletonList(field2));
+
+        List<MTSequence> sequences = Arrays.asList(sequence1, sequence2);
+
+        // Define input parameters
+        String seqName = "seqName1";
+        String fieldName = "fieldName1";
+
+        // Call the method to test
+        String result = mxMsgHandler.getRequiredFieldWithOutQualifier(sequences, seqName, fieldName);
+
+        // Assert the result
+        assertEquals("value1", result);
+    }
+
+    @Test
+    void testGetRequiredFieldWithOutQualifierNoMatch() {
+        // Create MTField instances
+        MTField field1 = new MTField();
+        field1.setFieldName("fieldName1");
+        field1.setFieldValue("value1");
+        field1.setFieldType("type1");
+
+        // Create MTSequence instances
+        MTSequence sequence1 = new MTSequence();
+        sequence1.setSeqName("seqName1");
+        sequence1.setMtFields(Collections.singletonList(field1));
+
+        List<MTSequence> sequences = Collections.singletonList(sequence1);
+
+        // Define input parameters that do not match
+        String seqName = "seqName1";
+        String fieldName = "nonMatchingFieldName";
+
+        // Call the method to test
+        String result = mxMsgHandler.getRequiredFieldWithOutQualifier(sequences, seqName, fieldName);
+
+        // Assert the result
+        assertNull(result);
+    }
+
+    @Test
+    void testGetRequiredFieldWithOutQualifierEmptySequences() {
+        // Define empty sequences
+        List<MTSequence> sequences = Collections.emptyList();
+
+        // Define input parameters
+        String seqName = "seqName1";
+        String fieldName = "fieldName1";
+
+        // Call the method to test
+        String result = mxMsgHandler.getRequiredFieldWithOutQualifier(sequences, seqName, fieldName);
+
+        // Assert the result
+        assertNull(result);
+    }
+
+    @Test
+    void testGetRequiredFieldWithOutQualifierNullSequences() {
+        // Call the method with null sequences
+        String result = mxMsgHandler.getRequiredFieldWithOutQualifier(null, "seqName1", "fieldName1");
+
+        // Assert the result
+        assertNull(result);
+    }
+}
+
