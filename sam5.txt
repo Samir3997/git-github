@@ -1,30 +1,108 @@
- @Test
-	  public  void testGetRequiredFieldValWithType() {
-	        MTField field1 = new MTField();
-	        field1.setFieldName("fieldName1");
-	        field1.setFieldValue("value1");
-	        field1.setFieldType("type1");
+package com.maybank.ilm.core.swiftmsghandlers;
 
-	        MTField field2 = new MTField();
-	        field2.setFieldName("fieldName2");
-	        field2.setFieldValue("value2");
-	        field2.setFieldType("type2");
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-	        MTSequence sequence1 = new MTSequence();
-	        sequence1.setSeqName("seqName1");
-	        sequence1.setMtFields(Arrays.asList(field1, field2));
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.util.DateUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-	        MTSequence sequence2 = new MTSequence();
-	        sequence2.setSeqName("seqName2");
-	        sequence2.setMtFields(Collections.singletonList(field2));
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
-	        List<MTSequence> sequences = Arrays.asList(sequence1, sequence2);
+class MXMsgHandlerAbstractImplTest {
 
-	        String seqName = "seqName1";
-	        String qualifier = "value1";
-	        String fieldName = "fieldName1";
+    @InjectMocks
+    private MXMsgHandlerAbstractImpl msgHandler;
 
-	        String result = mxMsgHandler.getRequiredFieldValWithType(sequences, seqName, qualifier, fieldName);
+    @Mock
+    private AccountBalanceAggregation mockAccountBalanceAggregation;
 
-	        assertEquals("value1", result);
-	    }
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testGetAggregations() {
+        // Given
+        List<AccountBalanceManagement> allEntries = Arrays.asList(
+                new AccountBalanceManagement(1L, BigDecimal.valueOf(100), ILMCoreConstants.PLUS, 1L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'Y'),
+                new AccountBalanceManagement(1L, BigDecimal.valueOf(-50), ILMCoreConstants.MINUS, 2L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'N'),
+                new AccountBalanceManagement(2L, BigDecimal.valueOf(200), ILMCoreConstants.PLUS, 3L, LocalDateTime.now().minusDays(1), LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), ILMCoreConstants.MESSAGETYPE292, "SENDER2", "RECEIVER2", "TRN2", "REF2", "MYR", 'Y')
+        );
+
+        List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+
+        // Mock static methods
+        try (var mockedStaticDateUtil = mockStatic(DateUtil.class)) {
+            mockedStaticDateUtil.when(() -> DateUtil.findDtEqualsCurrenctDt(any())).thenReturn(true);
+
+            // When
+            msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
+
+            // Then
+            assertEquals(2, aggregations.size()); // Assuming correct aggregations
+            verify(msgHandler, times(2)).lockDBAndAggregate(any(), any(), any(), any(), any(), any(), any(), any());
+        }
+    }
+
+    @Test
+    void testGetAggregationsWithEmptyList() {
+        // Given
+        List<AccountBalanceManagement> allEntries = Collections.emptyList();
+        List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+
+        // When
+        msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
+
+        // Then
+        assertTrue(aggregations.isEmpty());
+        verifyNoInteractions(mockAccountBalanceAggregation);
+    }
+
+    @Test
+    void testGetAggregationsWithNullList() {
+        // Given
+        List<AccountBalanceManagement> allEntries = null;
+        List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+
+        // When
+        msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
+
+        // Then
+        assertTrue(aggregations.isEmpty());
+        verifyNoInteractions(mockAccountBalanceAggregation);
+    }
+
+    @Test
+    void testGetAggregationsWithDateMismatch() {
+        // Given
+        List<AccountBalanceManagement> allEntries = Arrays.asList(
+                new AccountBalanceManagement(1L, BigDecimal.valueOf(100), ILMCoreConstants.PLUS, 1L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'Y'),
+                new AccountBalanceManagement(2L, BigDecimal.valueOf(-50), ILMCoreConstants.MINUS, 2L, LocalDateTime.now().minusDays(1), LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), ILMCoreConstants.MESSAGETYPE292, "SENDER2", "RECEIVER2", "TRN2", "REF2", "MYR", 'N')
+        );
+
+        List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+
+        // Mock static methods
+        try (var mockedStaticDateUtil = mockStatic(DateUtil.class)) {
+            mockedStaticDateUtil.when(() -> DateUtil.findDtEqualsCurrenctDt(any())).thenReturn(false);
+
+            // When
+            msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
+
+            // Then
+            assertEquals(2, aggregations.size()); // Assuming correct aggregations
+            verify(msgHandler, times(2)).lockDBAndAggregate(any(), any(), any(), any(), any(), any(), any(), any());
+        }
+    }
+}
