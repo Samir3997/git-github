@@ -1,24 +1,30 @@
 package com.maybank.ilm.core.swiftmsghandlers;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.*;
 
 import com.maybank.ilm.entity.AccountBalanceManagement;
 import com.maybank.ilm.entity.AccountBalanceAggregation;
 import com.maybank.ilm.util.DateUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PowerMockIgnore;
+import org.powermock.modules.junit4.PowerMockRunner;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
-class MXMsgHandlerAbstractImplTest {
+@RunWith(PowerMockRunner.class)
+@PowerMockIgnore("javax.management.*")
+public class MXMsgHandlerAbstractImplTest {
 
     @InjectMocks
     private MXMsgHandlerAbstractImpl msgHandler;
@@ -26,39 +32,37 @@ class MXMsgHandlerAbstractImplTest {
     @Mock
     private AccountBalanceAggregation mockAccountBalanceAggregation;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+        PowerMockito.mockStatic(DateUtil.class);
     }
 
     @Test
-    void testGetAggregations() {
+    public void testGetAggregations() {
         // Given
-        List<AccountBalanceManagement> allEntries = Arrays.asList(
-                new AccountBalanceManagement(1L, BigDecimal.valueOf(100), ILMCoreConstants.PLUS, 1L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'Y'),
-                new AccountBalanceManagement(1L, BigDecimal.valueOf(-50), ILMCoreConstants.MINUS, 2L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'N'),
-                new AccountBalanceManagement(2L, BigDecimal.valueOf(200), ILMCoreConstants.PLUS, 3L, LocalDateTime.now().minusDays(1), LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), ILMCoreConstants.MESSAGETYPE292, "SENDER2", "RECEIVER2", "TRN2", "REF2", "MYR", 'Y')
-        );
+        List<AccountBalanceManagement> allEntries = new ArrayList<>();
+        allEntries.add(new AccountBalanceManagement(1L, BigDecimal.valueOf(100), ILMCoreConstants.PLUS, 1L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'Y'));
+        allEntries.add(new AccountBalanceManagement(1L, BigDecimal.valueOf(-50), ILMCoreConstants.MINUS, 2L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'N'));
+        allEntries.add(new AccountBalanceManagement(2L, BigDecimal.valueOf(200), ILMCoreConstants.PLUS, 3L, LocalDateTime.now().minusDays(1), LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), ILMCoreConstants.MESSAGETYPE292, "SENDER2", "RECEIVER2", "TRN2", "REF2", "MYR", 'Y'));
 
         List<AccountBalanceAggregation> aggregations = new ArrayList<>();
 
         // Mock static methods
-        try (var mockedStaticDateUtil = mockStatic(DateUtil.class)) {
-            mockedStaticDateUtil.when(() -> DateUtil.findDtEqualsCurrenctDt(any())).thenReturn(true);
+        when(DateUtil.findDtEqualsCurrenctDt(any(LocalDate.class))).thenReturn(true);
 
-            // When
-            msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
+        // When
+        msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
 
-            // Then
-            assertEquals(2, aggregations.size()); // Assuming correct aggregations
-            verify(msgHandler, times(2)).lockDBAndAggregate(any(), any(), any(), any(), any(), any(), any(), any());
-        }
+        // Then
+        assertEquals(2, aggregations.size()); // Assuming correct aggregations
+        verify(msgHandler, times(2)).lockDBAndAggregate(any(AccountBalanceManagement.class), any(LocalDate.class), any(BigDecimal.class), any(String.class), any(BigDecimal.class), any(BigDecimal.class), any(String.class), anyList());
     }
 
     @Test
-    void testGetAggregationsWithEmptyList() {
+    public void testGetAggregationsWithEmptyList() {
         // Given
-        List<AccountBalanceManagement> allEntries = Collections.emptyList();
+        List<AccountBalanceManagement> allEntries = new ArrayList<>();
         List<AccountBalanceAggregation> aggregations = new ArrayList<>();
 
         // When
@@ -70,7 +74,7 @@ class MXMsgHandlerAbstractImplTest {
     }
 
     @Test
-    void testGetAggregationsWithNullList() {
+    public void testGetAggregationsWithNullList() {
         // Given
         List<AccountBalanceManagement> allEntries = null;
         List<AccountBalanceAggregation> aggregations = new ArrayList<>();
@@ -84,28 +88,22 @@ class MXMsgHandlerAbstractImplTest {
     }
 
     @Test
-    void testGetAggregationsWithDateMismatch() {
+    public void testGetAggregationsWithDateMismatch() {
         // Given
-        List<AccountBalanceManagement> allEntries = Arrays.asList(
-                new AccountBalanceManagement(1L, BigDecimal.valueOf(100), ILMCoreConstants.PLUS, 1L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'Y'),
-                new AccountBalanceManagement(2L, BigDecimal.valueOf(-50), ILMCoreConstants.MINUS, 2L, LocalDateTime.now().minusDays(1), LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), ILMCoreConstants.MESSAGETYPE292, "SENDER2", "RECEIVER2", "TRN2", "REF2", "MYR", 'N')
-        );
+        List<AccountBalanceManagement> allEntries = new ArrayList<>();
+        allEntries.add(new AccountBalanceManagement(1L, BigDecimal.valueOf(100), ILMCoreConstants.PLUS, 1L, LocalDateTime.now(), LocalDate.now(), LocalDate.now(), ILMCoreConstants.MESSAGETYPE192, "SENDER1", "RECEIVER1", "TRN1", "REF1", "MYR", 'Y'));
+        allEntries.add(new AccountBalanceManagement(2L, BigDecimal.valueOf(-50), ILMCoreConstants.MINUS, 2L, LocalDateTime.now().minusDays(1), LocalDate.now().minusDays(1), LocalDate.now().minusDays(1), ILMCoreConstants.MESSAGETYPE292, "SENDER2", "RECEIVER2", "TRN2", "REF2", "MYR", 'N'));
 
         List<AccountBalanceAggregation> aggregations = new ArrayList<>();
 
         // Mock static methods
-        try (var mockedStaticDateUtil = mockStatic(DateUtil.class)) {
-            mockedStaticDateUtil.when(() -> DateUtil.findDtEqualsCurrenctDt(any())).thenReturn(false);
+        when(DateUtil.findDtEqualsCurrenctDt(any(LocalDate.class))).thenReturn(false);
 
-            // When
-            msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
+        // When
+        msgHandler.getAggregations(allEntries, aggregations, "AGGR_IND");
 
-            // Then
-            assertEquals(2, aggregations.size()); // Assuming correct aggregations
-            verify(msgHandler, times(2)).lockDBAndAggregate(any(), any(), any(), any(), any(), any(), any(), any());
-        }
+        // Then
+        assertEquals(2, aggregations.size()); // Assuming correct aggregations
+        verify(msgHandler, times(2)).lockDBAndAggregate(any(AccountBalanceManagement.class), any(LocalDate.class), any(BigDecimal.class), any(String.class), any(BigDecimal.class), any(BigDecimal.class), any(String.class), anyList());
     }
 }
-
-
-org.mockito.MockedStatic<DateUtil>
