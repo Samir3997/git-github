@@ -1,11 +1,2 @@
-public static Boolean findDtEqualsCurrenctDt(LocalDate localDate) {
-		Boolean sameDt = Boolean.FALSE;
-		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-		if(currentDtTime != null && localDate != null) {
-			LocalDate currentDt = currentDtTime.toLocalDate();
-			if(localDate.isEqual(currentDt)) {
-				sameDt = Boolean.TRUE;
-			}
-		}
-		return sameDt;
-	}
+public List<AccountBalanceManagement> findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(LocalDate valueDate,
+			Long entityAcctMapSkey, List<String> messageTypes);
