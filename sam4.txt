@@ -1,629 +1,99 @@
 package com.maybank.ilm.core.swiftmsghandlers;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
-
-import com.maybank.ilm.core.dao.AccountBalanceAggrRepo;
-import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
-import com.maybank.ilm.core.dao.CashflowProjectionDao;
-import com.maybank.ilm.core.dao.DimDao;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.dao.FinMessageDao;
-import com.maybank.ilm.core.dao.KAccountConfigRepo;
-import com.maybank.ilm.core.dao.LockConfigDao;
-import com.maybank.ilm.core.dao.LockConfigRepo;
-import com.maybank.ilm.core.service.EntityAccountMappingService;
-import com.maybank.ilm.core.service.IlmAbstractMessageHandler;
-import com.maybank.ilm.core.util.ConversionUtil;
-import com.maybank.ilm.core.util.DateUtil;
-import com.maybank.ilm.core.util.ExceptionUtil;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
-import com.maybank.ilm.dto.KAccountRedemptionDTO;
-import com.maybank.ilm.embeddable.Block4Tag72;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
-import com.maybank.ilm.entity.DimCurrency;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.entity.FinMT940;
-import com.maybank.ilm.entity.KAccountConfiguration;
 import com.maybank.ilm.entity.MTField;
 import com.maybank.ilm.entity.MTSequence;
-import com.maybank.ilm.utility.exception.ExceptionConstants;
-import com.maybank.ilm.utility.exception.ILMException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-public abstract class MXMsgHandlerAbstractImpl extends IlmAbstractMessageHandler implements MXMessageHandler{
-	
-	private static final Logger LOGGER = LogManager.getLogger(MXMsgHandlerAbstractImpl.class);
-	
-	@Autowired
-	private EntityAccountMappingService entityAcctMapService;
-	
-	@Autowired
-	private FinMessageDao finMsgDao;
-	
-	@Autowired
-	private CashflowProjectionDao cfProjectionDao;
-	
-	@Autowired
-	private AccountBalanceMgmtRepo mgmtRepo;
-	
-	@Autowired
-	private AccountBalanceAggrRepo aggrRepo;
-	
-	@Autowired
-	private EntityAccountMappingRepo eamRepo;
-	
-	@Autowired
-	private KAccountConfigRepo kAccountConfigRepo;
-	
-	@Autowired
-	private DimDao dimDao;
-	
-	@Autowired
-	private LockConfigDao lockConfigDao;
-	
-	@Autowired
-	private LockConfigRepo lockConfigRepo;
-	
-	public final EntityAccountMapDefinition getDefnByEntityIDAndAcctType(String entityID, String acctType, String currencyCode) {
-		EntityAccountMapDefinition definition = null;
-		DimCurrency dimCurrency = getDimCurrency(currencyCode);
-		if(dimCurrency != null)
-			definition = eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(entityID, acctType, dimCurrency.getCurrencySkey());
-		return definition;
-	}
-	
-	public final EntityAccountMapDefinition getEntityAcctMapDefnByAcctNum(String acctNum, String currencyCode) {
-		EntityAccountMapDefinition definition = null;
-		DimCurrency dimCurrency = getDimCurrency(currencyCode);
-		if(dimCurrency != null)
-			definition = entityAcctMapService.getEntityAcctMapDefnByAcctNum(acctNum, dimCurrency.getCurrencySkey());
-		return definition;
-	}
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
-	private DimCurrency getDimCurrency(String currencyCode) {
-		return dimDao.getCurrDetailsByCode(currencyCode);
-	}
-	
-	public final String getAmntSign(String dcMark){
-		if(dcMark.contentEquals("C")) {
-			return "+";
-		}else if(dcMark.contentEquals("D")) {
-			return "-";
-		}
-		return null;
-	}
-	
-	public final <T> void saveAny(T t){
-		finMsgDao.saveAny(t);
-	}
-	
-	public final void saveAcctBalManagements(List<AccountBalanceManagement> balanceManagements) {
-		mgmtRepo.saveAll(balanceManagements);
-	}
+class MXMsgHandlerAbstractImplTest {
 
-	public final void saveAcctBalAggregations(List<AccountBalanceAggregation> aggregations) {
-		aggrRepo.saveAll(aggregations);
-	}
-	
-	public final LocalDateTime getCurrentDateTimeByZone() {
-		String configValue = cfProjectionDao.getConfigValue("ILM_TIMEZONE");
-		return DateUtil.getCurrentDateTimeByZone(configValue);
-	}	
-	
-	public void throwCoverMgsException() {
-		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.COVERMSGBLOCKED);
-	}
-	/**
-	 * @param narratives
-	 * 
-	 * It will return the TRN CODE value 
-	 * 
-	 * Please use TRN as constant
-	 * 
-	 * @return
-	 */
-	public final String getTRNCode(List<String> narratives){ 
-		Predicate<String> naratives=(narative)->{			
-			return !StringUtils.isEmpty(narative) && narative.split("/").length > 1 ?narative.split("/")[1].contentEquals("TRN"):false;
-		};
-		List<String> replacedNarratives = new ArrayList<>();
-		narratives.forEach(narr -> {    //CONVERTING DOUBLE SLASHES TO SINGLE SLASH
-				if(narr!=null) {
-					String narrFirstRepl = narr.replace("//", "-");
-					String narrSecondRepl = narrFirstRepl.replace("-", "/");
-					replacedNarratives.add(narrSecondRepl);
-				}
-		});
-		Optional<String> trnCode=replacedNarratives.stream().filter(naratives).map(it->
-			it.split("/")[2]).findFirst();
-		return trnCode.isPresent()?trnCode.get():null;
-	}
-	
-	/**
-	 * @param narratives
-	 * 
-	 * It will return the TRN CODE value for 566
-	 * 
-	 * Please use TRN as constant
-	 * 
-	 * @return
-	 */
-	public final String getTRNCode566(List<String> narratives){ 	//COMBINE BOTH TRN METHODS. MAKE GENERIC
-		Predicate<String> naratives=(narative)->{			
-			return !StringUtils.isEmpty(narative) && narative.split("/").length > 1 ?narative.split("/")[0].contentEquals("TRN"):false;
-		};
-		List<String> replacedNarratives = new ArrayList<>();
-		narratives.forEach(narr -> {    //CONVERTING DOUBLE SLASHES TO SINGLE SLASH
-				if(narr!=null) {
-					String narrFirstRepl = narr.replace("//", "-");
-					String narrSecondRepl = narrFirstRepl.replace("-", "/");
-					replacedNarratives.add(narrSecondRepl);
-				}
-		});
-		Optional<String> trnCode=replacedNarratives.stream().filter(naratives).map(it->
-			it.split("/")[1]).findFirst();
-		return trnCode.isPresent()?trnCode.get():null;
-	}
-	
-	public final List<String> getNarratives(Block4Tag72 tag72){
-		List<String> narratives = new ArrayList<>();
-		narratives.add(tag72.getBlock4Tag72Nar1());
-		narratives.add(tag72.getBlock4Tag72Nar2());
-		narratives.add(tag72.getBlock4Tag72Nar3());
-		narratives.add(tag72.getBlock4Tag72Nar4());
-		narratives.add(tag72.getBlock4Tag72Nar5());
-		narratives.add(tag72.getBlock4Tag72Nar6());
-		return narratives;
-	}
-	
-	public final AccountBalanceAggregation getLastUpdatedAcctBalAggr(Long entityAcctMapSkey, LocalDate valueDt) {
-		return finMsgDao.getLastUpdatedAcctBalAggr(entityAcctMapSkey, valueDt, ILMCoreConstants.OTHERS);
-	}
-	
-		
-	public final String getRequiredFieldValWithType(List<MTSequence> mtSequences, String seqName, String qualifier, String fieldName) {
-		String reqFieldValue = null;
-		if(mtSequences != null) {
-			List<MTSequence> filteredSeqs = mtSequences.stream().filter(it -> it.getSeqName().contentEquals(seqName)).collect(Collectors.toList());
-			if(filteredSeqs != null) {
-				for(MTSequence sequence : filteredSeqs) {
-					Predicate<MTField> isFieldValueNotNull = mt -> mt.getFieldValue() != null;
-					Predicate<MTField> isFieldValueEqual = it -> it.getFieldValue().contentEquals(qualifier);
-					if(sequence != null) {
-						List<MTField> filteredFields = sequence.getMtFields().stream().filter(isFieldValueNotNull.and(isFieldValueEqual)).collect(Collectors.toList());
-						if(CollectionUtils.isNotEmpty(filteredFields)) {
-							Optional<MTField> mtFieldOptional= sequence.getMtFields().stream().filter(it -> it.getFieldName().contentEquals(fieldName)).findFirst();
-							if(mtFieldOptional.isPresent()) {
-								MTField mtField = mtFieldOptional.get();
-								reqFieldValue = mtField.getFieldValue();
-							}
-						}
-					}
-				}
-			}
-		}	
-		return reqFieldValue;
-	}
-	
-	public final String getRequiredFieldWithOutQualifier(List<MTSequence> mtSequences, String seqName, String fieldName) {
-		String reqFieldValue = null;
-		if(mtSequences != null) {
-			List<MTSequence> filteredSeqs = mtSequences.stream().filter(it -> it.getSeqName().contentEquals(seqName)).collect(Collectors.toList());
-			if(filteredSeqs != null) {
-				for(MTSequence sequence : filteredSeqs) { 
-					if(sequence != null) {
-						List<MTField> filteredFields = sequence.getMtFields().stream().filter(it -> it.getFieldName().contentEquals(fieldName)).collect(Collectors.toList());
-						if(CollectionUtils.isNotEmpty(filteredFields)) {
-							Optional<MTField> mtFieldOptional= sequence.getMtFields().stream().filter(it -> it.getFieldName().contentEquals(fieldName)).findFirst();
-							if(mtFieldOptional.isPresent()) {
-								MTField mtField = mtFieldOptional.get();
-								reqFieldValue = mtField.getFieldValue();
-							}
-						}
-					}
-				}
-			}
-		}	
-		return reqFieldValue;
-	}
-	
-	public final List<String> getNarrativesForSeqMsgs(List<MTSequence> mtSequences, String qualifier, String seqName){
-		List<String> narratives = new ArrayList<>();
-		narratives.add(getRequiredFieldValWithType(mtSequences, seqName, qualifier, "70E_NARRATIVE_"+qualifier));
-		for(int index=2; index<10; index++) {
-			String fieldName = "70E_NARRATIVE_"+index+"_"+qualifier;
-			narratives.add(getRequiredFieldValWithType(mtSequences, seqName, qualifier, fieldName));
-		}
-		return narratives;
-	}
-	
-	public final void getAggregations(List<AccountBalanceManagement> allEntries, List<AccountBalanceAggregation> aggregations, String aggrInd) {
-		if(CollectionUtils.isNotEmpty(allEntries)) {
-			Map<Long, List<AccountBalanceManagement>> groupedMgmtsMap = allEntries.stream().collect(Collectors.groupingBy(p -> p.getEntityAcctMapSkey()));
-			for(Long skey : groupedMgmtsMap.keySet()) {
-				List<AccountBalanceManagement> managements = groupedMgmtsMap.get(skey);
-				BigDecimal tamount = BigDecimal.ZERO;
-				BigDecimal inFlow = BigDecimal.ZERO;
-				BigDecimal outFlow = BigDecimal.ZERO;
-				for(AccountBalanceManagement management : managements) {
-					BigDecimal amount = management.getAmount();
-					BigDecimal amntWithSign = management.getAmountSign().contentEquals(ILMCoreConstants.PLUS) ? amount : amount.multiply(new BigDecimal(-1));
-					if(amntWithSign.compareTo(BigDecimal.ZERO) > 0) {
-						inFlow = inFlow.add(amntWithSign);
-					}else if(amntWithSign.compareTo(BigDecimal.ZERO) < 0) {
-						outFlow =outFlow.add(amntWithSign);
-					}
-					tamount = tamount.add(amntWithSign);
-				}
-				AccountBalanceManagement balMgmt =  managements.get(0);
-				String tamountSign = tamount.signum() >= 0 ? ILMCoreConstants.PLUS : ILMCoreConstants.MINUS;
-				if(DateUtil.findDtEqualsCurrenctDt(balMgmt.getValueDate())){
-					lockDBAndAggregate(balMgmt, balMgmt.getValueDate() , tamount, tamountSign, inFlow, outFlow, aggrInd, aggregations);
-				}
-				else if(balMgmt.getMessageType().equals(ILMCoreConstants.MESSAGETYPE192) || balMgmt.getMessageType().equals(ILMCoreConstants.MESSAGETYPE292)) {
-					lockDBAndAggregate(balMgmt, LocalDate.now() , tamount, tamountSign, inFlow, outFlow, aggrInd, aggregations);
-				}
-			}
-		}
-	}
-	
-	public final void lockDBAndAggregate(AccountBalanceManagement balMgmt, LocalDate valueDt , BigDecimal tamount, String tamountSign, 
-			BigDecimal inFlow, BigDecimal outFlow, String aggrInd, List<AccountBalanceAggregation> aggregations) {
-		try {
-			while(true) {
-				int count = lockConfigDao.updateLockConfig("AGGR_LOCK", balMgmt.getTrackerID());
-				LOGGER.info("inside lockDBAggr count is "+count);
-				if(count>0) {
-					aggregations.add(super.aggregateBalance(balMgmt.getEntityAcctMapSkey(), balMgmt.getValueDate(), tamount.abs(), 
-							tamountSign, balMgmt.getBusinessDtTime(), inFlow, outFlow, aggrInd, balMgmt.getTrackerID()));
-					if (lockConfigRepo.findByLockName("AGGR_LOCK").getLockNumber().compareTo(balMgmt.getTrackerID()) == 0) {
-						LOGGER.info("TrackerID matched");
-						aggrRepo.saveAll(aggregations);
-						lockConfigDao.releaseLockConfig("AGGR_LOCK");
-						LOGGER.info("Saved Aggr and Locktable released");
-						break;
-					}
-					else {
-						continue;
-					}
-				}
-				else {
-					LOGGER.info("count is NOT greater than 0 -- sleep and continue");
-					Thread.sleep(100);
-					continue;
-				}
-				
-			}
-		}
-		catch(Exception e){
-			LOGGER.error("Exception in saving to Aggregation Table"+ e.getMessage());
-			lockConfigDao.releaseLockConfig("AGGR_LOCK");
-		}
-		catch(Error e){
-			LOGGER.error("Error in saving to Aggregation Table"+ e.getMessage());
-			lockConfigDao.releaseLockConfig("AGGR_LOCK");
-		}
-	}
-	
-	
-	public final Boolean checkRelatedRefOfMT910(LocalDate valueDate, Long entityAcctMapSkey, String relatedRef) {
-		List<String> messageTypes = new ArrayList<>(Arrays.asList("102", "103", "202", "203"));
-		List<AccountBalanceManagement> managements = mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, messageTypes);
-		return managements.stream().anyMatch(p -> p.getSendersRef().contentEquals(relatedRef));
-	}
-	
-	public final Optional<AccountBalanceManagement> checkRelatedRefOfCamt054(LocalDate valueDate, String relatedRef, String currencyCode) {
-		List<String> messageTypes = new ArrayList<>(Arrays.asList("202"));
-		List<AccountBalanceManagement> managements = mgmtRepo.findRelatedMgmtEntryBySenderRefAndMsgType(relatedRef, currencyCode, messageTypes, valueDate);
-		return managements.stream().findFirst();
-	}
-	
-	public final boolean checkRelatedRefForNostro(LocalDate valueDate, Long entityAcctMapSkey, String relatedRef) {
-		List<String> messageTypes = new ArrayList<>(Arrays.asList("103", "200", "202" , "900" ,"910"));
-		Boolean foundRelatedRefTrans = false;
-		List<AccountBalanceManagement> managements = mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, messageTypes);
-		List<AccountBalanceManagement> matchedMgmts = managements.stream().filter(p -> (p.getSendersRef() != null && p.getSendersRef().contentEquals(relatedRef))).collect(Collectors.toList());
-		if(CollectionUtils.isNotEmpty(matchedMgmts)) {
-			matchedMgmts.forEach(p -> p.setSettlementInd(ILMCoreConstants.YIND));
-			mgmtRepo.saveAll(matchedMgmts);
-			foundRelatedRefTrans = true;
-		}
-		return foundRelatedRefTrans;
-	}
-	
-	public final Long checkForIntraBankTransactions(String counterBic, String currencyCode){
-		Long entityAcctMapSkey = null;
-		EntityAccountMapDefinition defn = getDefnByEntityIDAndAcctType(counterBic, ILMCoreConstants.MAINACCOUNT, currencyCode);
-		if(defn != null) {
-			entityAcctMapSkey = defn.getEntityAcctMapSkey();
-		}
-		return entityAcctMapSkey;
-	}
-	
-	@Override
-	public AccountBalanceManagement setBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd, String... stringArgs) {
-		return new AccountBalanceManagement(entityAcctMapSkey,amount, amountSign,
-				 trackerID, businessDtTime,  valueDate,  transactionDt,
-				 messageType,  senderCode,  receiverCode,  trnCode,  sendersRef,
-				 currencyCode, kRedemptionInd);
-	}
-	
-	@Override
-	public AccountBalanceManagement setBalanceManagementWithSettlementInd(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
-			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
-			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
-			String currencyCode, Character kRedemptionInd,Character settlementInd , String... stringArgs) {
-		return new AccountBalanceManagement(entityAcctMapSkey,amount, amountSign,
-				 trackerID, businessDtTime,  valueDate,  transactionDt,
-				 messageType,  senderCode,  receiverCode,  trnCode,  sendersRef,
-				 currencyCode, kRedemptionInd , settlementInd);
-	}
-	
-	
-	public final <T> void  saveAllEntities(List<AccountBalanceManagement> balanceManagements, List<AccountBalanceAggregation> aggregations, T t) {
-		saveAcctBalManagements(balanceManagements);
-		saveAcctBalAggregations(aggregations);
-		saveAny(t);
-	}
-	
-	public final <T> void  saveEntities(List<AccountBalanceManagement> balanceManagements, T t) {
-		saveAcctBalManagements(balanceManagements);
-		saveAny(t);
-	}
-	
-	public final <T> void  saveEntitiesForMX(List<AccountBalanceManagement> balanceManagements) {
-		saveAcctBalManagements(balanceManagements);
-	}
-	
-	public final Map<Long, BigDecimal> getKAccountRedemptionEntries(Long countrySkey, Long entitySkey, Long currSkey, 
-			LocalDate valueDt, BigDecimal msgAmnt, Long mainAcctEamSkey, Long kAcctEamSkey) {
-		Map<Long, BigDecimal> amountsMap = new HashMap<>();
-		if(kAcctEamSkey!=null) {
-			List<KAccountConfiguration> kAcctConfigs = kAccountConfigRepo.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(countrySkey, entitySkey, currSkey, valueDt, valueDt);
-			AccountBalanceAggregation latestKAcctAggr = getLastUpdatedAcctBalAggr(kAcctEamSkey, valueDt);
-			KAccountRedemptionDTO kAccountRedemptionDTO = new KAccountRedemptionDTO(null, msgAmnt);
-			if(latestKAcctAggr != null) {
-				BigDecimal kAcctOutstandBal = latestKAcctAggr.getTotalAmnt(); 
-				if(CollectionUtils.isNotEmpty(kAcctConfigs) && kAcctOutstandBal != BigDecimal.ZERO) {
-					KAccountConfiguration reqConfig = kAcctConfigs.get(0);
-					BigDecimal trancheSize = reqConfig.getTrancheSize();
-					if(msgAmnt.compareTo(trancheSize) < 0) {
-						AccountBalanceAggregation aggregation = getLastUpdatedAcctBalAggr(mainAcctEamSkey, valueDt);
-						BigDecimal aggrBal = aggregation.getTotalAmnt().add(msgAmnt);
-						amntGreaterThanTranche(aggrBal, kAccountRedemptionDTO, trancheSize, kAcctOutstandBal);
-					}else{
-						amntGreaterThanTranche(msgAmnt, kAccountRedemptionDTO, trancheSize, kAcctOutstandBal);
-					}
-				}
-			}
-			amountsMap.put(mainAcctEamSkey, kAccountRedemptionDTO.getMainAcctBal());
-			amountsMap.put(kAcctEamSkey, kAccountRedemptionDTO.getNewKAcctOutstandBalMgmt());
-		}
-		return amountsMap;
-	}
-	
-	private void amntGreaterThanTranche(BigDecimal msgAmnt, KAccountRedemptionDTO kAccountRedemptionDTO, BigDecimal trancheSize, BigDecimal kAcctOutstandBal ) {
-		if(msgAmnt.compareTo(trancheSize) >= 0 && msgAmnt.compareTo(kAcctOutstandBal) < 0){
-			int multiple = msgAmnt.divide(trancheSize, 2, RoundingMode.HALF_UP).intValue();
-			BigDecimal totalTranches = trancheSize.multiply(new BigDecimal(multiple));
-			kAccountRedemptionDTO.setNewKAcctOutstandBalMgmt(totalTranches.negate());
-			kAccountRedemptionDTO.setMainAcctBal(msgAmnt.add(totalTranches.negate()));
-		}else if(msgAmnt.compareTo(kAcctOutstandBal) >= 0){
-			BigDecimal negKAcctBal = kAcctOutstandBal.negate();
-			kAccountRedemptionDTO.setNewKAcctOutstandBalMgmt(negKAcctBal);
-			kAccountRedemptionDTO.setMainAcctBal(msgAmnt.add(negKAcctBal));
-		}
-	}
-	
-	public String  getCurrencyByTag62For940And950(FinMT940 finMT940) {
-		String currencyCode = finMT940.getTags62().getBlock4Tag62FCurrency();
-		if(currencyCode == null) {
-			currencyCode = finMT940.getTags62().getBlock4Tag62MCurrency();
-		}
-		if(Objects.isNull(currencyCode)) {
-			LOGGER.info("Exception in MT940Handler getCurrDetailsByCode "+currencyCode);
-			ILMException ilmException=ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.NO_MAIL_EXECPTION_BY_CURRENCY);
-			ExceptionUtil.setExceptionObject(ilmException,"CurrencyCode",currencyCode);
-			throw ilmException;
-		}
-		return currencyCode;
-	}
-	
-	public String findTreasuryRefFromMsg(String sendersRef, String relatedRef) { //Initially written for MT545. To find the reference for KTPP, DV, N & FX
-		String ref = "";
-		if(!Objects.isNull(relatedRef)) {
-			if( relatedRef.startsWith("KTPP") || relatedRef.startsWith("DV") || relatedRef.startsWith("N") || relatedRef.startsWith("FX")) {
-				ref = relatedRef;
-			}else {
-				ref = sendersRef;
-			}
-		}else {
-			ref = sendersRef;
-		}
-		return ref;
-	}
-	
-	public void throwEntityNotFountException() {
-		throw  ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.ENTITYACCOUNTNOTMAPPING);
-	}
-	
-	public void throwMsgBlockedException() {
-		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.MSGBLOCKED);
-	}
-	
-	/**
-	 * This method is written to find the entity account definition,
-	 * if 57A of MT103 or 58A of MT202 is null or correspondng eam defn is null.
-	 * Param block4ReceiverBIC indicates 57A of MT103 or 58A of MT202
-	 */
-	public EntityAccountMapDefinition findEamDefn(String block4ReceiverBIC, Block4Tag72 tag72, String block1LT, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefn = null;
-		if(block4ReceiverBIC != null) {
-			EntityAccountMapDefinition eamDefnByBlock4 = getDefnByEntityIDAndAcctType(block4ReceiverBIC, accountName, currencyCode);
-			if(eamDefnByBlock4 != null) {
-				eamDefn = eamDefnByBlock4;
-				LOGGER.info("Entity Account Map definition found by block4ReceiverBIC {} {} {} ", accountName, block4ReceiverBIC, currencyCode);
-			}else {
-				eamDefn = findEamDefnByTag72orBlock1LT(tag72, block1LT, currencyCode, accountName);
-			}
-		}else {
-			eamDefn = findEamDefnByTag72orBlock1LT(tag72, block1LT, currencyCode, accountName);
-		}
-		return eamDefn;
-	}
-	
-	private EntityAccountMapDefinition findEamDefnByTag72orBlock1LT(Block4Tag72 tag72, String block1LT, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefn = null;
-		EntityAccountMapDefinition eamDefnByTag72 = findEamDefnByTag72(tag72, currencyCode, accountName);
-		EntityAccountMapDefinition eamDefnByLT = findEamDefnByBlock1LogicalTerminal(block1LT, currencyCode, accountName);
-		if(eamDefnByTag72 != null) {
-			eamDefn = eamDefnByTag72;
-		}else {
-			eamDefn = eamDefnByLT;
-		}
-		return eamDefn;
-	}
-	
-	/**
-	 * This method is written to find the entity account definition by tag 72 field,
-	 * if any of the narratives contain CPRB string then the next string is the bic code 
-	 * Example - /CPRO/BNMAMYKL/CPRB/MBBEMYKL
-	 */
-	private EntityAccountMapDefinition findEamDefnByTag72(Block4Tag72 tag72, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefnByTag72 = null;
-		String bicCode = getBicCodeFromTag72(tag72);
-		if(bicCode != null) {
-			eamDefnByTag72 = getDefnByEntityIDAndAcctType(bicCode, accountName, currencyCode);
-			LOGGER.info("Entity Account Map definition found by Tag 72 {} {} {} ", accountName, bicCode, currencyCode);
-		}
-		return eamDefnByTag72;
-	}
-	
-	public String getBicCodeFromTag72(Block4Tag72 tag72) {
-		String bicCode = null;
-		if(tag72 != null) {
-			List<String> narratives = getNarratives(tag72);
-			for(String narr : narratives) {
-				if(narr != null && narr.contains("CPRB")) {
-					String[] narrSplit = narr.split("/");
-					for (int index = 0; index < narrSplit.length; index++) {
-						if(narrSplit[index].contentEquals("CPRB")) {
-							int indPlus = index + 1;
-							if(indPlus < narrSplit.length) {
-								bicCode = narrSplit[indPlus];
-							}
-						}
-					}
-				}
-			}
-		}
-		return bicCode;
-	}
-	
-	/**
-	 * This method is written to find the entity account definition by Block 1 Logical Terminal,
-	 * Example - MBBEMYKL - Case when block1LT lenght is equal to 8 charactes - No truncate is applied
-	 * Example - MBBEMYKLAXXX - Case when block1LT lenght is greater than 8 charactes - Only first 8 characters are picked.
-	 */
-	private EntityAccountMapDefinition findEamDefnByBlock1LogicalTerminal(String block1LT, String currencyCode, String accountName) {
-		EntityAccountMapDefinition eamDefnByBlock1LT = null;
-		if(block1LT != null && block1LT.length() == 8) {
-			eamDefnByBlock1LT = getDefnByEntityIDAndAcctType(block1LT, accountName, currencyCode);
-			LOGGER.info("Entity Account Map definition found by Block 1 Logical Terminal {} {} {} ", accountName, block1LT, currencyCode);
-		}else if(block1LT != null && block1LT.length() > 8) {
-			String truncatedBlock1LT = block1LT.substring(0, 8);
-			eamDefnByBlock1LT = getDefnByEntityIDAndAcctType(truncatedBlock1LT, accountName, currencyCode);
-			LOGGER.info("Entity Account Map definition found by Block 1 Logical Terminal Truncated {} {} {} ", accountName, truncatedBlock1LT, currencyCode);
-		}
-		return eamDefnByBlock1LT;
-	}
-	
-	//SENDERS REF NULL CHECK - PENDING AND TEST 204 CURRENCY CODE PART
-	public AccountBalanceMgmtDTO validateMessage(String entityType, Block4Tag72 tag72, String block1LT, String currencyCode, String valueDt, 
-			String sendersRef, String messageType, BigDecimal amount, String acctNum, Boolean eamByBic) {
-		String message = null;
-		AccountBalanceMgmtDTO mgmtDTO = new AccountBalanceMgmtDTO();
-		EntityAccountMapDefinition eamDefn = null;
-		if(eamByBic) {
-			eamDefn = findEamDefn(entityType, tag72, block1LT, currencyCode, ILMCoreConstants.MAINACCOUNT);
-		}else {
-			eamDefn = getEntityAcctMapDefnByAcctNum(acctNum, currencyCode);
-		}
-		if(Objects.isNull(eamDefn)) {
-			message = "No definition is found for Entity Type, Currency code or Account Type.";
-		}else if (Objects.isNull(valueDt)) {
-			message = "Value Date not found.";
-		}else if(validateValueDate(valueDt)) {
-			message = "Value Date is a past date. This processor allows only present and future dates.";
-		}else if(checkUniquenessOfMessage(sendersRef, valueDt, messageType)) {
-			message = "Message already exists.";
-		}else {
-			message = "Validated Successfully.";
-			if (eamDefn != null) {
-				mgmtDTO = new AccountBalanceMgmtDTO(amount, DateUtil.getDateFromString(valueDt), messageType, sendersRef, currencyCode, eamDefn.getEntityIdentifier());
-			}
-		}
-		mgmtDTO.setMessageForUI(message);
-		return mgmtDTO;
-	}
-	
-	private Boolean validateValueDate(String valueDt) {
-		LocalDate valueDate = DateUtil.getDateFromString(valueDt);
-		return DateUtil.findDtBeforeCurrenctDt(valueDate);
-	}
-	
-	private Boolean checkUniquenessOfMessage(String sendersRef, String valueDt, String messageType) {
-		Boolean notUnique = Boolean.FALSE;
-		LocalDate valueDate = DateUtil.getDateFromString(valueDt);
-		List<AccountBalanceManagement> existingMgmts = mgmtRepo.findByValueDateAndSendersRefAndMessageType(valueDate, sendersRef, messageType);
-		if(CollectionUtils.isNotEmpty(existingMgmts)) {
-			notUnique = Boolean.TRUE;
-		}
-		return notUnique;
-	}
-	
-	public BigDecimal getTotalAmountForMT535(List<MTSequence> sequences) {
-		List<MTSequence> multiplePaymentSeqs = sequences.stream().filter(it -> it.getSeqName().contentEquals("B1"))
-				.collect(Collectors.toList());
-		BigDecimal totalAmnt = BigDecimal.ZERO;
-		for (MTSequence sequence : multiplePaymentSeqs) {
-			String fieldAmnt = getRequiredFieldValWithType(new ArrayList<MTSequence>(Arrays.asList(sequence)), "B1", "AVAI", "93B_BALANCE_AMOUNT_AVAI");
-			if(!Objects.isNull(fieldAmnt)) {
-				BigDecimal amount = ConversionUtil.convertStrToBigDecimal(fieldAmnt);
-				totalAmnt = totalAmnt.add(amount);
-			}
-		}
-		return totalAmnt;
-	}
-	public String removeXFromBIC(String bic) {
-		Integer length = bic.length();
-		for (int i = length; i > 8; i--) {
-			if (bic.charAt(bic.length() - 1) == 'X') {
-				bic = bic.substring(0, bic.length() - 1);
-			}
-		}
-		return bic;
-	}
+    @InjectMocks
+    private MXMsgHandlerAbstractImpl msgHandler;
+
+    @Mock
+    private MTSequence mtSequence;
+
+    @Mock
+    private MTField mtField;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgs() {
+        // Given
+        List<MTSequence> mtSequences = new ArrayList<>();
+
+        // Prepare test sequences
+        MTSequence sequence1 = new MTSequence();
+        sequence1.setSeqName("SEQ_NAME");
+        sequence1.setMtFields(Arrays.asList(
+                new MTField("70E_NARRATIVE_1_QUALIFIER", "Narrative 1"),
+                new MTField("70E_NARRATIVE_2_QUALIFIER", "Narrative 2"),
+                new MTField("70E_NARRATIVE_3_QUALIFIER", "Narrative 3")
+        ));
+
+        MTSequence sequence2 = new MTSequence();
+        sequence2.setSeqName("SEQ_NAME");
+        sequence2.setMtFields(Arrays.asList(
+                new MTField("70E_NARRATIVE_4_QUALIFIER", "Narrative 4"),
+                new MTField("70E_NARRATIVE_5_QUALIFIER", "Narrative 5")
+        ));
+
+        mtSequences.add(sequence1);
+        mtSequences.add(sequence2);
+
+        // When
+        List<String> narratives = msgHandler.getNarrativesForSeqMsgs(mtSequences, "QUALIFIER", "SEQ_NAME");
+
+        // Then
+        assertEquals(5, narratives.size());
+        assertEquals("Narrative 1", narratives.get(0));
+        assertEquals("Narrative 2", narratives.get(1));
+        assertEquals("Narrative 3", narratives.get(2));
+        assertEquals("Narrative 4", narratives.get(3));
+        assertEquals("Narrative 5", narratives.get(4));
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgsWithEmptySequence() {
+        // Given
+        List<MTSequence> mtSequences = new ArrayList<>();
+
+        // When
+        List<String> narratives = msgHandler.getNarrativesForSeqMsgs(mtSequences, "QUALIFIER", "SEQ_NAME");
+
+        // Then
+        assertTrue(narratives.isEmpty());
+    }
+
+    @Test
+    void testGetNarrativesForSeqMsgsWithNoMatchingQualifier() {
+        // Given
+        MTSequence sequence = new MTSequence();
+        sequence.setSeqName("SEQ_NAME");
+        sequence.setMtFields(Arrays.asList(
+                new MTField("70E_NARRATIVE_1_OTHER", "Narrative 1")
+        ));
+
+        List<MTSequence> mtSequences = Arrays.asList(sequence);
+
+        // When
+        List<String> narratives = msgHandler.getNarrativesForSeqMsgs(mtSequences, "QUALIFIER", "SEQ_NAME");
+
+        // Then
+        assertTrue(narratives.isEmpty());
+    }
 }
