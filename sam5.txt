@@ -1,67 +1,54 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
-
-import com.maybank.ilm.core.swiftmsghandlers.MXMsgHandlerAbstractImpl;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.service.EntityAccountMappingService;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-public class MXMsgHandlerAbstractImplTest {
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-    @Mock
-    private EntityAccountMappingRepo eamRepo;
+import static org.junit.jupiter.api.Assertions.*;
 
-    @Mock
-    private EntityAccountMappingService entityAcctMapService;
-
-    @InjectMocks
-    private MXMsgHandlerAbstractImpl mxMsgHandler;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+class AccountBalanceManagementTest {
 
     @Test
-    public void testCheckForIntraBankTransactions_ExistingEntity() {
-        // Given
-        String counterBic = "TESTBIC";
+    public void testSetBalanceManagement() {
+        // Arrange
+        Long entityAcctMapSkey = 1L;
+        BigDecimal amount = new BigDecimal("100.00");
+        String amountSign = "+";
+        Long trackerID = 2L;
+        LocalDateTime businessDtTime = LocalDateTime.now();
+        LocalDate valueDate = LocalDate.now();
+        LocalDate transactionDt = LocalDate.now().minusDays(1);
+        String messageType = "CREDIT";
+        String senderCode = "ABC";
+        String receiverCode = "XYZ";
+        String trnCode = "1234";
+        String sendersRef = "REF123";
         String currencyCode = "USD";
-        EntityAccountMapDefinition mockDefinition = new EntityAccountMapDefinition();
-        mockDefinition.setEntityAcctMapSkey(123L);
-        
-        // Mock the repository response
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(anyString(), anyString(), anyLong()))
-            .thenReturn(mockDefinition);
+        Character kRedemptionInd = 'N';
+        String[] stringArgs = {"arg1", "arg2"};
 
-        // When
-        Long result = mxMsgHandler.checkForIntraBankTransactions(counterBic, currencyCode);
+        // Act
+        AccountBalanceManagement result = new AccountBalanceManagement(
+                entityAcctMapSkey, amount, amountSign, trackerID, businessDtTime,
+                valueDate, transactionDt, messageType, senderCode, receiverCode,
+                trnCode, sendersRef, currencyCode, kRedemptionInd, stringArgs);
 
-        // Then
-        assertEquals(123L, result);
-    }
-
-    @Test
-    public void testCheckForIntraBankTransactions_NonExistingEntity() {
-        // Given
-        String counterBic = "UNKNOWNBIC";
-        String currencyCode = "EUR";
-
-        // Mock the repository response
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(anyString(), anyString(), anyLong()))
-            .thenReturn(null);
-
-        // When
-        Long result = mxMsgHandler.checkForIntraBankTransactions(counterBic, currencyCode);
-
-        // Then
-        assertEquals(null, result);
+        // Assert
+        assertNotNull(result);
+        assertEquals(entityAcctMapSkey, result.getEntityAcctMapSkey());
+        assertEquals(amount, result.getAmount());
+        assertEquals(amountSign, result.getAmountSign());
+        assertEquals(trackerID, result.getTrackerID());
+        assertEquals(businessDtTime, result.getBusinessDtTime());
+        assertEquals(valueDate, result.getValueDate());
+        assertEquals(transactionDt, result.getTransactionDt());
+        assertEquals(messageType, result.getMessageType());
+        assertEquals(senderCode, result.getSenderCode());
+        assertEquals(receiverCode, result.getReceiverCode());
+        assertEquals(trnCode, result.getTrnCode());
+        assertEquals(sendersRef, result.getSendersRef());
+        assertEquals(currencyCode, result.getCurrencyCode());
+        assertEquals(kRedemptionInd, result.getkRedemptionInd());
+        assertArrayEquals(stringArgs, result.getStringArgs());
     }
 }
