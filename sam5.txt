@@ -1,84 +1,29 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+@Test
+public void testGetKAccountRedemptionEntries_NoLatestAggr() {
+    // Arrange
+    Long countrySkey = 1L;
+    Long entitySkey = 2L;
+    Long currSkey = 3L;
+    LocalDate valueDt = LocalDate.now();
+    BigDecimal msgAmnt = new BigDecimal("100.00");
+    Long mainAcctEamSkey = 4L;
+    Long kAcctEamSkey = 5L;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+    List<KAccountConfiguration> kAcctConfigs = new ArrayList<>();
+    KAccountConfiguration kAccountConfiguration = new KAccountConfiguration();
+    kAccountConfiguration.setTrancheSize(new BigDecimal("50.00"));
+    kAcctConfigs.add(kAccountConfiguration);
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+    when(kAccountConfigRepo.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(countrySkey, entitySkey, currSkey, valueDt, valueDt)).thenReturn(kAcctConfigs);
+    when(aggrRepo.getLastUpdatedAcctBalAggr(kAcctEamSkey, valueDt)).thenReturn(null);
 
-import com.maybank.ilm.core.dao.AccountBalanceAggrRepo;
-import com.maybank.ilm.core.dao.KAccountConfigRepo;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.KAccountConfiguration;
+    // Act
+    Map<Long, BigDecimal> amountsMap = mxMsgHandlerAbstractImpl.getKAccountRedemptionEntries(countrySkey, entitySkey, currSkey, valueDt, msgAmnt, mainAcctEamSkey, kAcctEamSkey);
 
-public class MXMsgHandlerAbstractImplTest {
+    // Assert
+    assertEquals(0, amountsMap.size());
 
-    @InjectMocks
-    private MXMsgHandlerAbstractImpl mxMsgHandlerAbstractImpl;
-
-    @Mock
-    private KAccountConfigRepo kAccountConfigRepo;
-
-    @Mock
-    private AccountBalanceAggrRepo aggrRepo;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    public void testGetKAccountRedemptionEntries_NoKAccountConfig() {
-        // Arrange
-        Long countrySkey = 1L;
-        Long entitySkey = 2L;
-        Long currSkey = 3L;
-        LocalDate valueDt = LocalDate.now();
-        BigDecimal msgAmnt = new BigDecimal("100.00");
-        Long mainAcctEamSkey = 4L;
-        Long kAcctEamSkey = 5L;
-
-        when(kAccountConfigRepo.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(countrySkey, entitySkey, currSkey, valueDt, valueDt)).thenReturn(new ArrayList<>());
-
-        // Act
-        Map<Long, BigDecimal> amountsMap = mxMsgHandlerAbstractImpl.getKAccountRedemptionEntries(countrySkey, entitySkey, currSkey, valueDt, msgAmnt, mainAcctEamSkey, kAcctEamSkey);
-
-        // Assert
-        assertEquals(0, amountsMap.size());
-    }
-
-    @Test
-    public void testGetKAccountRedemptionEntries_NoLatestAggr() {
-        // Arrange
-        Long countrySkey = 1L;
-        Long entitySkey = 2L;
-        Long currSkey = 3L;
-        LocalDate valueDt = LocalDate.now();
-        BigDecimal msgAmnt = new BigDecimal("100.00");
-        Long mainAcctEamSkey = 4L;
-        Long kAcctEamSkey = 5L;
-
-        List<KAccountConfiguration> kAcctConfigs = new ArrayList<>();
-        KAccountConfiguration kAccountConfiguration = new KAccountConfiguration();
-        kAccountConfiguration.setTrancheSize(new BigDecimal("50.00"));
-        kAcctConfigs.add(kAccountConfiguration);
-
-        when(kAccountConfigRepo.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(countrySkey, entitySkey, currSkey, valueDt, valueDt)).thenReturn(kAcctConfigs);
-        when(aggrRepo.getLastUpdatedAcctBalAggr(kAcctEamSkey, valueDt)).thenReturn(null);
-
-        // Act
-        Map<Long, BigDecimal> amountsMap = mxMsgHandlerAbstractImpl.getKAccountRedemptionEntries(countrySkey, entitySkey, currSkey, valueDt, msgAmnt, mainAcctEamSkey, kAcctEamSkey);
-
-        // Assert
-        assertEquals(0, amountsMap.size());
-    }
-
-    // ... other test cases for different scenarios ...
+    // Additional assertions to check specific conditions
+    assertEquals(0, kAcctConfigs.size(), "kAcctConfigs should be empty");
+    assertNull(latestKAcctAggr, "latestKAcctAggr should be null");
 }
