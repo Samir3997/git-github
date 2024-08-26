@@ -1,16 +1,18 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.service.EntityAccountMappingService;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.utility.exception.ILMException;
+import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
+import com.maybank.ilm.core.util.DateUtil;
+import com.maybank.ilm.entity.AccountBalanceManagement;
 
 public class MXMsgHandlerAbstractImplTest {
 
@@ -18,10 +20,7 @@ public class MXMsgHandlerAbstractImplTest {
     private MXMsgHandlerAbstractImpl mxMsgHandlerAbstractImpl;
 
     @Mock
-    private EntityAccountMappingService entityAcctMapService;
-
-    @Mock
-    private EntityAccountMappingRepo eamRepo;
+    private AccountBalanceMgmtRepo mgmtRepo;
 
     @BeforeEach
     public void setUp() {
@@ -29,35 +28,41 @@ public class MXMsgHandlerAbstractImplTest {
     }
 
     @Test
-    public void testCheckForIntraBankTransactions_IntraBank() {
+    public void testCheckRelatedRefForNostro_FoundRelatedRef() {
         // Arrange
-        String counterBic = "MBBEMYKL";
-        String currencyCode = "USD";
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "REF123";
 
-        EntityAccountMapDefinition entityAccountMapDefinition = new EntityAccountMapDefinition();
-        entityAccountMapDefinition.setEntityAcctMapSkey(1L);
+        List<AccountBalanceManagement> managements = new ArrayList<>();
+        AccountBalanceManagement management = new AccountBalanceManagement();
+        management.setSendersRef(relatedRef);
+        managements.add(management);
 
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(counterBic, "MAINACCOUNT", currencyCode)).thenReturn(entityAccountMapDefinition);
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, any())).thenReturn(managements);
 
         // Act
-        Long entityAcctMapSkey = mxMsgHandlerAbstractImpl.checkForIntraBankTransactions(counterBic, currencyCode);
+        boolean foundRelatedRefTrans = mxMsgHandlerAbstractImpl.checkRelatedRefForNostro(valueDate, entityAcctMapSkey, relatedRef);
 
         // Assert
-        assertEquals(1L, entityAcctMapSkey);
+        assertEquals(true, foundRelatedRefTrans);
     }
 
     @Test
-    public void testCheckForIntraBankTransactions_NotIntraBank() {
+    public void testCheckRelatedRefForNostro_NotFoundRelatedRef() {
         // Arrange
-        String counterBic = "HSBCMYKL";
-        String currencyCode = "USD";
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "REF123";
 
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(counterBic, "MAINACCOUNT", currencyCode)).thenReturn(null);
+        List<AccountBalanceManagement> managements = new ArrayList<>();
+
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, any())).thenReturn(managements);
 
         // Act
-        Long entityAcctMapSkey = mxMsgHandlerAbstractImpl.checkForIntraBankTransactions(counterBic, currencyCode);
+        boolean foundRelatedRefTrans = mxMsgHandlerAbstractImpl.checkRelatedRefForNostro(valueDate, entityAcctMapSkey, relatedRef);
 
         // Assert
-        assertEquals(null, entityAcctMapSkey);
+        assertEquals(false, foundRelatedRefTrans);
     }
 }
