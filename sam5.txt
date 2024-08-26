@@ -1,10 +1,13 @@
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+package com.maybank.ilm.core.swiftmsghandlers;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,74 +17,52 @@ import org.mockito.MockitoAnnotations;
 
 import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
 import com.maybank.ilm.entity.AccountBalanceManagement;
-import com.maybank.ilm.core.swiftmsghandlers.MXMsgHandlerAbstractImpl;
 
 public class MXMsgHandlerAbstractImplTest {
-
-    @InjectMocks
-    private MXMsgHandlerAbstractImpl mxMsgHandler;
 
     @Mock
     private AccountBalanceMgmtRepo mgmtRepo;
 
+    @InjectMocks
+    private MXMsgHandlerAbstractImpl mxMsgHandler;
+
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     public void testCheckRelatedRefOfCamt054_Found() {
-        LocalDate valueDate = LocalDate.now();
-        Long entityAcctMapSkey = 1L;
-        String relatedRef = "relatedReferenceCamt054";
+        // Given
+        LocalDate valueDate = LocalDate.of(2024, 8, 26);
+        String relatedRef = "sampleRef";
+        String currencyCode = "USD";
+        List<AccountBalanceManagement> managements = Arrays.asList(new AccountBalanceManagement(), new AccountBalanceManagement());
 
-        // Mocking the repository response
-        AccountBalanceManagement management1 = new AccountBalanceManagement();
-        management1.setSendersRef("relatedReferenceCamt054");
-        List<AccountBalanceManagement> managements = Arrays.asList(management1);
+        when(mgmtRepo.findRelatedMgmtEntryBySenderRefAndMsgType(relatedRef, currencyCode, Arrays.asList("202"), valueDate))
+            .thenReturn(managements);
 
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054")))
-                .thenReturn(managements);
+        // When
+        Optional<AccountBalanceManagement> result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, relatedRef, currencyCode);
 
-        Boolean result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, entityAcctMapSkey, relatedRef);
-
-        assertTrue(result);
-        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054"));
+        // Then
+        assertTrue(result.isPresent());
     }
 
     @Test
     public void testCheckRelatedRefOfCamt054_NotFound() {
-        LocalDate valueDate = LocalDate.now();
-        Long entityAcctMapSkey = 1L;
-        String relatedRef = "unrelatedReferenceCamt054";
+        // Given
+        LocalDate valueDate = LocalDate.of(2024, 8, 26);
+        String relatedRef = "sampleRef";
+        String currencyCode = "USD";
+        
+        when(mgmtRepo.findRelatedMgmtEntryBySenderRefAndMsgType(relatedRef, currencyCode, Arrays.asList("202"), valueDate))
+            .thenReturn(Arrays.asList());
 
-        // Mocking the repository response
-        AccountBalanceManagement management1 = new AccountBalanceManagement();
-        management1.setSendersRef("differentReference");
-        List<AccountBalanceManagement> managements = Arrays.asList(management1);
+        // When
+        Optional<AccountBalanceManagement> result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, relatedRef, currencyCode);
 
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054")))
-                .thenReturn(managements);
-
-        Boolean result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, entityAcctMapSkey, relatedRef);
-
-        assertFalse(result);
-        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054"));
-    }
-
-    @Test
-    public void testCheckRelatedRefOfCamt054_EmptyList() {
-        LocalDate valueDate = LocalDate.now();
-        Long entityAcctMapSkey = 1L;
-        String relatedRef = "relatedReferenceCamt054";
-
-        // Mocking the repository response
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054")))
-                .thenReturn(new ArrayList<>());
-
-        Boolean result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, entityAcctMapSkey, relatedRef);
-
-        assertFalse(result);
-        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054"));
+        // Then
+        assertFalse(result.isPresent());
     }
 }
