@@ -1,13 +1,10 @@
-package com.maybank.ilm.core.swiftmsghandlers;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,42 +24,53 @@ public class MXMsgHandlerAbstractImplTest {
     private MXMsgHandlerAbstractImpl mxMsgHandler;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testCheckRelatedRefOfCamt054_Found() {
-        // Given
-        LocalDate valueDate = LocalDate.of(2024, 8, 26);
-        String relatedRef = "sampleRef";
-        String currencyCode = "USD";
-        List<AccountBalanceManagement> managements = Arrays.asList(new AccountBalanceManagement(), new AccountBalanceManagement());
+    void testCheckRelatedRefForNostro_FoundRelatedRef() {
+        // Arrange
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "ABC123";
 
-        when(mgmtRepo.findRelatedMgmtEntryBySenderRefAndMsgType(relatedRef, currencyCode, Arrays.asList("202"), valueDate))
+        AccountBalanceManagement matchingEntry = new AccountBalanceManagement();
+        matchingEntry.setSendersRef(relatedRef);
+        
+        List<AccountBalanceManagement> managements = Arrays.asList(matchingEntry);
+        
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(eq(valueDate), eq(entityAcctMapSkey), anyList()))
             .thenReturn(managements);
 
-        // When
-        Optional<AccountBalanceManagement> result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, relatedRef, currencyCode);
+        // Act
+        boolean result = mxMsgHandler.checkRelatedRefForNostro(valueDate, entityAcctMapSkey, relatedRef);
 
-        // Then
-        assertTrue(result.isPresent());
+        // Assert
+        assertTrue(result);
+        verify(mgmtRepo, times(1)).saveAll(managements);
     }
 
     @Test
-    public void testCheckRelatedRefOfCamt054_NotFound() {
-        // Given
-        LocalDate valueDate = LocalDate.of(2024, 8, 26);
-        String relatedRef = "sampleRef";
-        String currencyCode = "USD";
+    void testCheckRelatedRefForNostro_NotFoundRelatedRef() {
+        // Arrange
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "ABC123";
+
+        AccountBalanceManagement nonMatchingEntry = new AccountBalanceManagement();
+        nonMatchingEntry.setSendersRef("XYZ456");
         
-        when(mgmtRepo.findRelatedMgmtEntryBySenderRefAndMsgType(relatedRef, currencyCode, Arrays.asList("202"), valueDate))
-            .thenReturn(Arrays.asList());
+        List<AccountBalanceManagement> managements = Arrays.asList(nonMatchingEntry);
+        
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(eq(valueDate), eq(entityAcctMapSkey), anyList()))
+            .thenReturn(managements);
 
-        // When
-        Optional<AccountBalanceManagement> result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, relatedRef, currencyCode);
+        // Act
+        boolean result = mxMsgHandler.checkRelatedRefForNostro(valueDate, entityAcctMapSkey, relatedRef);
 
-        // Then
-        assertFalse(result.isPresent());
+        // Assert
+        assertFalse(result);
+        verify(mgmtRepo, times(0)).saveAll(managements);
     }
 }
