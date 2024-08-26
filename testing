@@ -274,3 +274,518 @@ public class EntityAccountMapDefinition {
 		return true;
 	}
 }
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.core.dao;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.maybank.ilm.entity.KAccountConfiguration;
+
+public interface KAccountConfigRepo extends JpaRepository<KAccountConfiguration, Long>{
+
+	public List<KAccountConfiguration> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqual(Long countrySkey, Long entitySkey, Long currencySkey, LocalDate fromValueDt, LocalDate toValueDt);
+}
+
+
+
+
+
+
+
+
+package com.maybank.ilm.entity;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQuery;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@Entity
+@Table(name = "PRC_K_ACCOUNT_CONFIG")
+@NamedQuery(name = "DELETEKACCTCONFIGDEFNSBYSKEYS", query = "delete from KAccountConfiguration ka where ka.kAcctConfigSkey IN ( :defnSkeys )")
+@JsonIgnoreProperties(ignoreUnknown = true)
+
+public class KAccountConfiguration {
+
+	@Id
+	@Column(name = "N_K_ACCT_CONFIG_SKEY")
+	@SequenceGenerator(name = "kAcctConfigSkey", sequenceName = "PRC_K_ACCOUNT_CONFIG_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "kAcctConfigSkey")
+	private Long kAcctConfigSkey;
+	
+	@Column(name = "N_COUNTRY_SKEY")
+	private Long countrySkey;
+	
+	@Column(name = "N_ENTITY_SKEY")
+	private Long entitySkey;
+	
+	@Column(name = "N_CURRENCY_SKEY")
+	private Long currencySkey;
+	
+	@Column(name = "N_TRANCHE_SIZE")
+	private BigDecimal trancheSize;
+	
+	@Column(name = "N_COST_PER_TRANCHE")
+	private BigDecimal costPerTranche;
+	
+	@Column(name = "N_THRESHOLD_PER")
+	private BigDecimal threshold;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy",with = Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+	@Column(name = "D_EFFECTIVE_FROM")
+	private LocalDate effectiveFrom;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy",with = Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+	@Column(name = "D_EFFECTIVE_TO")
+	private LocalDate effectiveTo;
+	
+	@Column(name = "V_CREATED_BY")
+	private String createdBy;
+	
+	@Column(name = "N_K_ACCT_LIMIT")
+	private BigDecimal borrowingLimit;
+	
+	@Column(name = "V_DEFN_TYPE")
+	private String defnType;
+	
+	@Column(name = "F_LATEST_RECORD_INDICATOR")
+	private Character latestRecInd;
+
+	public Long getkAcctConfigSkey() {
+		return kAcctConfigSkey;
+	}
+
+	public void setkAcctConfigSkey(Long kAcctConfigSkey) {
+		this.kAcctConfigSkey = kAcctConfigSkey;
+	}
+
+	public Long getCountrySkey() {
+		return countrySkey;
+	}
+
+	public void setCountrySkey(Long countrySkey) {
+		this.countrySkey = countrySkey;
+	}
+
+	public Long getEntitySkey() {
+		return entitySkey;
+	}
+
+	public void setEntitySkey(Long entitySkey) {
+		this.entitySkey = entitySkey;
+	}
+
+	public Long getCurrencySkey() {
+		return currencySkey;
+	}
+
+	public void setCurrencySkey(Long currencySkey) {
+		this.currencySkey = currencySkey;
+	}
+
+	public BigDecimal getTrancheSize() {
+		return trancheSize;
+	}
+
+	public void setTrancheSize(BigDecimal trancheSize) {
+		this.trancheSize = trancheSize;
+	}
+
+	public BigDecimal getCostPerTranche() {
+		return costPerTranche;
+	}
+
+	public void setCostPerTranche(BigDecimal costPerTranche) {
+		this.costPerTranche = costPerTranche;
+	}
+
+	public LocalDate getEffectiveFrom() {
+		return effectiveFrom;
+	}
+
+	public void setEffectiveFrom(LocalDate effectiveFrom) {
+		this.effectiveFrom = effectiveFrom;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public LocalDate getEffectiveTo() {
+		return effectiveTo;
+	}
+
+	public void setEffectiveTo(LocalDate effectiveTo) {
+		this.effectiveTo = effectiveTo;
+	}
+
+	public BigDecimal getBorrowingLimit() {
+		return borrowingLimit;
+	}
+
+	public void setBorrowingLimit(BigDecimal borrowingLimit) {
+		this.borrowingLimit = borrowingLimit;
+	}
+
+	public String getDefnType() {
+		return defnType;
+	}
+
+	public void setDefnType(String defnType) {
+		this.defnType = defnType;
+	}
+
+	public Character getLatestRecInd() {
+		return latestRecInd;
+	}
+
+	public void setLatestRecInd(Character latestRecInd) {
+		this.latestRecInd = latestRecInd;
+	}
+	
+	public BigDecimal getThreshold() {
+		return threshold;
+	}
+
+	public void setThreshold(BigDecimal threshold) {
+		this.threshold = threshold;
+	}
+
+	@Override
+	public String toString() {
+		return "KAccountConfiguration [kAcctConfigSkey=" + kAcctConfigSkey + ", countrySkey=" + countrySkey
+				+ ", entitySkey=" + entitySkey + ", currencySkey=" + currencySkey + ", trancheSize=" + trancheSize
+				+ ", costPerTranche=" + costPerTranche + ", threshold=" + threshold + ", effectiveFrom=" + effectiveFrom
+				+ ", effectiveTo=" + effectiveTo + ", createdBy=" + createdBy + ", borrowingLimit=" + borrowingLimit
+				+ ", defnType=" + defnType + ", latestRecInd=" + latestRecInd + "]";
+	}
+
+	
+
+}
+
+
+
+
+
+package com.maybank.ilm.entity;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.maybank.ilm.core.util.QueryConstants;
+
+@Entity
+@Table(name = "PRC_ACCOUNT_BALANCE_AGGR")
+@NamedQueries({
+	@NamedQuery(name = "GETLATESTAGGR", query = QueryConstants.GETLATESTAGGR),
+	@NamedQuery(name = "GETLATESTAGGRWITHAGGRIND", query = QueryConstants.GETLATESTAGGRWITHAGGRIND),
+	@NamedQuery(name = "GETSKEYAMNT", query = "SELECT aba FROM AccountBalanceAggregation aba WHERE aba.entityAcctMapSkey =:entityAcctMapSkey AND aba.valueDate =:valueDt"),
+	@NamedQuery(name = "GETBTWBUSINESSDTS", query = QueryConstants.GETBTWBUSINESSDTS)
+})
+public class AccountBalanceAggregation  implements Cloneable{
+
+	@Id
+	@Column(name = "N_ACCOUNT_BALANCE_AGGR_SKEY")
+	@SequenceGenerator(name = "acctBalAggrSkey", sequenceName = "PRC_ACCOUNT_BALANCE_AGGR_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "acctBalAggrSkey")
+	private Long acctBalAggrSkey;
+	
+	@Column(name = "N_ENTITY_ACCT_MAP_SKEY")
+	private Long entityAcctMapSkey;
+	
+	@Column(name = "N_TOTAL_AMOUNT")
+	private BigDecimal totalAmnt;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss a")
+	@Column(name = "D_BUSINESS_DT")
+	private LocalDateTime businessDtTime;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	@Column(name = "D_VALUE_DT")
+	private LocalDate valueDate;
+	
+	@Column(name = "N_TOTAL_IN_FLOW_AMNT")
+	private BigDecimal totalInFlowAmnt;
+	
+	@Column(name = "N_TOTAL_OUT_FLOW_AMNT")
+	private BigDecimal totalOutFlowAmnt;
+	
+	@Column(name = "V_AGGR_IND")
+	private String aggrInd;
+	
+	@Column(name = "V_OPENING_CLOSING_BAL_IND")
+	private String openingClosingBalInd;
+	
+	@Column(name = "N_TRACKER_ID")
+	private Long trackerID;
+	
+	@Transient
+	private Integer rnk;
+	
+	@Transient
+	private BigDecimal srrClosingBalance=BigDecimal.valueOf(0.0);
+	
+	@Transient
+	private BigDecimal srrDailyPercentage=BigDecimal.valueOf(0.0);
+	
+	@Transient
+	private BigDecimal cashBalance;
+	
+	@Transient
+	private BigDecimal securitiesBalance;
+	
+	@Transient
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	private LocalDate latestMT950Date;
+	
+	public AccountBalanceAggregation() {
+		super();
+	}
+
+	public AccountBalanceAggregation(Long acctBalAggrSkey, Long entityAcctMapSkey, BigDecimal totalAmnt,
+			LocalDateTime businessDtTime, LocalDate valueDate, BigDecimal totalInFlowAmnt,
+			BigDecimal totalOutFlowAmnt) {
+		super();
+		this.acctBalAggrSkey = acctBalAggrSkey;
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.totalAmnt = totalAmnt;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.totalInFlowAmnt = totalInFlowAmnt;
+		this.totalOutFlowAmnt = totalOutFlowAmnt;
+	}
+	
+	public AccountBalanceAggregation(Long entityAcctMapSkey, BigDecimal totalAmnt, LocalDateTime businessDtTime,
+			LocalDate valueDate, BigDecimal totalInFlowAmnt, BigDecimal totalOutFlowAmnt, String aggrInd,
+			String openingClosingBalInd) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.totalAmnt = totalAmnt;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.totalInFlowAmnt = totalInFlowAmnt;
+		this.totalOutFlowAmnt = totalOutFlowAmnt;
+		this.aggrInd = aggrInd;
+		this.openingClosingBalInd = openingClosingBalInd;
+	}
+	
+
+	public Long getAcctBalAggrSkey() {
+		return acctBalAggrSkey;
+	}
+
+	public void setAcctBalAggrSkey(Long acctBalAggrSkey) {
+		this.acctBalAggrSkey = acctBalAggrSkey;
+	}
+
+	public Long getEntityAcctMapSkey() {
+		return entityAcctMapSkey;
+	}
+
+	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
+		this.entityAcctMapSkey = entityAcctMapSkey;
+	}
+
+	public BigDecimal getTotalAmnt() {
+		return totalAmnt;
+	}
+
+	public void setTotalAmnt(BigDecimal totalAmnt) {
+		this.totalAmnt = totalAmnt;
+	}
+
+	public LocalDateTime getBusinessDtTime() {
+		return businessDtTime;
+	}
+
+	public void setBusinessDtTime(LocalDateTime businessDtTime) {
+		this.businessDtTime = businessDtTime;
+	}
+
+	public LocalDate getValueDate() {
+		return valueDate;
+	}
+
+	public void setValueDate(LocalDate valueDate) {
+		this.valueDate = valueDate;
+	}
+
+	public BigDecimal getTotalInFlowAmnt() {
+		return totalInFlowAmnt;
+	}
+
+	public void setTotalInFlowAmnt(BigDecimal totalInFlowAmnt) {
+		this.totalInFlowAmnt = totalInFlowAmnt;
+	}
+
+	public BigDecimal getTotalOutFlowAmnt() {
+		return totalOutFlowAmnt;
+	}
+
+	public void setTotalOutFlowAmnt(BigDecimal totalOutFlowAmnt) {
+		this.totalOutFlowAmnt = totalOutFlowAmnt;
+	}
+
+	public BigDecimal getSrrClosingBalance() {
+		return srrClosingBalance;
+	}
+
+	public void setSrrClosingBalance(BigDecimal srrClosingBalance) {
+		this.srrClosingBalance = srrClosingBalance;
+	}
+
+	public BigDecimal getSrrDailyPercentage() {
+		return srrDailyPercentage;
+	}
+
+	public void setSrrDailyPercentage(BigDecimal srrDailyPercentage) {
+		this.srrDailyPercentage = srrDailyPercentage;
+	}
+
+	public Integer getRnk() {
+		return rnk;
+	}
+
+	public void setRnk(Integer rnk) {
+		this.rnk = rnk;
+	}
+
+	public String getAggrInd() {
+		return aggrInd;
+	}
+
+	public void setAggrInd(String aggrInd) {
+		this.aggrInd = aggrInd;
+	}
+
+	public String getOpeningClosingBalInd() {
+		return openingClosingBalInd;
+	}
+
+	public void setOpeningClosingBalInd(String openingClosingBalInd) {
+		this.openingClosingBalInd = openingClosingBalInd;
+	}
+
+	public BigDecimal getCashBalance() {
+		return cashBalance;
+	}
+
+	public void setCashBalance(BigDecimal cashBalance) {
+		this.cashBalance = cashBalance;
+	}
+
+	public BigDecimal getSecuritiesBalance() {
+		return securitiesBalance;
+	}
+
+	public void setSecuritiesBalance(BigDecimal securitiesBalance) {
+		this.securitiesBalance = securitiesBalance;
+	}
+
+	public Long getTrackerID() {
+		return trackerID;
+	}
+
+	public void setTrackerID(Long trackerID) {
+		this.trackerID = trackerID;
+	}
+	
+	public LocalDate getLatestMT950Date() {
+		return latestMT950Date;
+	}
+
+	public void setLatestMT950Date(LocalDate latestMT950Date) {
+		this.latestMT950Date = latestMT950Date;
+	}
+
+	@Override
+	public String toString() {
+		return "AccountBalanceAggregation [acctBalAggrSkey=" + acctBalAggrSkey + ", entityAcctMapSkey="
+				+ entityAcctMapSkey + ", totalAmnt=" + totalAmnt + ", businessDtTime=" + businessDtTime + ", valueDate="
+				+ valueDate + ", totalInFlowAmnt=" + totalInFlowAmnt + ", totalOutFlowAmnt=" + totalOutFlowAmnt
+				+ ", aggrInd=" + aggrInd + ", openingClosingBalInd=" + openingClosingBalInd + ", trackerID=" + trackerID
+				+ ", rnk=" + rnk + ", srrClosingBalance=" + srrClosingBalance + ", srrDailyPercentage="
+				+ srrDailyPercentage + ", cashBalance=" + cashBalance + ", securitiesBalance=" + securitiesBalance
+				+ ", latestMT950Date=" + latestMT950Date + "]";
+	}
+	
+	
+}
+
+
+
+
+
+
+
+
+package com.maybank.ilm.dto;
+
+import java.math.BigDecimal;
+
+public class KAccountRedemptionDTO {
+
+	private BigDecimal newKAcctOutstandBalMgmt;
+	private BigDecimal mainAcctBal;
+	public KAccountRedemptionDTO() {
+		super();
+	}
+	public KAccountRedemptionDTO(BigDecimal newKAcctOutstandBalMgmt, BigDecimal mainAcctBal) {
+		super();
+		this.newKAcctOutstandBalMgmt = newKAcctOutstandBalMgmt;
+		this.mainAcctBal = mainAcctBal;
+	}
+	public BigDecimal getNewKAcctOutstandBalMgmt() {
+		return newKAcctOutstandBalMgmt;
+	}
+	public void setNewKAcctOutstandBalMgmt(BigDecimal newKAcctOutstandBalMgmt) {
+		this.newKAcctOutstandBalMgmt = newKAcctOutstandBalMgmt;
+	}
+	public BigDecimal getMainAcctBal() {
+		return mainAcctBal;
+	}
+	public void setMainAcctBal(BigDecimal mainAcctBal) {
+		this.mainAcctBal = mainAcctBal;
+	}
+}
+
