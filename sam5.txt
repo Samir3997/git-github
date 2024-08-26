@@ -1,1 +1,16 @@
-The method getLastUpdatedAcctBalAggr(Long, LocalDate, String) is undefined for the type AccountBalanceAggrRepo
+@Test
+public void testGetKAccountRedemptionEntries_MsgAmntLessThanTrancheSize() {
+    // Set up mock data
+    // ... (same as in the previous test cases)
+
+    // Mock the behavior of getLastUpdatedAcctBalAggr to return an aggregation with a total amount
+    // greater than the tranche size
+    Mockito.when(accountBalanceAggrRepo.getLastUpdatedAcctBalAggr(mainAcctEamSkey, valueDt, Mockito.anyString()))
+            .thenReturn(new AccountBalanceAggregation(null, null, BigDecimal.valueOf(1500), null, null, null, null));
+
+    // Call the method
+    Map<Long, BigDecimal> amountsMap = mxMsgHandlerAbstractImpl.getKAccountRedemptionEntries(countrySkey, entitySkey, currSkey, valueDt, msgAmnt, mainAcctEamSkey, kAcctEamSkey);
+
+    // Assert the results
+    // ... (assert that the amountsMap contains the expected values based on the scenario)
+}
