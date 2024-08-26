@@ -1,10 +1,6 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -13,8 +9,6 @@ import org.mockito.MockitoAnnotations;
 
 import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
 import com.maybank.ilm.core.service.EntityAccountMappingService;
-import com.maybank.ilm.core.util.DateUtil;
-import com.maybank.ilm.entity.AccountBalanceManagement;
 import com.maybank.ilm.entity.EntityAccountMapDefinition;
 import com.maybank.ilm.utility.exception.ILMException;
 
@@ -35,74 +29,35 @@ public class MXMsgHandlerAbstractImplTest {
     }
 
     @Test
-    public void testSetBalanceManagement() {
+    public void testCheckForIntraBankTransactions_IntraBank() {
         // Arrange
-        Long entityAcctMapSkey = 1L;
-        BigDecimal amount = new BigDecimal("100.00");
-        String amountSign = "+";
-        Long trackerID = 2L;
-        LocalDateTime businessDtTime = LocalDateTime.now();
-        LocalDate valueDate = LocalDate.now();
-        LocalDate transactionDt = LocalDate.now().minusDays(1);
-        String messageType = "MT103";
-        String senderCode = "SENDER1";
-        String receiverCode = "RECEIVER1";
-        String trnCode = "TRN123";
-        String sendersRef = "REF123";
+        String counterBic = "MBBEMYKL";
         String currencyCode = "USD";
-        Character kRedemptionInd = 'N';
 
         EntityAccountMapDefinition entityAccountMapDefinition = new EntityAccountMapDefinition();
-        entityAccountMapDefinition.setEntityAcctMapSkey(entityAcctMapSkey);
+        entityAccountMapDefinition.setEntityAcctMapSkey(1L);
 
-        when(entityAcctMapService.getEntityAcctMapDefnByAcctNum(anyString(), anyString())).thenReturn(entityAccountMapDefinition);
+        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(counterBic, "MAINACCOUNT", currencyCode)).thenReturn(entityAccountMapDefinition);
 
         // Act
-        AccountBalanceManagement accountBalanceManagement = mxMsgHandlerAbstractImpl.setBalanceManagement(entityAcctMapSkey, amount, amountSign, trackerID, businessDtTime, valueDate, transactionDt, messageType, senderCode, receiverCode, trnCode, sendersRef, currencyCode, kRedemptionInd);
+        Long entityAcctMapSkey = mxMsgHandlerAbstractImpl.checkForIntraBankTransactions(counterBic, currencyCode);
 
         // Assert
-        assertEquals(entityAcctMapSkey, accountBalanceManagement.getEntityAcctMapSkey());
-        assertEquals(amount, accountBalanceManagement.getAmount());
-        assertEquals(amountSign, accountBalanceManagement.getAmountSign());
-        assertEquals(trackerID, accountBalanceManagement.getTrackerID());
-        assertEquals(businessDtTime, accountBalanceManagement.getBusinessDtTime());
-        assertEquals(valueDate, accountBalanceManagement.getValueDate());
-        assertEquals(transactionDt, accountBalanceManagement.getTransactionDt());
-        assertEquals(messageType, accountBalanceManagement.getMessageType());
-        assertEquals(senderCode, accountBalanceManagement.getSenderCode());
-        assertEquals(receiverCode, accountBalanceManagement.getReceiverCode());
-        assertEquals(trnCode, accountBalanceManagement.getTrnCode());
-        assertEquals(sendersRef, accountBalanceManagement.getSendersRef());
-        assertEquals(currencyCode, accountBalanceManagement.getCurrencyCode());
-        assertEquals(kRedemptionInd, accountBalanceManagement.getkRedemptionInd());
+        assertEquals(1L, entityAcctMapSkey);
     }
 
     @Test
-    public void testSetBalanceManagement_NullEntityAccountMapDefinition() {
+    public void testCheckForIntraBankTransactions_NotIntraBank() {
         // Arrange
-        Long entityAcctMapSkey = 1L;
-        BigDecimal amount = new BigDecimal("100.00");
-        String amountSign = "+";
-        Long trackerID = 2L;
-        LocalDateTime businessDtTime = LocalDateTime.now();
-        LocalDate valueDate = LocalDate.now();
-        LocalDate transactionDt = LocalDate.now().minusDays(1);
-        String messageType = "MT103";
-        String senderCode = "SENDER1";
-        String receiverCode = "RECEIVER1";
-        String trnCode = "TRN123";
-        String sendersRef = "REF123";
+        String counterBic = "HSBCMYKL";
         String currencyCode = "USD";
-        Character kRedemptionInd = 'N';
 
-        when(entityAcctMapService.getEntityAcctMapDefnByAcctNum(anyString(), anyString())).thenReturn(null);
+        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(counterBic, "MAINACCOUNT", currencyCode)).thenReturn(null);
 
-        // Act and Assert
-        try {
-            mxMsgHandlerAbstractImpl.setBalanceManagement(entityAcctMapSkey, amount, amountSign, trackerID, businessDtTime, valueDate, transactionDt, messageType, senderCode, receiverCode, trnCode, sendersRef, currencyCode, kRedemptionInd);
-            fail("Expected ILMException to be thrown");
-        } catch (ILMException e) {
-            // Expected exception
-        }
+        // Act
+        Long entityAcctMapSkey = mxMsgHandlerAbstractImpl.checkForIntraBankTransactions(counterBic, currencyCode);
+
+        // Assert
+        assertEquals(null, entityAcctMapSkey);
     }
 }
