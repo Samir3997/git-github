@@ -1,6 +1,10 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,9 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import com.maybank.ilm.core.dao.AccountBalanceAggrRepo;
 import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
-import com.maybank.ilm.core.util.DateUtil;
+import com.maybank.ilm.core.dao.FinMessageDao;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
 import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.FinMT940;
 
 public class MXMsgHandlerAbstractImplTest {
 
@@ -22,47 +29,36 @@ public class MXMsgHandlerAbstractImplTest {
     @Mock
     private AccountBalanceMgmtRepo mgmtRepo;
 
+    @Mock
+    private AccountBalanceAggrRepo aggrRepo;
+
+    @Mock
+    private FinMessageDao finMsgDao;
+
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testCheckRelatedRefForNostro_FoundRelatedRef() {
+    public void testSaveAllEntities() {
         // Arrange
-        LocalDate valueDate = LocalDate.now();
-        Long entityAcctMapSkey = 1L;
-        String relatedRef = "REF123";
+        List<AccountBalanceManagement> balanceManagements = new ArrayList<>();
+        AccountBalanceManagement balanceManagement = new AccountBalanceManagement();
+        balanceManagements.add(balanceManagement);
 
-        List<AccountBalanceManagement> managements = new ArrayList<>();
-        AccountBalanceManagement management = new AccountBalanceManagement();
-        management.setSendersRef(relatedRef);
-        managements.add(management);
+        List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+        AccountBalanceAggregation aggregation = new AccountBalanceAggregation();
+        aggregations.add(aggregation);
 
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, any())).thenReturn(managements);
+        FinMT940 finMT940 = new FinMT940();
 
         // Act
-        boolean foundRelatedRefTrans = mxMsgHandlerAbstractImpl.checkRelatedRefForNostro(valueDate, entityAcctMapSkey, relatedRef);
+        mxMsgHandlerAbstractImpl.saveAllEntities(balanceManagements, aggregations, finMT940);
 
         // Assert
-        assertEquals(true, foundRelatedRefTrans);
-    }
-
-    @Test
-    public void testCheckRelatedRefForNostro_NotFoundRelatedRef() {
-        // Arrange
-        LocalDate valueDate = LocalDate.now();
-        Long entityAcctMapSkey = 1L;
-        String relatedRef = "REF123";
-
-        List<AccountBalanceManagement> managements = new ArrayList<>();
-
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, any())).thenReturn(managements);
-
-        // Act
-        boolean foundRelatedRefTrans = mxMsgHandlerAbstractImpl.checkRelatedRefForNostro(valueDate, entityAcctMapSkey, relatedRef);
-
-        // Assert
-        assertEquals(false, foundRelatedRefTrans);
+        verify(mgmtRepo).saveAll(balanceManagements);
+        verify(aggrRepo).saveAll(aggregations);
+        verify(finMsgDao).saveAny(finMT940);
     }
 }
