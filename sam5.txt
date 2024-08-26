@@ -1,2 +1,87 @@
-public List<AccountBalanceManagement> findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(LocalDate valueDate,
-			Long entityAcctMapSkey, List<String> messageTypes);
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.core.swiftmsghandlers.MXMsgHandlerAbstractImpl;
+
+public class MXMsgHandlerAbstractImplTest {
+
+    @InjectMocks
+    private MXMsgHandlerAbstractImpl mxMsgHandler;
+
+    @Mock
+    private AccountBalanceMgmtRepo mgmtRepo;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
+    @Test
+    public void testCheckRelatedRefOfMT910_Found() {
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "relatedReference";
+
+        // Mocking the repository response
+        AccountBalanceManagement management1 = new AccountBalanceManagement();
+        management1.setSendersRef("relatedReference");
+        List<AccountBalanceManagement> managements = Arrays.asList(management1);
+
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203")))
+                .thenReturn(managements);
+
+        Boolean result = mxMsgHandler.checkRelatedRefOfMT910(valueDate, entityAcctMapSkey, relatedRef);
+
+        assertTrue(result);
+        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203"));
+    }
+
+    @Test
+    public void testCheckRelatedRefOfMT910_NotFound() {
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "unrelatedReference";
+
+        // Mocking the repository response
+        AccountBalanceManagement management1 = new AccountBalanceManagement();
+        management1.setSendersRef("differentReference");
+        List<AccountBalanceManagement> managements = Arrays.asList(management1);
+
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203")))
+                .thenReturn(managements);
+
+        Boolean result = mxMsgHandler.checkRelatedRefOfMT910(valueDate, entityAcctMapSkey, relatedRef);
+
+        assertFalse(result);
+        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203"));
+    }
+
+    @Test
+    public void testCheckRelatedRefOfMT910_EmptyList() {
+        LocalDate valueDate = LocalDate.now();
+        Long entityAcctMapSkey = 1L;
+        String relatedRef = "relatedReference";
+
+        // Mocking the repository response
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203")))
+                .thenReturn(new ArrayList<>());
+
+        Boolean result = mxMsgHandler.checkRelatedRefOfMT910(valueDate, entityAcctMapSkey, relatedRef);
+
+        assertFalse(result);
+        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203"));
+    }
+}
