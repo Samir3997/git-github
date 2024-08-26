@@ -30,58 +30,58 @@ public class MXMsgHandlerAbstractImplTest {
     }
 
     @Test
-    public void testCheckRelatedRefOfMT910_Found() {
+    public void testCheckRelatedRefOfCamt054_Found() {
         LocalDate valueDate = LocalDate.now();
         Long entityAcctMapSkey = 1L;
-        String relatedRef = "relatedReference";
+        String relatedRef = "relatedReferenceCamt054";
 
         // Mocking the repository response
         AccountBalanceManagement management1 = new AccountBalanceManagement();
-        management1.setSendersRef("relatedReference");
+        management1.setSendersRef("relatedReferenceCamt054");
         List<AccountBalanceManagement> managements = Arrays.asList(management1);
 
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203")))
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054")))
                 .thenReturn(managements);
 
-        Boolean result = mxMsgHandler.checkRelatedRefOfMT910(valueDate, entityAcctMapSkey, relatedRef);
+        Boolean result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, entityAcctMapSkey, relatedRef);
 
         assertTrue(result);
-        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203"));
+        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054"));
     }
 
     @Test
-    public void testCheckRelatedRefOfMT910_NotFound() {
+    public void testCheckRelatedRefOfCamt054_NotFound() {
         LocalDate valueDate = LocalDate.now();
         Long entityAcctMapSkey = 1L;
-        String relatedRef = "unrelatedReference";
+        String relatedRef = "unrelatedReferenceCamt054";
 
         // Mocking the repository response
         AccountBalanceManagement management1 = new AccountBalanceManagement();
         management1.setSendersRef("differentReference");
         List<AccountBalanceManagement> managements = Arrays.asList(management1);
 
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203")))
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054")))
                 .thenReturn(managements);
 
-        Boolean result = mxMsgHandler.checkRelatedRefOfMT910(valueDate, entityAcctMapSkey, relatedRef);
+        Boolean result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, entityAcctMapSkey, relatedRef);
 
         assertFalse(result);
-        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203"));
+        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054"));
     }
 
     @Test
-    public void testCheckRelatedRefOfMT910_EmptyList() {
+    public void testCheckRelatedRefOfCamt054_EmptyList() {
         LocalDate valueDate = LocalDate.now();
         Long entityAcctMapSkey = 1L;
-        String relatedRef = "relatedReference";
+        String relatedRef = "relatedReferenceCamt054";
 
         // Mocking the repository response
-        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203")))
+        when(mgmtRepo.findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054")))
                 .thenReturn(new ArrayList<>());
 
-        Boolean result = mxMsgHandler.checkRelatedRefOfMT910(valueDate, entityAcctMapSkey, relatedRef);
+        Boolean result = mxMsgHandler.checkRelatedRefOfCamt054(valueDate, entityAcctMapSkey, relatedRef);
 
         assertFalse(result);
-        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("102", "103", "202", "203"));
+        verify(mgmtRepo, times(1)).findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(valueDate, entityAcctMapSkey, Arrays.asList("054"));
     }
 }
