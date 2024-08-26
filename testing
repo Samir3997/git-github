@@ -627,3 +627,585 @@ public abstract class MXMsgHandlerAbstractImpl extends IlmAbstractMessageHandler
 		return bic;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.entity;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.maybank.ilm.core.util.QueryConstants;
+
+@Entity
+@Table(name = "PRC_ACCOUNT_BALANCE_MGMT")
+@NamedQueries({
+	@NamedQuery(name = "GETOPENINGBAL", query = QueryConstants.GETOPENINGBAL),
+	@NamedQuery(name = "GETOPENINGBALSG", query = QueryConstants.GETOPENINGBALSG),
+	@NamedQuery(name = "GETCOUNTOFTRANSCSAFTERMT940", query = "SELECT COUNT(abm) FROM AccountBalanceManagement abm WHERE businessDtTime > :businessDt940 AND valueDate =:valueDt AND entityAcctMapSkey =:entityAcctMapSkey AND messageType NOT IN (:msgTypes)"),
+	@NamedQuery(name = "GETFUTUREDATEDTRANSACS", query = "SELECT new com.maybank.ilm.dto.BlotterParamsDTO(entityAcctMapSkey, SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END)) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND currencyCode = 'MYR' GROUP BY entityAcctMapSkey"),
+	@NamedQuery(name = "GETNOSTROFUTUREDATEDTRANSACS", query = "SELECT new com.maybank.ilm.dto.BlotterParamsDTO(entityAcctMapSkey, SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END)) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND currencyCode != 'MYR' AND messageType NOT IN (:msgTypes) GROUP BY entityAcctMapSkey"),
+	@NamedQuery(name = "GETMGMTSWITHRELATEDREF900", query = QueryConstants.GETMGMTSWITHRELATEDREF900),
+	@NamedQuery(name = "GETPROJECTEDBALANCE", query = "SELECT SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END) FROM AccountBalanceManagement WHERE valueDate =:valueDt AND entityAcctMapSkey IN (:eamSkeys) AND messageType IN (:msgTypes)"),
+	//@NamedQuery(name="GETSINGLEDAYSENTPAYMENTS",query=QueryConstants.GETSINGLEDAYSENTPAYMENTS),
+	//@NamedQuery(name="GETSINGLEDAYRECIEVEDPAYMENTS",query=QueryConstants.GETSINGLEDAYRECIEVEDPAYMENTS),
+	//@NamedQuery(name="GETPASTPERIODRECIEVEDPAYMENTS",query=QueryConstants.GETPASTPERIODRECIEVEDPAYMENTS),
+	//@NamedQuery(name="GETPASTPERIODSENTPAYMENTS",query=QueryConstants.GETPASTPERIODSENTPAYMENTS)
+})
+public class AccountBalanceManagement {
+
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+	}
+	
+
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd, Character settlementInd) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+		this.settlementInd = settlementInd;
+	}
+
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd, Character settlementInd, String actualMessageType ) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+		this.settlementInd = settlementInd;
+		this.actualMessageType = actualMessageType;
+	}
+	
+	public AccountBalanceManagement(Long entityAcctMapSkey, BigDecimal amount, String amountSign,
+			Long trackerID, LocalDateTime businessDtTime, LocalDate valueDate, LocalDate transactionDt,
+			String messageType, String senderCode, String receiverCode, String counterParty, String trnCode, String sendersRef,
+			String currencyCode, Character kRedemptionInd, Character settlementInd, String actualMessageType ) {
+		super();
+		this.entityAcctMapSkey = entityAcctMapSkey;
+		this.amount = amount;
+		this.amountSign = amountSign;
+		this.trackerID = trackerID;
+		this.businessDtTime = businessDtTime;
+		this.valueDate = valueDate;
+		this.transactionDt = transactionDt;
+		this.messageType = messageType;
+		this.senderCode = senderCode;
+		this.receiverCode = receiverCode;
+		this.counterParty = counterParty;
+		this.trnCode = trnCode;
+		this.sendersRef = sendersRef;
+		this.currencyCode = currencyCode;
+		this.kRedemptionInd = kRedemptionInd;
+		this.settlementInd = settlementInd;
+		this.actualMessageType = actualMessageType;
+	}
+
+	public AccountBalanceManagement() {
+		super();
+	}
+
+	@Id
+	@Column(name = "N_ACCOUNT_BALANCE_MGMT_SKEY")
+	@SequenceGenerator(name = "acctBalMgmtSkey", sequenceName = "PRC_ACCOUNT_BALANCE_MGMT_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "acctBalMgmtSkey")
+	private Long acctBalMgmtSkey;
+	
+	@Column(name = "N_ENTITY_ACCT_MAP_SKEY")
+	private Long entityAcctMapSkey;
+	
+	@Column(name = "N_AMOUNT")
+	private BigDecimal amount;
+	
+	@Column(name = "V_AMOUNT_SIGN")
+	private String amountSign;
+	
+	@Column(name = "N_TRACKER_ID")
+	private Long trackerID;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy hh:mm:ss a")
+	@Column(name = "D_BUSINESS_DT")
+	private LocalDateTime businessDtTime;
+	
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	@Column(name = "D_VALUE_DT")
+	private LocalDate valueDate;
+	
+	@Column(name = "D_TRANSACTION_DT")
+	private LocalDate transactionDt;
+	
+	@Column(name = "V_MESSAGE_TYPE")
+	
+	private String messageType;
+	@Column(name = "V_SENDER_CODE")
+	private String senderCode;
+	
+	@Column(name = "V_RECEIVER_CODE")
+	private String receiverCode;
+	
+	@Column(name = "V_COUNTER_PARTY")
+	private String counterParty;
+	
+	@Column(name = "V_TRN_CODE")
+	private String trnCode;
+	
+	@Column(name = "V_SENDERS_REFERENCE")
+	private String sendersRef;
+	
+	@Column(name = "V_CURRENCY_CODE")
+	private String currencyCode;
+	
+	@Column(name = "F_K_REDEMPTION_IND")
+	private Character kRedemptionInd;
+	
+	@Column(name = "F_SETTLEMENT_IND")
+	private Character settlementInd;
+	
+	@Column(name = "V_ACTUAL_MESSAGE_TYPE")
+	private String actualMessageType;
+	
+	@Transient
+	private Character isSRR;
+	
+	@Transient
+	private String detailsOfCharges;
+	
+	@Transient
+	private BigDecimal sendersCharges;
+	
+	@Transient
+	private BigDecimal receiversCharges;
+	
+	@Transient
+	private String senderToReceiverInfo;
+
+	@Transient
+	private String relatedReference;
+	
+	public Long getAcctBalMgmtSkey() {
+		return acctBalMgmtSkey;
+	}
+
+	public void setAcctBalMgmtSkey(Long acctBalMgmtSkey) {
+		this.acctBalMgmtSkey = acctBalMgmtSkey;
+	}
+
+	public Long getEntityAcctMapSkey() {
+		return entityAcctMapSkey;
+	}
+
+	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
+		this.entityAcctMapSkey = entityAcctMapSkey;
+	}
+
+	public BigDecimal getAmount() {
+		return amount;
+	}
+
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
+
+	public String getAmountSign() {
+		return amountSign;
+	}
+
+	public void setAmountSign(String amountSign) {
+		this.amountSign = amountSign;
+	}
+
+	public Long getTrackerID() {
+		return trackerID;
+	}
+
+	public void setTrackerID(Long trackerID) {
+		this.trackerID = trackerID;
+	}
+
+	public LocalDateTime getBusinessDtTime() {
+		return businessDtTime;
+	}
+
+	public void setBusinessDtTime(LocalDateTime businessDtTime) {
+		this.businessDtTime = businessDtTime;
+	}
+
+	public LocalDate getValueDate() {
+		return valueDate;
+	}
+
+	public void setValueDate(LocalDate valueDate) {
+		this.valueDate = valueDate;
+	}
+
+	public LocalDate getTransactionDt() {
+		return transactionDt;
+	}
+
+	public void setTransactionDt(LocalDate transactionDt) {
+		this.transactionDt = transactionDt;
+	}
+
+	public String getMessageType() {
+		return messageType;
+	}
+
+	public void setMessageType(String messageType) {
+		this.messageType = messageType;
+	}
+
+	public String getSenderCode() {
+		return senderCode;
+	}
+
+	public void setSenderCode(String senderCode) {
+		this.senderCode = senderCode;
+	}
+
+	public String getReceiverCode() {
+		return receiverCode;
+	}
+
+	public void setReceiverCode(String receiverCode) {
+		this.receiverCode = receiverCode;
+	}
+	
+	public String getCounterParty() {
+		return counterParty;
+	}
+
+	public void setCounterParty(String counterParty) {
+		this.counterParty = counterParty;
+	}
+
+	public String getTrnCode() {
+		return trnCode;
+	}
+
+	public void setTrnCode(String trnCode) {
+		this.trnCode = trnCode;
+	}
+
+	public String getSendersRef() {
+		return sendersRef;
+	}
+
+	public void setSendersRef(String sendersRef) {
+		this.sendersRef = sendersRef;
+	}
+
+	public String getCurrencyCode() {
+		return currencyCode;
+	}
+
+	public void setCurrencyCode(String currencyCode) {
+		this.currencyCode = currencyCode;
+	}
+	
+	public Character getkRedemptionInd() {
+		return kRedemptionInd;
+	}
+
+	public void setkRedemptionInd(Character kRedemptionInd) {
+		this.kRedemptionInd = kRedemptionInd;
+	}
+
+	public Character getIsSRR() {
+		return isSRR;
+	}
+
+	public void setIsSRR(Character isSRR) {
+		this.isSRR = isSRR;
+	}
+	
+	public Character getSettlementInd() {
+		return settlementInd;
+	}
+
+	public void setSettlementInd(Character settlementInd) {
+		this.settlementInd = settlementInd;
+	}
+
+	public String getDetailsOfCharges() {
+		return detailsOfCharges;
+	}
+
+	public void setDetailsOfCharges(String detailsOfCharges) {
+		this.detailsOfCharges = detailsOfCharges;
+	}
+
+	public BigDecimal getSendersCharges() {
+		return sendersCharges;
+	}
+
+	public void setSendersCharges(BigDecimal sendersCharges) {
+		this.sendersCharges = sendersCharges;
+	}
+
+	public BigDecimal getReceiversCharges() {
+		return receiversCharges;
+	}
+
+	public void setReceiversCharges(BigDecimal receiversCharges) {
+		this.receiversCharges = receiversCharges;
+	}
+
+	public String getSenderToReceiverInfo() {
+		return senderToReceiverInfo;
+	}
+
+	public void setSenderToReceiverInfo(String senderToReceiverInfo) {
+		this.senderToReceiverInfo = senderToReceiverInfo;
+	}
+
+	public String getRelatedReference() {
+		return relatedReference;
+	}
+
+	public void setRelatedReference(String relatedReference) {
+		this.relatedReference = relatedReference;
+	}
+
+	public String getActualMessageType() {
+		return actualMessageType;
+	}
+
+	public void setActualMessageType(String actualMessageType) {
+		this.actualMessageType = actualMessageType;
+	}
+
+
+	@Override
+	public String toString() {
+		return "AccountBalanceManagement [acctBalMgmtSkey=" + acctBalMgmtSkey + ", entityAcctMapSkey="
+				+ entityAcctMapSkey + ", amount=" + amount + ", amountSign=" + amountSign + ", trackerID=" + trackerID
+				+ ", businessDtTime=" + businessDtTime + ", valueDate=" + valueDate + ", transactionDt=" + transactionDt
+				+ ", messageType=" + messageType + ", senderCode=" + senderCode + ", receiverCode=" + receiverCode
+				+ ", counterParty=" + counterParty + ", trnCode=" + trnCode + ", sendersRef=" + sendersRef
+				+ ", currencyCode=" + currencyCode + ", kRedemptionInd=" + kRedemptionInd + ", settlementInd="
+				+ settlementInd + ", actualMessageType=" + actualMessageType + ", isSRR=" + isSRR
+				+ ", detailsOfCharges=" + detailsOfCharges + ", sendersCharges=" + sendersCharges
+				+ ", receiversCharges=" + receiversCharges + ", senderToReceiverInfo=" + senderToReceiverInfo
+				+ ", relatedReference=" + relatedReference + "]";
+	}
+
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.core.dao;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.maybank.ilm.entity.AccountBalanceManagement;
+
+@Transactional(transactionManager = "transactionManager")
+public interface AccountBalanceMgmtRepo extends JpaRepository<AccountBalanceManagement, Long> {
+	
+	public AccountBalanceManagement findFirstByEntityAcctMapSkeyAndMessageTypeOrderByTrackerIDDesc(Long entityAcctMapSkey, String messageType);
+
+	public List<AccountBalanceManagement> findByValueDateAndEntityAcctMapSkeyAndMessageTypeIn(LocalDate valueDate,
+			Long entityAcctMapSkey, List<String> messageTypes);
+
+	public List<AccountBalanceManagement> findByValueDateAndEntityAcctMapSkey(LocalDate valueDate,
+			Long entityAcctMapSkey);
+
+	public List<AccountBalanceManagement> findByValueDateAndSendersRefAndMessageType(LocalDate valueDate,
+			String sendersRef, String messageType);
+
+	@Query("SELECT SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END) FROM  AccountBalanceManagement abm WHERE abm.messageType IN ( :messageTypes ) AND abm.entityAcctMapSkey =:entityAcctMapSkey AND abm.valueDate =:valueDate")
+	public BigDecimal getTotalAmountByMessageTypeInAndEntityAcctMapSkeyAndValueDate(List<String> messageTypes,
+			Long entityAcctMapSkey, LocalDate valueDate);
+
+	@Query("Select abm from AccountBalanceManagement abm where abm.valueDate between :fromDate and :toDate and abm.entityAcctMapSkey IN (:entityAcctMapSkey) order by valueDate ASC")
+	public List<AccountBalanceManagement> getFutureTransactionDetails(@Param(value = "fromDate") LocalDate fromDate,
+			@Param(value = "toDate") LocalDate todate, @Param(value = "entityAcctMapSkey") List<Long> entityMapSkey);
+
+	public List<AccountBalanceManagement> findBySettlementIndOrderByBusinessDtTimeDesc(Character settlementInd);
+
+	public List<AccountBalanceManagement> findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeAsc(
+			LocalDate valueDate, Long entityAcctMapSkey);
+
+	public List<AccountBalanceManagement> findBySendersRefAndMessageTypeAndCurrencyCode(String sendersRef, String messageType, String currencyCode);
+
+	public List<AccountBalanceManagement> findBySendersRefAndCurrencyCodeAndMessageTypeIn(String sendersRef, String currencyCode, List<String> messageType);
+	
+	public List<AccountBalanceManagement> findBySendersRefAndCurrencyCodeAndAmountSignAndMessageTypeIn(String sendersRef, String currencyCode, String amountSign ,List<String> messageType);
+	
+	@Query("SELECT abm from AccountBalanceManagement abm WHERE abm.messageType IN ( :messageTypes ) AND abm.valueDate =:valueDate AND abm.sendersRef =:sendersRef AND abm.currencyCode =:currencyCode")
+	public List<AccountBalanceManagement> findRelatedMgmtEntryBySenderRefAndMsgType(String sendersRef, String currencyCode, List<String> messageTypes, LocalDate valueDate);
+
+	@Query("select sum(abm.amount) from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey=:entityAcctMapSkey and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and (abm.sendersRef like '99%' or abm.sendersRef like 'TPC%')")
+	public BigDecimal getTradeAgentTotalOutwardAmount(final LocalDate valueDate, final Long entityAcctMapSkey,
+			final List<String> messageTypeList);
+
+	@Query("select sum(abm.amount) from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey=:entityAcctMapSkey and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and abm.sendersRef like 'CUS%'")
+	public BigDecimal getCustodyAgentTotalOutwardAmount(final LocalDate valueDate, final Long entityAcctMapSkey,
+			final List<String> messageTypeList);
+
+	@Query("select sum(abm.amount) from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey=:entityAcctMapSkey and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and not (abm.sendersRef like '99%' or abm.sendersRef like 'TPC%' or abm.sendersRef like 'CUS%' or abm.sendersRef like 'KTPP%' or ((abm.sendersRef LIKE 'N%' AND abm.sendersRef LIKE '%:%') and abm.senderCode like 'MBBEMYKL%'))")
+	public BigDecimal getRDPAgentTotalOutwardAmount(final LocalDate valueDate, final Long entityAcctMapSkey,
+			final List<String> messageTypeList);
+
+    @Query("select abm from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey IN(:entityAcctMapSkey)  and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and (abm.sendersRef like '99%' or abm.sendersRef like 'TPC%')")
+    public List<AccountBalanceManagement> getTradeAgentOutwardDrilldown(final LocalDate valueDate,
+                final List<Long> entityAcctMapSkey, final List<String> messageTypeList);
+    
+    @Query("select abm from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey IN(:entityAcctMapSkey) and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and abm.sendersRef like 'CUS%'")
+    public List<AccountBalanceManagement> getCustodyAgentOutwardDrilldown(final LocalDate valueDate,
+                final List<Long> entityAcctMapSkey, final List<String> messageTypeList);
+    
+    @Query("select abm from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey IN(:entityAcctMapSkey)  and abm.messageType IN (:messageTypeList) and abm.amountSign='-' and not (abm.sendersRef like '99%' or abm.sendersRef like 'TPC%' or abm.sendersRef like 'CUS%' or abm.sendersRef like 'KTPP%' or ((abm.sendersRef LIKE 'N%' AND abm.sendersRef LIKE '%:%') and abm.senderCode like 'MBBEMYKL%'))")
+    public List<AccountBalanceManagement> getRDPAgentOutwardDrilldown(final LocalDate valueDate,
+                final List<Long> entityAcctMapSkey, final List<String> messageTypeList);
+
+	@Query("select sum(abm.amount) from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey=:entityAcctMapSkey and abm.amountSign='+' and abm.messageType IN (:messageTypeList)")
+	public BigDecimal getAgentTotalInwardAmount(final LocalDate valueDate, final Long entityAcctMapSkey,
+			final List<String> messageTypeList);
+
+	@Query("select abm from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey IN(:entityAcctMapSkey) and abm.amountSign='+' and abm.messageType IN (:messageTypeList)")
+    public List<AccountBalanceManagement> getAgentTotalInwardAmountDrilldown(final LocalDate valueDate,
+                final List<Long> entityAcctMapSkey, final List<String> messageTypeList);
+
+	@Query("select sum(abm.amount) from AccountBalanceManagement abm WHERE abm.valueDate=:valueDate and abm.entityAcctMapSkey=:entityAcctMapSkey and abm.amountSign='-' and abm.messageType IN (:messageTypeList)")
+	public BigDecimal getAgentTotalOutwardAmount(final LocalDate valueDate, final Long entityAcctMapSkey,
+			final List<String> messageTypeList);
+
+	@Query("Select abm from AccountBalanceManagement abm where abm.valueDate=:valueDate and abm.entityAcctMapSkey =:entityAcctMapSkey and abm.amountSign='-' and abm.messageType IN (:messageTypeList) and (abm.sendersRef LIKE 'N%' AND abm.sendersRef LIKE '%:%') and abm.senderCode like 'MBBEMYKL%' ")
+	public List<AccountBalanceManagement> getProtocollOutwardAmount(LocalDate valueDate, final Long entityAcctMapSkey,
+			final List<String> messageTypeList);
+
+	@Query("SELECT abm FROM AccountBalanceManagement abm WHERE abm.valueDate =:valueDate AND abm.entityAcctMapSkey =:entityAcctMapSkey AND abm.amountSign = '+' AND abm.messageType IN (:messageTypeList) AND abm.trackerID IN ( SELECT finMt.trackerID FROM FinMT202 finMt WHERE finMt.block4.block4Tag20 LIKE 'KTPP%' AND finMt.block2.block2ReceiverAddr LIKE 'MGTCBEBEXECL%' AND finMt.tags53.block4Tag53aDcmark = 'D' AND finMt.tags53.block4Tag53aAcct = '68796280')")
+	public List<AccountBalanceManagement> getEuroclearAmountInward( LocalDate valueDate,
+			Long entityAcctMapSkey, List<String> messageTypeList);
+	
+	@Query("SELECT abm FROM AccountBalanceManagement abm WHERE abm.valueDate = :valueDate AND abm.entityAcctMapSkey = :entityAcctMapSkey AND abm.amountSign = '-' AND abm.messageType IN :messageTypeList AND abm.sendersRef LIKE 'KTPP%' AND abm.receiverCode LIKE 'MGTCBEBEXECL%'")
+	public List<AccountBalanceManagement> getEuroclearAmountOutward( LocalDate valueDate,
+			Long entityAcctMapSkey, List<String> messageTypeList);
+	
+	@Query("Select abm from AccountBalanceManagement abm where abm.valueDate=:valueDate and abm.entityAcctMapSkey =:entityAcctMapSkey and abm.amountSign='-' and abm.messageType IN (:messageTypeList) and abm.sendersRef like 'KTPP%' ")
+	public List<AccountBalanceManagement> getTreasuryMailAmount( LocalDate valueDate,
+			Long entityAcctMapSkey, List<String> messageTypeList);
+
+	@Query("SELECT SUM(CASE WHEN amountSign = '-' THEN (amount * (-1)) ELSE amount END) FROM  AccountBalanceManagement abm WHERE abm.messageType IN ( :messageTypes ) AND abm.entityAcctMapSkey =:entityAcctMapSkey AND abm.valueDate >:valueDate")
+	public BigDecimal getFutureDatedTotalAmountByMessageTypeInAndEntityAcctMapSkeyAndValueDate(List<String> messageTypes,
+			Long entityAcctMapSkey, LocalDate valueDate);
+}
