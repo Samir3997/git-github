@@ -1,21 +1,57 @@
-package com.maybank.ilm.core.dao;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.assertThrows;
+import org.mockito.Mockito;
+import com.maybank.ilm.core.util.ILMException;
+import com.maybank.ilm.entity.FinMT940;
+import com.maybank.ilm.embeddable.Block4Tag62;
 
-import java.time.LocalDate;
-import java.util.List;
+class MXMsgHandlerAbstractImplTest {
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+    @Test
+    void testGetCurrencyByTag62For940And950_FCurrencyNotNull() {
+        // Create a FinMT940 object with FCurrency not null
+        FinMT940 finMT940 = new FinMT940();
+        Block4Tag62 tags62 = new Block4Tag62();
+        tags62.setBlock4Tag62FCurrency("USD");
+        finMT940.setTags62(tags62);
 
-import com.maybank.ilm.entity.AccountBalanceAggregation;
+        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
+        Mockito.when(handler.getTags62For940And950(finMT940)).thenReturn(tags62);
 
-@Transactional(transactionManager = "transactionManager",propagation=Propagation.NOT_SUPPORTED)
-public interface AccountBalanceAggrRepo extends JpaRepository<AccountBalanceAggregation, Long>{
-	@Query("Select aba from AccountBalanceAggregation aba where aba.valueDate = :date and aba.openingClosingBalInd = 'CLOSING_BALANCE' and aba.entityAcctMapSkey = :entityAcctMapSkey" )
-	public List<AccountBalanceAggregation> getClosingBalances (LocalDate date, Long entityAcctMapSkey);
-	public List<AccountBalanceAggregation> findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeDesc(LocalDate valueDate, Long entityAcctMapSkey);
-	public AccountBalanceAggregation findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd(Long entityAcctMapSkey,LocalDate valueDate, String openingClosingBalInd, String aggrInd);
-	public List<AccountBalanceAggregation> findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeAsc(LocalDate valueDate, Long entityAcctMapSkey);
-	public List<AccountBalanceAggregation> findByValueDateAndOpeningClosingBalIndAndEntityAcctMapSkeyIn(LocalDate valueDate ,String openingClosingBalInd, List<Long> eamSkeyList);
+        String currencyCode = handler.getCurrencyByTag62For940And950(finMT940);
+
+        assertEquals("USD", currencyCode);
+    }
+
+    @Test
+    void testGetCurrencyByTag62For940And950_FCurrencyNull_MCurrencyNotNull() {
+        // Create a FinMT940 object with FCurrency null and MCurrency not null
+        FinMT940 finMT940 = new FinMT940();
+        Block4Tag62 tags62 = new Block4Tag62();
+        tags62.setBlock4Tag62FCurrency(null);
+        tags62.setBlock4Tag62MCurrency("EUR");
+        finMT940.setTags62(tags62);
+
+        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
+        Mockito.when(handler.getTags62For940And950(finMT940)).thenReturn(tags62);
+
+        String currencyCode = handler.getCurrencyByTag62For940And950(finMT940);
+
+        assertEquals("EUR", currencyCode);
+    }
+
+    @Test
+    void testGetCurrencyByTag62For940And950_BothCurrenciesNull() {
+        // Create a FinMT940 object with both FCurrency and MCurrency null
+        FinMT940 finMT940 = new FinMT940();
+        Block4Tag62 tags62 = new Block4Tag62();
+        tags62.setBlock4Tag62FCurrency(null);
+        tags62.setBlock4Tag62MCurrency(null);
+        finMT940.setTags62(tags62);
+
+        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
+        Mockito.when(handler.getTags62For940And950(finMT940)).thenReturn(tags62);
+
+        assertThrows(ILMException.class, () -> handler.getCurrencyByTag62For940And950(finMT940));
+    }
 }
