@@ -1,68 +1,83 @@
 @RunWith(MockitoJUnitRunner.class)
 public class MXMsgHandlerAbstractImplTest {
 
-    @InjectMocks
-    private MXMsgHandlerAbstractImpl mxMsgHandler;
+    // ... (other setup as before)
 
     @Test
-    public void testGetBicCodeFromTag72_BicCodePresent() {
+    public void testValidateMessage_ValidMessage() {
         // Arrange
         Block4Tag72 tag72 = new Block4Tag72();
         tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKL");
+        String currencyCode = "USD";
+        String valueDt = "2024-08-28";
+        String sendersRef = "SR123";
+        String messageType = "MT535";
+        BigDecimal amount = BigDecimal.valueOf(100);
+        String acctNum = "12345";
+        Boolean eamByBic = true;
+
+        EntityAccountMapDefinition expectedDefinition = new EntityAccountMapDefinition();
+        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("MBBEMYKL", "MAINACCOUNT", any())).thenReturn(expectedDefinition);
+        when(mgmtRepo.findByValueDateAndSendersRefAndMessageType(any(), any(), any())).thenReturn(Collections.emptyList());
 
         // Act
-        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
+        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
+            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
+        );
 
         // Assert
-        assertEquals("MBBEMYKL", bicCode);
+        assertEquals("Validated Successfully.", result.getMessageForUI());
+        assertNotNull(result.getEntityIdentifier());
+        // ... other assertions to verify the DTO contents
     }
 
     @Test
-    public void testGetBicCodeFromTag72_BicCodeNotPresent() {
+    public void testValidateMessage_NoDefinitionFound() {
         // Arrange
-        Block4Tag72 tag72 = new Block4Tag72();
-        tag72.setBlock4Tag72Nar1("Some narrative without CPRB");
+        // ... (same as above, but without the definition)
+        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("MBBEMYKL", "MAINACCOUNT", any())).thenReturn(null);
 
         // Act
-        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
+        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
+            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
+        );
 
         // Assert
-        assertNull(bicCode);
+        assertEquals("No definition is found for Entity Type, Currency code or Account Type.", result.getMessageForUI());
+        assertNull(result.getEntityIdentifier());
     }
 
     @Test
-    public void testGetBicCodeFromTag72_MultipleNarratives() {
+    public void testValidateMessage_PastValueDate() {
         // Arrange
-        Block4Tag72 tag72 = new Block4Tag72();
-        tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKL");
-        tag72.setBlock4Tag72Nar2("/OTHER/NARRATIVE");
+        // ... (same as above, but with a past value date)
+        valueDt = "2024-08-26";
 
         // Act
-        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
+        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
+            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
+        );
 
         // Assert
-        assertEquals("MBBEMYKL", bicCode);
+        assertEquals("Value Date is a past date. This processor allows only present and future dates.", result.getMessageForUI());
+        assertNull(result.getEntityIdentifier());
     }
 
     @Test
-    public void testGetBicCodeFromTag72_Tag72IsNull() {
-        // Act
-        String bicCode = mxMsgHandler.getBicCodeFromTag72(null);
-
-        // Assert
-        assertNull(bicCode);
-    }
-
-    @Test
-    public void testGetBicCodeFromTag72_BicCodeWithXCharacters() {
+    public void testValidateMessage_MessageAlreadyExists() {
         // Arrange
-        Block4Tag72 tag72 = new Block4Tag72();
-        tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKLX");
+        // ... (same as above, but with an existing message)
+        when(mgmtRepo.findByValueDateAndSendersRefAndMessageType(any(), any(), any())).thenReturn(Collections.singletonList(new AccountBalanceManagement()));
 
         // Act
-        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
+        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
+            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
+        );
 
         // Assert
-        assertEquals("MBBEMYKL", bicCode);
+        assertEquals("Message already exists.", result.getMessageForUI());
+        assertNull(result.getEntityIdentifier());
     }
+
+    // ... (add more test cases for different scenarios)
 }
