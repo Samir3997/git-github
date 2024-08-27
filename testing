@@ -1,64 +1,68 @@
 @RunWith(MockitoJUnitRunner.class)
 public class MXMsgHandlerAbstractImplTest {
 
-    @Mock
-    private EntityAccountMappingRepo eamRepo;
-
-    @Mock
-    private DimDao dimDao;
-
     @InjectMocks
     private MXMsgHandlerAbstractImpl mxMsgHandler;
 
     @Test
-    public void testFindEamDefnByTag72_BicCodePresent() {
+    public void testGetBicCodeFromTag72_BicCodePresent() {
         // Arrange
         Block4Tag72 tag72 = new Block4Tag72();
         tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKL");
-        String currencyCode = "USD";
-        String accountName = "MAINACCOUNT";
-
-        EntityAccountMapDefinition expectedDefinition = new EntityAccountMapDefinition();
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("MBBEMYKL", accountName, any())).thenReturn(expectedDefinition);
 
         // Act
-        EntityAccountMapDefinition actualDefinition = mxMsgHandler.findEamDefnByTag72(tag72, currencyCode, accountName);
+        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
 
         // Assert
-        assertEquals(expectedDefinition, actualDefinition);
+        assertEquals("MBBEMYKL", bicCode);
     }
 
     @Test
-    public void testFindEamDefnByTag72_BicCodeNotPresent() {
+    public void testGetBicCodeFromTag72_BicCodeNotPresent() {
         // Arrange
         Block4Tag72 tag72 = new Block4Tag72();
         tag72.setBlock4Tag72Nar1("Some narrative without CPRB");
-        String currencyCode = "USD";
-        String accountName = "MAINACCOUNT";
 
         // Act
-        EntityAccountMapDefinition actualDefinition = mxMsgHandler.findEamDefnByTag72(tag72, currencyCode, accountName);
+        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
 
         // Assert
-        assertNull(actualDefinition);
+        assertNull(bicCode);
     }
 
     @Test
-    public void testFindEamDefnByTag72_Tag72IsNull() {
+    public void testGetBicCodeFromTag72_MultipleNarratives() {
         // Arrange
-        String currencyCode = "USD";
-        String accountName = "MAINACCOUNT";
+        Block4Tag72 tag72 = new Block4Tag72();
+        tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKL");
+        tag72.setBlock4Tag72Nar2("/OTHER/NARRATIVE");
 
         // Act
-        EntityAccountMapDefinition actualDefinition = mxMsgHandler.findEamDefnByTag72(null, currencyCode, accountName);
+        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
 
         // Assert
-        assertNull(actualDefinition);
+        assertEquals("MBBEMYKL", bicCode);
     }
 
-    // Add more test cases to cover different scenarios, such as:
-    // - Multiple narratives with CPRB
-    // - BIC code with 'X' characters
-    // - Currency code not found
-    // - Account name not found
+    @Test
+    public void testGetBicCodeFromTag72_Tag72IsNull() {
+        // Act
+        String bicCode = mxMsgHandler.getBicCodeFromTag72(null);
+
+        // Assert
+        assertNull(bicCode);
+    }
+
+    @Test
+    public void testGetBicCodeFromTag72_BicCodeWithXCharacters() {
+        // Arrange
+        Block4Tag72 tag72 = new Block4Tag72();
+        tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKLX");
+
+        // Act
+        String bicCode = mxMsgHandler.getBicCodeFromTag72(tag72);
+
+        // Assert
+        assertEquals("MBBEMYKL", bicCode);
+    }
 }
