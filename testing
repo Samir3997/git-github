@@ -1,60 +1,64 @@
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import static org.mockito.Mockito.*;
-import com.maybank.ilm.core.service.MXMsgHandlerAbstractImpl;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.embeddable.Block4Tag72;
+@RunWith(MockitoJUnitRunner.class)
+public class MXMsgHandlerAbstractImplTest {
 
-class MXMsgHandlerAbstractImplTest {
+    @Mock
+    private EntityAccountMappingRepo eamRepo;
+
+    @Mock
+    private DimDao dimDao;
+
+    @InjectMocks
+    private MXMsgHandlerAbstractImpl mxMsgHandler;
 
     @Test
-    void testFindEamDefn_Block4ReceiverBIC_Success( ) {
-        // Mock dependencies
-        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
-        EntityAccountMapDefinition eamDefnByBlock4 = Mockito.mock(EntityAccountMapDefinition.class);
-        Mockito.when(handler.getDefnByEntityIDAndAcctType("B12345678", "accountName", "USD")).thenReturn(eamDefnByBlock4);
+    public void testFindEamDefnByTag72_BicCodePresent() {
+        // Arrange
+        Block4Tag72 tag72 = new Block4Tag72();
+        tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKL");
+        String currencyCode = "USD";
+        String accountName = "MAINACCOUNT";
 
-        // Call the method
-        EntityAccountMapDefinition result = handler.findEamDefn("B12345678", null, null, "USD", "accountName");
+        EntityAccountMapDefinition expectedDefinition = new EntityAccountMapDefinition();
+        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("MBBEMYKL", accountName, any())).thenReturn(expectedDefinition);
 
-        // Assert results
-        assertEquals(eamDefnByBlock4, result);
-        verify(handler, times(1)).getDefnByEntityIDAndAcctType("B12345678", "accountName", "USD");
-        verify(handler, never()).findEamDefnByTag72orBlock1LT(any(), any(), any(), any());
+        // Act
+        EntityAccountMapDefinition actualDefinition = mxMsgHandler.findEamDefnByTag72(tag72, currencyCode, accountName);
+
+        // Assert
+        assertEquals(expectedDefinition, actualDefinition);
     }
 
     @Test
-    void testFindEamDefn_Block4ReceiverBIC_NotFound_Tag72( ) {
-        // Mock dependencies
-        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
-        Mockito.when(handler.getDefnByEntityIDAndAcctType("B12345678", "accountName", "USD")).thenReturn(null);
-        Block4Tag72 tag72 = Mockito.mock(Block4Tag72.class);
-        EntityAccountMapDefinition eamDefnByTag72 = Mockito.mock(EntityAccountMapDefinition.class);
-        Mockito.when(handler.findEamDefnByTag72(tag72, "USD", "accountName")).thenReturn(eamDefnByTag72);
+    public void testFindEamDefnByTag72_BicCodeNotPresent() {
+        // Arrange
+        Block4Tag72 tag72 = new Block4Tag72();
+        tag72.setBlock4Tag72Nar1("Some narrative without CPRB");
+        String currencyCode = "USD";
+        String accountName = "MAINACCOUNT";
 
-        // Call the method
-        EntityAccountMapDefinition result = handler.findEamDefn("B12345678", tag72, null, "USD", "accountName");
+        // Act
+        EntityAccountMapDefinition actualDefinition = mxMsgHandler.findEamDefnByTag72(tag72, currencyCode, accountName);
 
-        // Assert results
-        assertEquals(eamDefnByTag72, result);
-        verify(handler, times(1)).getDefnByEntityIDAndAcctType("B12345678", "accountName", "USD");
-        verify(handler, times(1)).findEamDefnByTag72(tag72, "USD", "accountName");
-        verify(handler, never()).findEamDefnByBlock1LogicalTerminal(any(), any(), any());
+        // Assert
+        assertNull(actualDefinition);
     }
 
     @Test
-    void testFindEamDefn_Block4ReceiverBIC_NotFound_Tag72_NotFound_Block1LT( ) {
-        // Mock dependencies
-        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
-        Mockito.when(handler.getDefnByEntityIDAndAcctType("B12345678", "accountName", "USD")).thenReturn(null);
-        Block4Tag72 tag72 = Mockito.mock(Block4Tag72.class);
-        Mockito.when(handler.findEamDefnByTag72(tag72, "USD", "accountName")).thenReturn(null);
-        Mockito.when(handler.findEamDefnByBlock1LogicalTerminal("LT12345", "USD", "accountName")).thenReturn(null);
+    public void testFindEamDefnByTag72_Tag72IsNull() {
+        // Arrange
+        String currencyCode = "USD";
+        String accountName = "MAINACCOUNT";
 
-        // Call the method
-        EntityAccountMapDefinition result = handler.findEamDefn("B12345678", tag72, "LT12345", "USD", "accountName");
+        // Act
+        EntityAccountMapDefinition actualDefinition = mxMsgHandler.findEamDefnByTag72(null, currencyCode, accountName);
 
-        // Assert results
-        assertNull(result);
-        verify(handler, times(1)).getDefnByEntityIDAndAcctType("B12345678", "accountName", "USD");
-        verify(handler, times(1)).findEamDefnByTag72(
+        // Assert
+        assertNull(actualDefinition);
+    }
+
+    // Add more test cases to cover different scenarios, such as:
+    // - Multiple narratives with CPRB
+    // - BIC code with 'X' characters
+    // - Currency code not found
+    // - Account name not found
+}
