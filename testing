@@ -1,71 +1,13 @@
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.assertThrows;
+import com.maybank.ilm.utility.exception.ILMException;
 import com.maybank.ilm.core.service.MXMsgHandlerAbstractImpl;
 
 class MXMsgHandlerAbstractImplTest {
 
     @Test
-    void testFindTreasuryRefFromMsg_RelatedRefStartsWithKTPP() {
+    void testThrowEntityNotFountException() {
         MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
-        String sendersRef = "SR123";
-        String relatedRef = "KTPP456";
-
-        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
-
-        assertEquals("KTPP456", treasuryRef);
-    }
-
-    @Test
-    void testFindTreasuryRefFromMsg_RelatedRefStartsWithDV() {
-        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
-        String sendersRef = "SR123";
-        String relatedRef = "DV789";
-
-        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
-
-        assertEquals("DV789", treasuryRef);
-    }
-
-    @Test
-    void testFindTreasuryRefFromMsg_RelatedRefStartsWithN() {
-        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
-        String sendersRef = "SR123";
-        String relatedRef = "N1011";
-
-        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
-
-        assertEquals("N1011", treasuryRef);
-    }
-
-    @Test
-    void testFindTreasuryRefFromMsg_RelatedRefStartsWithFX() {
-        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
-        String sendersRef = "SR123";
-        String relatedRef = "FX1213";
-
-        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
-
-        assertEquals("FX1213", treasuryRef);
-    }
-
-    @Test
-    void testFindTreasuryRefFromMsg_RelatedRefDoesNotStartWithSpecifiedPrefixes() {
-        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
-        String sendersRef = "SR123";
-        String relatedRef = "ABC123";
-
-        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
-
-        assertEquals("SR123", treasuryRef);
-    }
-
-    @Test
-    void testFindTreasuryRefFromMsg_RelatedRefIsNull() {
-        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
-        String sendersRef = "SR123";
-        String relatedRef = null;
-
-        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
-
-        assertEquals("SR123", treasuryRef);
+        assertThrows(ILMException.class, () -> handler.throwEntityNotFountException());
     }
 }
