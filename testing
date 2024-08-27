@@ -1,57 +1,71 @@
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.assertThrows;
-import org.mockito.Mockito;
-import com.maybank.ilm.core.util.ILMException;
-import com.maybank.ilm.entity.FinMT940;
-import com.maybank.ilm.embeddable.Block4Tag62;
+import com.maybank.ilm.core.service.MXMsgHandlerAbstractImpl;
 
 class MXMsgHandlerAbstractImplTest {
 
     @Test
-    void testGetCurrencyByTag62For940And950_FCurrencyNotNull() {
-        // Create a FinMT940 object with FCurrency not null
-        FinMT940 finMT940 = new FinMT940();
-        Block4Tag62 tags62 = new Block4Tag62();
-        tags62.setBlock4Tag62FCurrency("USD");
-        finMT940.setTags62(tags62);
+    void testFindTreasuryRefFromMsg_RelatedRefStartsWithKTPP() {
+        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
+        String sendersRef = "SR123";
+        String relatedRef = "KTPP456";
 
-        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
-        Mockito.when(handler.getTags62For940And950(finMT940)).thenReturn(tags62);
+        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
 
-        String currencyCode = handler.getCurrencyByTag62For940And950(finMT940);
-
-        assertEquals("USD", currencyCode);
+        assertEquals("KTPP456", treasuryRef);
     }
 
     @Test
-    void testGetCurrencyByTag62For940And950_FCurrencyNull_MCurrencyNotNull() {
-        // Create a FinMT940 object with FCurrency null and MCurrency not null
-        FinMT940 finMT940 = new FinMT940();
-        Block4Tag62 tags62 = new Block4Tag62();
-        tags62.setBlock4Tag62FCurrency(null);
-        tags62.setBlock4Tag62MCurrency("EUR");
-        finMT940.setTags62(tags62);
+    void testFindTreasuryRefFromMsg_RelatedRefStartsWithDV() {
+        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
+        String sendersRef = "SR123";
+        String relatedRef = "DV789";
 
-        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
-        Mockito.when(handler.getTags62For940And950(finMT940)).thenReturn(tags62);
+        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
 
-        String currencyCode = handler.getCurrencyByTag62For940And950(finMT940);
-
-        assertEquals("EUR", currencyCode);
+        assertEquals("DV789", treasuryRef);
     }
 
     @Test
-    void testGetCurrencyByTag62For940And950_BothCurrenciesNull() {
-        // Create a FinMT940 object with both FCurrency and MCurrency null
-        FinMT940 finMT940 = new FinMT940();
-        Block4Tag62 tags62 = new Block4Tag62();
-        tags62.setBlock4Tag62FCurrency(null);
-        tags62.setBlock4Tag62MCurrency(null);
-        finMT940.setTags62(tags62);
+    void testFindTreasuryRefFromMsg_RelatedRefStartsWithN() {
+        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
+        String sendersRef = "SR123";
+        String relatedRef = "N1011";
 
-        MXMsgHandlerAbstractImpl handler = Mockito.mock(MXMsgHandlerAbstractImpl.class);
-        Mockito.when(handler.getTags62For940And950(finMT940)).thenReturn(tags62);
+        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
 
-        assertThrows(ILMException.class, () -> handler.getCurrencyByTag62For940And950(finMT940));
+        assertEquals("N1011", treasuryRef);
+    }
+
+    @Test
+    void testFindTreasuryRefFromMsg_RelatedRefStartsWithFX() {
+        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
+        String sendersRef = "SR123";
+        String relatedRef = "FX1213";
+
+        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
+
+        assertEquals("FX1213", treasuryRef);
+    }
+
+    @Test
+    void testFindTreasuryRefFromMsg_RelatedRefDoesNotStartWithSpecifiedPrefixes() {
+        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
+        String sendersRef = "SR123";
+        String relatedRef = "ABC123";
+
+        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
+
+        assertEquals("SR123", treasuryRef);
+    }
+
+    @Test
+    void testFindTreasuryRefFromMsg_RelatedRefIsNull() {
+        MXMsgHandlerAbstractImpl handler = new MXMsgHandlerAbstractImpl();
+        String sendersRef = "SR123";
+        String relatedRef = null;
+
+        String treasuryRef = handler.findTreasuryRefFromMsg(sendersRef, relatedRef);
+
+        assertEquals("SR123", treasuryRef);
     }
 }
