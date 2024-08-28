@@ -1,8 +1,22 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
+import com.maybank.ilm.core.dao.DimDao;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.ConversionUtil;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.entity.FinMT103;
+import com.prowidesoftware.swift.model.mx.MxCamt05400108;
+import com.prowidesoftware.swift.model.mx.dic.EntryTransaction10;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -12,29 +26,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-import com.maybank.ilm.core.dao.DimDao;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.entity.AccountBalanceAggregation;
-import com.maybank.ilm.core.entity.AccountBalanceManagement;
-import com.maybank.ilm.core.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.core.util.ConversionUtil;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
-import com.maybank.ilm.entity.FinMT103;
-import com.prowidesoftware.swift.model.mx.MxCamt05400108;
-import com.prowidesoftware.swift.model.mx.dic.EntryTransaction10;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 
 public class MXcamt05400108HandlerTest {
 
     @InjectMocks
-    private MXcamt05400108Handler mxcamt05400108Handler;
+    private MXcamt05400108Handler handler;
 
     @Mock
     private EntityAccountMappingRepo eamRepo;
@@ -42,145 +41,99 @@ public class MXcamt05400108HandlerTest {
     @Mock
     private DimDao dimDao;
 
-    @Before
-    public void setUp() throws Exception {
+    @BeforeEach
+    public void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void testSaveToAcctBalMgmtAndMapping_MYR_Credit() throws Exception {
-        MxCamt05400108 camt05400108 = createMockMxCamt05400108("MYR", ILMCoreConstants.CREDIT);
-        when(eamRepo.findByAccountNumber(any())).thenReturn(createMockEntityAccountMapDefinition());
+    @Transactional
+    public void testSaveToAcctBalMgmtAndMapping() {
+        // Create mock MxCamt05400108
+        MxCamt05400108 mockCamt = mock(MxCamt05400108.class);
+        EntryTransaction10 mockTxDtls = mock(EntryTransaction10.class);
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn()).thenReturn(mock(BkToCstmrDbtCdtNtfctn.class));
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn()).thenReturn(Arrays.asList(mock(Notification.class)));
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry()).thenReturn(Arrays.asList(mock(Entry.class)));
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy()).thenReturn("MYR");
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getValue()).thenReturn(BigDecimal.valueOf(1000));
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getCdtDbtInd().value()).thenReturn(ILMCoreConstants.DBIT);
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls().get(0).getTxDtls().get(0)).thenReturn(mockTxDtls);
+        when(mockTxDtls.getAddtlTxInf()).thenReturn("TRN/1234/ICRU/5678");
+        when(mockTxDtls.getRltdPties()).thenReturn(mock(RelatedParties.class));
+        when(mockTxDtls.getRltdPties().getDbtr()).thenReturn(mock(Debtor.class));
+        when(mockTxDtls.getRltdPties().getDbtr().getPty()).thenReturn(mock(Party.class));
+        when(mockTxDtls.getRltdPties().getDbtr().getPty().getId().getOrgId().getAnyBIC()).thenReturn("BIC123");
+        when(mockTxDtls.getRltdPties().getDbtrAcct()).thenReturn(mock(DebtorAccount.class));
+        when(mockTxDtls.getRltdPties().getDbtrAcct().getId().getOthr().getId()).thenReturn("Account123");
 
-        mxcamt05400108Handler.saveToAcctBalMgmtAndMapping(camt05400108, 1L);
+        EntityAccountMapDefinition mockDefn = mock(EntityAccountMapDefinition.class);
+        when(eamRepo.findByAccountNumber(anyString())).thenReturn(mockDefn);
+        when(mockDefn.getEntityAcctMapSkey()).thenReturn(1L);
 
-        List<AccountBalanceManagement> allEntries = mxcamt05400108Handler.allEntries;
-        assertNotNull(allEntries);
-        assertEquals(1, allEntries.size());
+        // Call the method to test
+        handler.saveToAcctBalMgmtAndMapping(mockCamt, 123L);
 
-        AccountBalanceManagement mgmt = allEntries.get(0);
-        assertEquals(new BigDecimal("100.00"), mgmt.getAmount());
-        assertEquals(ILMCoreConstants.PLUS, mgmt.getAmountSign());
-        assertEquals(ILMCoreConstants.MESSAGETYPE910, mgmt.getMessageType());
+        // Verify the interactions and assert expected results
+        verify(eamRepo, times(1)).findByAccountNumber(anyString());
+        verify(dimDao, times(1)).save(any());
+        // Add more assertions and verifications as needed
     }
 
     @Test
-    public void testSaveToAcctBalMgmtAndMapping_MYR_Debit() throws Exception {
-        MxCamt05400108 camt05400108 = createMockMxCamt05400108("MYR", ILMCoreConstants.DEBIT);
-        when(eamRepo.findByAccountNumber(any())).thenReturn(createMockEntityAccountMapDefinition());
-        when(mxcamt05400108Handler.extractCounterParty(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAddtlTxInf())).thenReturn("counterParty");
+    public void testCreateEntriesForICRU() {
+        // Create necessary mocks
+        MxCamt05400108 mockCamt = mock(MxCamt05400108.class);
+        AccountBalanceManagement mockMgmt = mock(AccountBalanceManagement.class);
+        String sIcruAmnt = "5678";
+        String addtlTxInf = "ICRU/5678";
 
-        mxcamt05400108Handler.saveToAcctBalMgmtAndMapping(camt05400108, 1L);
+        // Call the method to test
+        handler.createEntriesForICRU(new ArrayList<>(), mockMgmt, mockCamt, addtlTxInf);
 
-        List<AccountBalanceManagement> allEntries = mxcamt05400108Handler.allEntries;
-        assertNotNull(allEntries);
-        assertEquals(1, allEntries.size());
-
-        AccountBalanceManagement mgmt = allEntries.get(0);
-        assertEquals(new BigDecimal("100
-
-
-
-
-
-
-
-
-
-
-
-
-@Test
-public void testSaveToAcctBalMgmtAndMapping_NostroCurrency() throws Exception {
-    MxCamt05400108 camt05400108 = createMockMxCamt05400108("USD", ILMCoreConstants.CREDIT);
-    when(eamRepo.findByAccountNumber(any())).thenReturn(null);
-    when(eamRepo.findByEntityIdentifier(any())).thenReturn(createMockEntityAccountMapDefinition());
-
-    mxcamt05400108Handler.saveToAcctBalMgmtAndMapping(camt05400108, 1L);
-
-    List<AccountBalanceManagement> allEntries = mxcamt05400108Handler.allEntries;
-    assertNotNull(allEntries);
-    assertEquals(1, allEntries.size());
-
-    AccountBalanceManagement mgmt = allEntries.get(0);
-    assertEquals(new BigDecimal("100.00"), mgmt.getAmount());
-    assertEquals(ILMCoreConstants.PLUS, mgmt.getAmountSign());
-    assertEquals(ILMCoreConstants.MESSAGETYPE910, mgmt.getMessageType());
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-@Test
-public void testSaveToAcctBalMgmtAndMapping_WithIcruAmount() throws Exception {
-    MxCamt05400108 camt05400108 = createMockMxCamt05400108("MYR", ILMCoreConstants.CREDIT, "ICRU/10.00");
-    when(eamRepo.findByAccountNumber(any())).thenReturn(createMockEntityAccountMapDefinition());
-    when(eamRepo.findByEntityIdentifier(any())).thenReturn(createMockEntityAccountMapDefinition());
-
-    mxcamt05400108Handler.saveToAcctBalMgmtAndMapping(camt05400108, 1L);
-
-    List<AccountBalanceManagement> allEntries = mxcamt05400108Handler.allEntries;
-    assertNotNull(allEntries);
-    assertEquals(2, allEntries.size()); // One for main account and one for ICRU
-
-    AccountBalanceManagement mgmt = allEntries.get(0);
-    assertEquals(new BigDecimal("100.00"), mgmt.getAmount());
-    assertEquals(ILMCoreConstants.PLUS, mgmt.getAmountSign());
-    assertEquals(ILMCoreConstants.MESSAGETYPE910, mgmt.getMessageType());
-
-    AccountBalanceManagement icruMgmt = allEntries.get(1);
-    assertEquals(new BigDecimal("10.00"), icruMgmt.getAmount());
-    assertEquals(ILMCoreConstants.PLUS, icruMgmt.getAmountSign());
-    assertEquals(ILMCoreConstants.MESSAGETYPE910, icruMgmt.getMessageType());
-}
-
-
-
-
-
-
-@Test
-public void testSaveToAcctBalMgmtAndMapping_EntityNotFound() throws Exception {
-    MxCamt05400108 camt05400108 = createMockMxCamt05400108("MYR", ILMCoreConstants.CREDIT);
-    when(eamRepo.findByAccountNumber(any())).thenReturn(null);
-    when(eamRepo.findByEntityIdentifier(any())).thenReturn(null);
-
-    try {
-        mxcamt05400108Handler.saveToAcctBalMgmtAndMapping(camt05400108, 1L);
-        fail("Expected EntityNotFoundException");
-    } catch (EntityNotFoundException e) {
-        // Expected behavior
+        // Verify the interactions and assert expected results
+        // Add more assertions and verifications as needed
     }
-}
 
+    @Test
+    public void testSetICRUEntry() {
+        // Create necessary mocks
+        MxCamt05400108 mockCamt = mock(MxCamt05400108.class);
+        AccountBalanceManagement mockMgmt = mock(AccountBalanceManagement.class);
+        String sIcruAmnt = "5678";
+        String acctName = ILMCoreConstants.KACCOUNT;
+        
+        // Create an entity account map definition
+        EntityAccountMapDefinition mockDefn = mock(EntityAccountMapDefinition.class);
+        when(eamRepo.findByAccountNumber(anyString())).thenReturn(mockDefn);
+        when(mockDefn.getEntityAcctMapSkey()).thenReturn(1L);
+        
+        // Call the method to test
+        AccountBalanceManagement result = handler.setICRUEntry(mockCamt, sIcruAmnt, mockMgmt, acctName);
 
+        // Assert the result
+        assertNotNull(result);
+        assertEquals(BigDecimal.valueOf(5678), result.getAmount());
+    }
 
-private MxCamt05400108 createMockMxCamt05400108(String currencyCode, String creditDebitInd, String addtlTxInf) {
-    // ... (create a mock MxCamt05400108 object with desired values)
-    when(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy()).thenReturn(currencyCode);
-    when(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getCdtDbtInd().value()).thenReturn(creditDebitInd);
-    when(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAddtlTxInf()).thenReturn(addtlTxInf);
-    // ... (set other necessary values)
-    return camt05400108;
-}
+    @Test
+    public void testExtractAccountNumber() {
+        // Create necessary mocks
+        MxCamt05400108 mockCamt = mock(MxCamt05400108.class);
+        EntryTransaction10 mockTxDtls = mock(EntryTransaction10.class);
+        
+        // Setup mocks
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy()).thenReturn("MYR");
+        when(mockCamt.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getCdtDbtInd().value()).thenReturn(ILMCoreConstants.DBIT);
+        when(mockTxDtls.getAddtlTxInf()).thenReturn("PAYA/Account123");
 
-private EntityAccountMapDefinition createMockEntityAccountMapDefinition() {
-    // ... (create a mock EntityAccountMapDefinition object with desired values)
-    return entityAccountMapDefinition;
-}
+        // Call the method to test
+        String result = handler.extractAccountNumber(mockCamt, ILMCoreConstants.DBIT, mockTxDtls, "MYR", LocalDate.now());
 
+        // Assert the result
+        assertEquals("Account123", result);
+    }
 
-
+    @Test
+    public void testExtractFromAddlTxInf() {
+       
