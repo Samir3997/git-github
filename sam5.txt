@@ -1,13 +1,45 @@
-   MxCamt05400108 camt05400108 = mock(MxCamt05400108.class);
-        EntryTransaction10 txDtls = mock(EntryTransaction10.class);
-        String addtlTxInf = "TRN/1234567890/ICRU/500";
-        ActiveOrHistoricCurrencyAndAmount ah=new ActiveOrHistoricCurrencyAndAmount();
-        ah.setCcy("MYR");
-        ah.setValue(BigDecimal.valueOf(1000));
-        ReportEntry10 re=new ReportEntry10();
-        re.setAmt(ah);
-        AccountNotification17 an=new AccountNotification17();
-        an.addNtry(re);
-        BankToCustomerDebitCreditNotificationV08 bc=new BankToCustomerDebitCreditNotificationV08();
-        bc.addNtfctn(an);
-        camt05400108.setBkToCstmrDbtCdtNtfctn(bc);
+import com.prowidesoftware.swift.model.mx.MxCamt05400108;
+import com.prowidesoftware.swift.model.mx.dic.AccountNotification17;
+import com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount;
+import com.prowidesoftware.swift.model.mx.dic.BankToCustomerDebitCreditNotificationV08;
+import com.prowidesoftware.swift.model.mx.dic.ReportEntry10;
+
+public class MXcamt05400108HandlerTest extends AbstractServiceTest{
+	@InjectMocks
+    MXcamt05400108Handler handler;
+	
+	@Mock
+    EntityAccountMappingRepo eamRepo;
+
+    @Mock
+    DimDao dimDao;
+
+    @Before
+    public void setUp() {
+         MockitoAnnotations.initMocks(this);
+         doSetup(handler);
+     }
+
+	@Test
+	public void testSaveToAcctBalMgmtAndMapping() {
+		MxCamt05400108 camt05400108 = new MxCamt05400108();
+		ActiveOrHistoricCurrencyAndAmount ah = new ActiveOrHistoricCurrencyAndAmount();
+		ah.setCcy("MYR");
+		ah.setValue(BigDecimal.ONE);
+		List<ReportEntry10> re = new ArrayList<>();
+		ReportEntry10 re1 = new ReportEntry10();
+		re1.setAmt(ah);
+		re.add(re1);
+
+		List<AccountNotification17> an = new ArrayList<AccountNotification17>();
+		AccountNotification17 ant = new AccountNotification17();
+		ant.addNtry(re1);
+		an.add(ant);
+		BankToCustomerDebitCreditNotificationV08 bc = new BankToCustomerDebitCreditNotificationV08();
+		bc.addNtfctn(ant);
+		camt05400108.setBkToCstmrDbtCdtNtfctn(bc);
+		when(bc.getNtfctn().get(0).getNtry().get(0).getAmt().getCcy().toString()).thenReturn("MYR");
+		when(bc.getNtfctn().get(0).getNtry().get(0).getAmt().getValue()).thenReturn(BigDecimal.ONE);
+
+	}
+}
