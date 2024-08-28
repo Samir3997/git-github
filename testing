@@ -1,83 +1,207 @@
-@RunWith(MockitoJUnitRunner.class)
-public class MXMsgHandlerAbstractImplTest {
+package com.maybank.ilm.core.swiftmsghandlers;
 
-    // ... (other setup as before)
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
-    @Test
-    public void testValidateMessage_ValidMessage() {
-        // Arrange
-        Block4Tag72 tag72 = new Block4Tag72();
-        tag72.setBlock4Tag72Nar1("/CPRO/BNMAMYKL/CPRB/MBBEMYKL");
-        String currencyCode = "USD";
-        String valueDt = "2024-08-28";
-        String sendersRef = "SR123";
-        String messageType = "MT535";
-        BigDecimal amount = BigDecimal.valueOf(100);
-        String acctNum = "12345";
-        Boolean eamByBic = true;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-        EntityAccountMapDefinition expectedDefinition = new EntityAccountMapDefinition();
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("MBBEMYKL", "MAINACCOUNT", any())).thenReturn(expectedDefinition);
-        when(mgmtRepo.findByValueDateAndSendersRefAndMessageType(any(), any(), any())).thenReturn(Collections.emptyList());
+import com.maybank.ilm.core.dao.DimDao;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.ConversionUtil;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.entity.FinMT103;
+import com.prowidesoftware.swift.model.mx.MxCamt05400108;
+import com.prowidesoftware.swift.model.mx.dic.EntryTransaction10;
 
-        // Act
-        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
-            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
-        );
+@Component
+public class MXcamt05400108Handler extends MXMsgHandlerAbstractImpl {
+	private static final Logger LOGGER = LogManager.getLogger(MXcamt05400108Handler.class);
 
-        // Assert
-        assertEquals("Validated Successfully.", result.getMessageForUI());
-        assertNotNull(result.getEntityIdentifier());
-        // ... other assertions to verify the DTO contents
-    }
+	@Autowired
+	private EntityAccountMappingRepo eamRepo;
 
-    @Test
-    public void testValidateMessage_NoDefinitionFound() {
-        // Arrange
-        // ... (same as above, but without the definition)
-        when(eamRepo.findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey("MBBEMYKL", "MAINACCOUNT", any())).thenReturn(null);
+	@Autowired
+	private DimDao dimDao;
 
-        // Act
-        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
-            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
-        );
+	/**
+	 * Instantiates a new MX camt05400108 parser.
+	 *
+	 */
+	@Transactional
+	@Override
+	public <T> void saveToAcctBalMgmtAndMapping(T t, Long trackerId) {
+		MxCamt05400108 camt05400108 = (MxCamt05400108) t;
+		String actualMessageType = camt05400108.getMxId().toString();
+		String currencyCode = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy();
+		String amountSign = "";
+		String messageType ="";
+		String counterParty = "";
+		BigDecimal amount = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getValue();
+		String creditDebitInd = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getCdtDbtInd().value();
+		LocalDateTime businessDtTime = LocalDateTime.now();
+		String senderCode = camt05400108.getAppHdr().from().substring(0, 8);
+		String receiverCode = camt05400108.getAppHdr().to().substring(0, 8);
+		final EntryTransaction10 txDtls = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls().get(0).getTxDtls().get(0);
+		if(creditDebitInd.contentEquals(ILMCoreConstants.DBIT)) {
+			amountSign = ILMCoreConstants.MINUS;
+			messageType = ILMCoreConstants.MESSAGETYPE900;
+			counterParty = this.extractCounterParty(txDtls.getAddtlTxInf());
+		} else {
+			amountSign = ILMCoreConstants.PLUS;
+			messageType = ILMCoreConstants.MESSAGETYPE910;
+		}
+		List<AccountBalanceManagement> allEntries = new ArrayList<>();
+		List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+		if(currencyCode.equals(ILMCoreConstants.MYR)) {
+			String sendersRef = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0)
+					.getNtryDtls().get(0).getTxDtls().get(0).getRefs().getEndToEndId();
+			LocalDate valueDate = LocalDate
+					.parse(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls()
+							.get(0).getTxDtls().get(0).getRltdDts().getIntrBkSttlmDt().toString());
+			final String accountNo = this.extractAccountNumber(camt05400108, creditDebitInd, txDtls, currencyCode, valueDate);
+			final EntityAccountMapDefinition eamDefnIn = getEntityAcctMapDefnByAcctNum(accountNo, currencyCode);
+			if (eamDefnIn != null) {
+				LOGGER.info("Entity account mapping found for {}", accountNo);
+				Long entityAcctMapSkey = eamDefnIn.getEntityAcctMapSkey();
+				final String addtlTxInf = txDtls.getAddtlTxInf();
+				final String trnCode = this.extractFromAddlTxInf(addtlTxInf,"TRN");
+				System.out.println(trnCode);
+				AccountBalanceManagement mgmt = new AccountBalanceManagement(entityAcctMapSkey, amount, amountSign, trackerId,
+						businessDtTime, valueDate, null, messageType, senderCode, receiverCode, counterParty, trnCode, sendersRef,
+						currencyCode, null,null,actualMessageType);
+				System.out.println(mgmt);
+				allEntries.add(mgmt);
+				createEntriesForICRU(allEntries,mgmt,camt05400108,addtlTxInf);
+			} else {
+				LOGGER.info("Entity defination not found for {} {} {} ", accountNo,
+						ILMCoreConstants.MAINACCOUNT, currencyCode);
+				throwEntityNotFountException();
+			}
+			
+		}else {
+			LOGGER.info("creditDebitIndicator: {}", creditDebitInd);
+			LOGGER.info("Inside MXcamt05400108Handler for Nostro {}.", currencyCode);
+			EntityAccountMapDefinition eamDefn = getDefnByEntityIDAndAcctType(senderCode,
+					ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+			if (eamDefn != null) {
+				LocalDate valueDate=LocalDate.parse(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getValDt().getDt().toString());
+				String sendersRef=camt05400108.getBkToCstmrDbtCdtNtfctn().getGrpHdr().getMsgId();
+				Long entityAcctMapSkey = eamDefn.getEntityAcctMapSkey();
+				Character settled = ILMCoreConstants.NIND;
+				if (checkRelatedRefForNostro(valueDate, entityAcctMapSkey, sendersRef)) {
+					settled = ILMCoreConstants.YIND;
+				}
+				AccountBalanceManagement mgmt = new AccountBalanceManagement(entityAcctMapSkey, amount, amountSign,
+						trackerId, businessDtTime, valueDate, null, messageType, senderCode, receiverCode, null,
+						sendersRef, currencyCode, ILMCoreConstants.NIND, settled, actualMessageType);
+				allEntries.add(mgmt);
 
-        // Assert
-        assertEquals("No definition is found for Entity Type, Currency code or Account Type.", result.getMessageForUI());
-        assertNull(result.getEntityIdentifier());
-    }
+			} else {
+				LOGGER.info("Entity defination not found for {} {} {} ", senderCode, ILMCoreConstants.NOSTROACCOUNT,
+						currencyCode);
+				throwEntityNotFountException();
+			}
+		}
+		String aggrInd = ILMCoreConstants.OTHERS;
+		getAggregations(allEntries, aggregations, aggrInd);
+		saveEntitiesForMX(allEntries);
+		
+	}
+	
+	private void createEntriesForICRU(List<AccountBalanceManagement> icruEntries, AccountBalanceManagement mgmt, MxCamt05400108 camt05400108, String addtlTxInf) {
+		String sIcruAmnt = this.extractFromAddlTxInf(addtlTxInf, "ICRU");
+		if (sIcruAmnt != null) {
+			AccountBalanceManagement kAcctEntry = setICRUEntry(camt05400108, sIcruAmnt,mgmt, ILMCoreConstants.KACCOUNT);
+			icruEntries.add(kAcctEntry);
+		}
+	}
+	
+	private AccountBalanceManagement setICRUEntry(MxCamt05400108 camt05400108, String sIcruAmnt, AccountBalanceManagement mgmt, String acctName) {
+		BigDecimal icruAmnt = ConversionUtil.convertStrToBigDecimal(sIcruAmnt);
+		String  entityBic = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls()
+						.get(0).getTxDtls().get(0).getRltdPties().getDbtr().getPty().getId().getOrgId().getAnyBIC();
+		EntityAccountMapDefinition eamDefn = getDefnByEntityIDAndAcctType(entityBic, acctName, ILMCoreConstants.MYR);
+		AccountBalanceManagement icruEntry = null;
+		if(eamDefn != null) {
+			icruEntry = new AccountBalanceManagement(eamDefn.getEntityAcctMapSkey(), icruAmnt, ILMCoreConstants.PLUS, mgmt.getTrackerID(),
+					getCurrentDateTimeByZone(), mgmt.getValueDate(), null, mgmt.getMessageType(), entityBic, null, null, mgmt.getTrnCode(), mgmt.getSendersRef(),
+					ILMCoreConstants.MYR, null,null,camt05400108.getMxId().toString());
+		}else {
+			LOGGER.info("Entity defination not found for {} {} {}", entityBic, acctName, ILMCoreConstants.MYR);
+		}
+		
+		return icruEntry;
+	}
 
-    @Test
-    public void testValidateMessage_PastValueDate() {
-        // Arrange
-        // ... (same as above, but with a past value date)
-        valueDt = "2024-08-26";
+	private String extractAccountNumber(final MxCamt05400108 camt05400108, final String creditDebitInd, final EntryTransaction10 txDtls
+			, final String currencyCode, final LocalDate valueDate) {
+		if(creditDebitInd.contentEquals(ILMCoreConstants.DBIT)) {
+			return /*this.checkRelatedRefOfCamt054(valueDate, txDtls.getRefs().getEndToEndId(), currencyCode)
+			.map(mgmt -> {
+				return this.getDefnByEntityIDAndAcctType(txDtls.getRltdPties().getDbtr().getPty().getId().getOrgId().getAnyBIC()
+						, ILMCoreConstants.SRRACCOUNT, currencyCode).getAccountNumber();
+			})
+			.orElseGet(() -> {
+				return txDtls.getRltdPties().getDbtrAcct().getId().getOthr().getId();
+			});*/Optional.ofNullable( 
+					Optional.ofNullable(this.extractFromAddlTxInf(txDtls.getAddtlTxInf(), "PAYA"))
+			.orElseGet(() ->  this.getDefnByEntityIDAndAcctType(this.extractFromAddlTxInf(txDtls.getAddtlTxInf(), "PAYB")
+					, ILMCoreConstants.MAINACCOUNT, currencyCode).getAccountNumber()))
+			.orElseGet(() -> txDtls.getRltdPties().getDbtrAcct().getId().getOthr().getId());
+			
+		} else {
+			return Optional.ofNullable(this.extractFromAddlTxInf(txDtls.getAddtlTxInf(), "CPRA"))
+			.orElseGet(() -> camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getAcct().getId().getOthr().getId());
+		}
+	}
 
-        // Act
-        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
-            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
-        );
+	private String extractFromAddlTxInf(final String addtlTxInf,final String ind) {
+		final List<String> segs = Arrays.asList(addtlTxInf.split("/"));
+		final Integer index = segs.indexOf(ind);
+		if(index != -1) {
+			final String result = StringUtils.trimToNull(segs.get(index + 1));
+			LOGGER.info("AddtlTxInf {} {}", ind, result);
+			return result;
+		}
+		return null;
+	}
+	
+	private String extractCounterParty(final String addtlTxInf) {
+		String bic = this.extractFromAddlTxInf(addtlTxInf, "CPRB");
+		if(bic != null) {
+			return bic;
+		} else {
+			String acctNo = this.extractFromAddlTxInf(addtlTxInf, "CPRA");
+			String bicFromAcctNo = eamRepo.findByAccountNumber(acctNo) != null ? eamRepo.findByAccountNumber(acctNo).getEntityIdentifier() : null;
+			return bicFromAcctNo;
+		}
+	}
 
-        // Assert
-        assertEquals("Value Date is a past date. This processor allows only present and future dates.", result.getMessageForUI());
-        assertNull(result.getEntityIdentifier());
-    }
+	@Override
+	public String getMessageType() {
+		return ILMCoreConstants.MXTYPECAMT05400108;
+	}
 
-    @Test
-    public void testValidateMessage_MessageAlreadyExists() {
-        // Arrange
-        // ... (same as above, but with an existing message)
-        when(mgmtRepo.findByValueDateAndSendersRefAndMessageType(any(), any(), any())).thenReturn(Collections.singletonList(new AccountBalanceManagement()));
-
-        // Act
-        AccountBalanceMgmtDTO result = mxMsgHandler.validateMessage(
-            "ENTITY_TYPE", tag72, "BLOCK1LT", currencyCode, valueDt, sendersRef, messageType, amount, acctNum, eamByBic
-        );
-
-        // Assert
-        assertEquals("Message already exists.", result.getMessageForUI());
-        assertNull(result.getEntityIdentifier());
-    }
-
-    // ... (add more test cases for different scenarios)
+	@Override
+	public <T> AccountBalanceMgmtDTO validateMessage(T t) {
+		FinMT103 finMT103 = (FinMT103) t;
+		return super.validateMessage(finMT103.getTags57().getBlock4Tag57aBic(), finMT103.getTags72(),
+				finMT103.getBlock1().getBlock1LogicalTerminal(), finMT103.getBlock4().getBlock4Tag32aCurrency(),
+				finMT103.getBlock4().getBlock4Tag32aDate(), finMT103.getBlock4().getBlock4Tag20(),
+				ILMCoreConstants.MESSAGETYPE103, finMT103.getBlock4().getBlock4Tag32aSettledAmnt(), null, Boolean.TRUE);
+	}
 }
