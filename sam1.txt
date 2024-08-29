@@ -1,33 +1,84 @@
-package com.maybank.ilm.core.dao;
+package com.maybank.ilm.junit.swiftmsghandlers;
 
-import java.util.List;
-import java.util.Optional;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import com.maybank.ilm.core.swiftmsghandlers.MXcamt05400108Handler;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
 import com.maybank.ilm.entity.EntityAccountMapDefinition;
 
-public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
+public class MXcamt05400108HandlerTest {
 
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndAccountType(Long entitySkey, String accountType);
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndCurrencySkeyAndAccountType(Long entitySkey,Long currencySkey,String accountType);
-	public EntityAccountMapDefinition findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(String entityIdentifier, String accountType, Long currencySkey);
-	public List<EntityAccountMapDefinition> findByAccountType(String accountType);
-	public EntityAccountMapDefinition findFirstByEntitySkey(Long entitySkey);
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndCountrySkeyAndCurrencySkey(Long entitySkey, Long countrySkey, Long currencySkey);
-	public List<EntityAccountMapDefinition> getDefnByNostroInd(Character nostroInd);
-	public List<EntityAccountMapDefinition> findByEntityAcctMapSkey(Long entityAcctMapSkey);
-	public List<EntityAccountMapDefinition> findByEntityIdentifier(String bic);
-	@Query("SELECT dic.currencyCode FROM DimCurrency dic WHERE dic.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
-	public String findCurrencyCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
+    @InjectMocks
+    private MXcamt05400108Handler handler;
 
-	@Query("SELECT dc.countryCode FROM DimCountry dc WHERE dc.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
-	public String findCountryCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
+    @Mock
+    private EntityAccountMappingRepo eamRepo;
 
-	public Optional<EntityAccountMapDefinition> findFirstByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
-	public EntityAccountMapDefinition findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndNostroBankName(Long countrySkey, Long entitySkey, Long currencySkey, String nostroAgent);
-	public List <EntityAccountMapDefinition> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
-	public EntityAccountMapDefinition findByAccountNumber(String accountNumber);
-	
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    public void testExtractCounterPartyWithBic() {
+        // Mocking the extractFromAddlTxInf method to return a BIC
+        String addtlTxInf = "CPRB/BIC1234/OtherInfo";
+        String expectedBic = "BIC1234";
+        
+        // Mock the method to return the expected BIC
+        doReturn(expectedBic).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRB");
+
+        // Call the method under test
+        String result = handler.extractCounterParty(addtlTxInf);
+
+        // Verify the result
+        assertEquals(expectedBic, result);
+    }
+
+    @Test
+    public void testExtractCounterPartyWithAccountNumber() {
+        // Mocking the extractFromAddlTxInf method to return an account number
+        String addtlTxInf = "CPRA/ACCOUNT1234/OtherInfo";
+        String accountNumber = "ACCOUNT1234";
+        String expectedBic = "BIC5678";
+
+        // Mock the method to return the account number
+        doReturn(accountNumber).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRA");
+
+        // Mock the repository method
+        EntityAccountMapDefinition entity = new EntityAccountMapDefinition();
+        entity.setEntityIdentifier(expectedBic);
+        when(eamRepo.findByAccountNumber(accountNumber)).thenReturn(entity);
+
+        // Call the method under test
+        String result = handler.extractCounterParty(addtlTxInf);
+
+        // Verify the result
+        assertEquals(expectedBic, result);
+    }
+
+    @Test
+    public void testExtractCounterPartyWithNoBicOrAccount() {
+        // Mocking the extractFromAddlTxInf method to return null
+        String addtlTxInf = "SomeOtherInfo";
+
+        // Mock the method to return null for both BIC and account number
+        doReturn(null).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRB");
+        doReturn(null).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRA");
+
+        // Call the method under test
+        String result = handler.extractCounterParty(addtlTxInf);
+
+        // Verify the result is null
+        assertEquals(null, result);
+    }
 }
