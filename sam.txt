@@ -1,153 +1,103 @@
-import org.junit.jupiter.api.Test;
-import java.lang.reflect.Method;
-import static org.junit.jupiter.api.Assertions.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+package com.maybank.ilm.entity;
 
-public class DateValidatorBaseTest {
+import java.util.List;
 
-    // Concrete subclass to instantiate for testing
-    private static class TestableDateValidator extends DateValidatorBase {
-        // No additional methods are needed here
-    }
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
 
-    private TestableDateValidator dateValidator = new TestableDateValidator();
+import org.hibernate.annotations.LazyCollection;
+import org.hibernate.annotations.LazyCollectionOption;
 
-    @Test
-    void testValidateValueDate_ValidDateBeforeCurrentDate() throws Exception {
-        // Given
-        String dateStr = "230827"; // Date in yyMMdd format (August 27, 2023)
+@Entity
+@Table(name = "PRC_MT_SEQUENCE")
+public class MTSequence {
 
-        // When
-        Boolean result = invokePrivateMethod("validateValueDate", dateStr);
+	@Id
+	@Column(name = "N_MT_SEQUENCE_SKEY")
+	@SequenceGenerator(name = "mtSeqSkey", sequenceName = "PRC_MT_SEQUENCE_SEQ", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mtSeqSkey")
+	private Long mtSeqSkey;
+	
+	@Column(name = "N_MT_SKEY")
+	private Long mtSkey;
+	
+	@Column(name = "V_SEQUENCE_NAME")
+	private String seqName;
+	
+	@ManyToOne(fetch = FetchType.LAZY, optional=true)
+	@JoinColumn(name="N_PARENT_SEQ_SKEY")
+	private MTSequence parentSeq;
+	
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	@JoinColumn(name = "N_MT_SEQUENCE_SKEY")
+	private List<MTField> mtFields;
+	
+	@OneToMany(mappedBy = "parentSeq", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@LazyCollection(LazyCollectionOption.FALSE)
+	private List<MTSequence> mtSequences;
 
-        // Then
-        assertTrue(result, "Date should be before the current date.");
-    }
+	public Long getMtSeqSkey() {
+		return mtSeqSkey;
+	}
 
-    @Test
-    void testValidateValueDate_ValidDateEqualToCurrentDate() throws Exception {
-        // Given
-        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
+	public void setMtSeqSkey(Long mtSeqSkey) {
+		this.mtSeqSkey = mtSeqSkey;
+	}
 
-        // When
-        Boolean result = invokePrivateMethod("validateValueDate", dateStr);
+	public Long getMtSkey() {
+		return mtSkey;
+	}
 
-        // Then
-        assertFalse(result, "Date should not be before the current date.");
-    }
+	public void setMtSkey(Long mtSkey) {
+		this.mtSkey = mtSkey;
+	}
 
-    @Test
-    void testValidateValueDate_ValidDateAfterCurrentDate() throws Exception {
-        // Given
-        LocalDate futureDate = LocalDate.now().plusDays(1);
-        String dateStr = futureDate.format(DateTimeFormatter.ofPattern("yyMMdd"));
+	public String getSeqName() {
+		return seqName;
+	}
 
-        // When
-        Boolean result = invokePrivateMethod("validateValueDate", dateStr);
+	public void setSeqName(String seqName) {
+		this.seqName = seqName;
+	}
 
-        // Then
-        assertFalse(result, "Date should not be before the current date.");
-    }
+	public List<MTField> getMtFields() {
+		return mtFields;
+	}
 
-    @Test
-    void testValidateValueDate_InvalidDateFormat() throws Exception {
-        // Given
-        String invalidDateStr = "2023-08-27"; // Invalid format
+	public void setMtFields(List<MTField> mtFields) {
+		this.mtFields = mtFields;
+	}
 
-        // When
-        Boolean result = invokePrivateMethod("validateValueDate", invalidDateStr);
+	public List<MTSequence> getMtSequences() {
+		return mtSequences;
+	}
 
-        // Then
-        assertNull(result, "Invalid date should return null.");
-    }
+	public void setMtSequences(List<MTSequence> mtSequences) {
+		this.mtSequences = mtSequences;
+	}
 
-    private Boolean invokePrivateMethod(String methodName, String valueDt) throws Exception {
-        // Use reflection to access the private method
-        Method method = DateValidatorBase.class.getDeclaredMethod(methodName, String.class);
-        method.setAccessible(true);
-        return (Boolean) method.invoke(dateValidator, valueDt);
-    }
-}
+	public MTSequence getParentSeq() {
+		return parentSeq;
+	}
 
+	public void setParentSeq(MTSequence parentSeq) {
+		this.parentSeq = parentSeq;
+	}
 
-
-
-
-
-
-
-
-import org.junit.jupiter.api.Test;
-import java.lang.reflect.Method;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import static org.junit.jupiter.api.Assertions.*;
-
-public class DateValidatorBaseTest {
-
-    private DateValidatorBase createTestableDateValidator() {
-        // Create an anonymous subclass to instantiate DateValidatorBase
-        return new DateValidatorBase() {};
-    }
-
-    @Test
-    void testValidateValueDate_ValidDateBeforeCurrentDate() throws Exception {
-        // Given
-        DateValidatorBase dateValidator = createTestableDateValidator();
-        String dateStr = "230827"; // Date in yyMMdd format (August 27, 2023)
-
-        // When
-        Boolean result = invokePrivateMethod(dateValidator, "validateValueDate", dateStr);
-
-        // Then
-        assertTrue(result, "Date should be before the current date.");
-    }
-
-    @Test
-    void testValidateValueDate_ValidDateEqualToCurrentDate() throws Exception {
-        // Given
-        DateValidatorBase dateValidator = createTestableDateValidator();
-        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-
-        // When
-        Boolean result = invokePrivateMethod(dateValidator, "validateValueDate", dateStr);
-
-        // Then
-        assertFalse(result, "Date should not be before the current date.");
-    }
-
-    @Test
-    void testValidateValueDate_ValidDateAfterCurrentDate() throws Exception {
-        // Given
-        DateValidatorBase dateValidator = createTestableDateValidator();
-        LocalDate futureDate = LocalDate.now().plusDays(1);
-        String dateStr = futureDate.format(DateTimeFormatter.ofPattern("yyMMdd"));
-
-        // When
-        Boolean result = invokePrivateMethod(dateValidator, "validateValueDate", dateStr);
-
-        // Then
-        assertFalse(result, "Date should not be before the current date.");
-    }
-
-    @Test
-    void testValidateValueDate_InvalidDateFormat() throws Exception {
-        // Given
-        DateValidatorBase dateValidator = createTestableDateValidator();
-        String invalidDateStr = "2023-08-27"; // Invalid format
-
-        // When
-        Boolean result = invokePrivateMethod(dateValidator, "validateValueDate", invalidDateStr);
-
-        // Then
-        assertNull(result, "Invalid date should return null.");
-    }
-
-    private Boolean invokePrivateMethod(Object obj, String methodName, Object... params) throws Exception {
-        Class<?> clazz = obj.getClass();
-        Method method = clazz.getDeclaredMethod(methodName, String.class);
-        method.setAccessible(true);
-        return (Boolean) method.invoke(obj, params);
-    }
+	@Override
+	public String toString() {
+		return "MTSequence [mtSeqSkey=" + mtSeqSkey + ", mtSkey=" + mtSkey + ", seqName=" + seqName + ", parentSeq="
+				+ parentSeq + ", mtFields=" + mtFields + ", mtSequences=" + mtSequences + "]";
+	}	
 }
