@@ -1,4 +1,5 @@
 package com.maybank.ilm.junit.swiftmsghandlers;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
@@ -18,21 +19,24 @@ import com.prowidesoftware.swift.model.mx.dic.AccountNotification17;
 import com.prowidesoftware.swift.model.mx.dic.ActiveOrHistoricCurrencyAndAmount;
 import com.prowidesoftware.swift.model.mx.dic.BankToCustomerDebitCreditNotificationV08;
 import com.prowidesoftware.swift.model.mx.dic.CreditDebitCode;
+import com.prowidesoftware.swift.model.mx.dic.EntryDetails9;
+import com.prowidesoftware.swift.model.mx.dic.EntryTransaction10;
 import com.prowidesoftware.swift.model.mx.dic.ReportEntry10;
 
-public class MXcamt05400108HandlerTest extends AbstractServiceTest{
-	private MXcamt05400108Handler handler;
+public class MXcamt05400108HandlerTest extends AbstractServiceTest {
+    private MXcamt05400108Handler handler;
     private MxCamt05400108 mxMessage;
 
     @Before
     public void setUp() {
-         MockitoAnnotations.initMocks(this);
-         handler = new MXcamt05400108Handler();
-         mxMessage = new MxCamt05400108();
-     }
+        MockitoAnnotations.initMocks(this);
+        handler = new MXcamt05400108Handler();
+        mxMessage = new MxCamt05400108();
+    }
+
     @Test
-  public  void testSaveToAcctBalMgmtAndMapping() {
-    	BankToCustomerDebitCreditNotificationV08 notification = new BankToCustomerDebitCreditNotificationV08();
+    public void testSaveToAcctBalMgmtAndMapping() {
+        BankToCustomerDebitCreditNotificationV08 notification = new BankToCustomerDebitCreditNotificationV08();
         List<AccountNotification17> notifications = new ArrayList<>();
         AccountNotification17 accountNotification = new AccountNotification17();
         List<ReportEntry10> entries = new ArrayList<>();
@@ -42,17 +46,29 @@ public class MXcamt05400108HandlerTest extends AbstractServiceTest{
         amount.setValue(BigDecimal.valueOf(1000));
         entry.setAmt(amount);
         entry.setCdtDbtInd(CreditDebitCode.DBIT);
+
+        // Setting up EntryTransaction10
+        EntryTransaction10 txDetails = new EntryTransaction10();
+        List<EntryTransaction10> txDetailsList = new ArrayList<>();
+        txDetailsList.add(txDetails);
+        EntryDetails9 entryDetails = new EntryDetails9();
+        entryDetails.getTxDtls().add(txDetails);
+        List<EntryDetails9> entryDetailsList = new ArrayList<>();
+        entryDetailsList.add(entryDetails);
+        entry.setNtryDtls(entryDetailsList);
+
         entries.add(entry);
         accountNotification.getNtry().add(entry);
         notifications.add(accountNotification);
         notification.getNtfctn().add(accountNotification);
         mxMessage.setBkToCstmrDbtCdtNtfctn(notification);
-        handler.saveToAcctBalMgmtAndMapping(mxMessage, 12345L);
 
+        // Calling the method to test
+        handler.saveToAcctBalMgmtAndMapping(mxMessage, 12345L);
     }
 
     @Test
-   public void testGetMessageType() {
+    public void testGetMessageType() {
         String messageType = handler.getMessageType();
         assertEquals(ILMCoreConstants.MXTYPECAMT05400108, messageType);
     }
