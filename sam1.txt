@@ -1,84 +1,38 @@
-package com.maybank.ilm.junit.swiftmsghandlers;
+	private Boolean validateValueDate(String valueDt) {
+		LocalDate valueDate = DateUtil.getDateFromString(valueDt);
+		return DateUtil.findDtBeforeCurrenctDt(valueDate);
+	}
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-import com.maybank.ilm.core.swiftmsghandlers.MXcamt05400108Handler;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
+	public static LocalDate getDateFromString(String dateString) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
+		}
+		return localDate;
+	}
 
-public class MXcamt05400108HandlerTest {
 
-    @InjectMocks
-    private MXcamt05400108Handler handler;
+public static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
+		Boolean pastDt = Boolean.FALSE;
+		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
+		if(currentDtTime != null && localDate != null) {
+			LocalDate currentDt = currentDtTime.toLocalDate();
+			if(localDate.isBefore(currentDt)) {
+				pastDt = Boolean.TRUE;
+			}
+		}
+		return pastDt;
+	}
 
-    @Mock
-    private EntityAccountMappingRepo eamRepo;
-
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    public void testExtractCounterPartyWithBic() {
-        // Mocking the extractFromAddlTxInf method to return a BIC
-        String addtlTxInf = "CPRB/BIC1234/OtherInfo";
-        String expectedBic = "BIC1234";
-        
-        // Mock the method to return the expected BIC
-        doReturn(expectedBic).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRB");
-
-        // Call the method under test
-        String result = handler.extractCounterParty(addtlTxInf);
-
-        // Verify the result
-        assertEquals(expectedBic, result);
-    }
-
-    @Test
-    public void testExtractCounterPartyWithAccountNumber() {
-        // Mocking the extractFromAddlTxInf method to return an account number
-        String addtlTxInf = "CPRA/ACCOUNT1234/OtherInfo";
-        String accountNumber = "ACCOUNT1234";
-        String expectedBic = "BIC5678";
-
-        // Mock the method to return the account number
-        doReturn(accountNumber).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRA");
-
-        // Mock the repository method
-        EntityAccountMapDefinition entity = new EntityAccountMapDefinition();
-        entity.setEntityIdentifier(expectedBic);
-        when(eamRepo.findByAccountNumber(accountNumber)).thenReturn(entity);
-
-        // Call the method under test
-        String result = handler.extractCounterParty(addtlTxInf);
-
-        // Verify the result
-        assertEquals(expectedBic, result);
-    }
-
-    @Test
-    public void testExtractCounterPartyWithNoBicOrAccount() {
-        // Mocking the extractFromAddlTxInf method to return null
-        String addtlTxInf = "SomeOtherInfo";
-
-        // Mock the method to return null for both BIC and account number
-        doReturn(null).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRB");
-        doReturn(null).when(handler).extractFromAddlTxInf(addtlTxInf, "CPRA");
-
-        // Call the method under test
-        String result = handler.extractCounterParty(addtlTxInf);
-
-        // Verify the result is null
-        assertEquals(null, result);
-    }
-}
+public static LocalDateTime getCurrentDateTimeByZone(String zone) {
+		ZoneId zid = null;
+		if (zone != null) {
+			zid = ZoneId.of(zone);
+		}
+		return zid != null ? LocalDateTime.now(zid) : null;
+	}
