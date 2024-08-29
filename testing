@@ -1,3 +1,29 @@
-LocalDate valueDate = LocalDate
-					.parse(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getNtryDtls()
-							.get(0).getTxDtls().get(0).getRltdDts().getIntrBkSttlmDt().toString());
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
+
+public class Main {
+    public static void main(String[] args) {
+        try {
+            // Retrieve the XMLGregorianCalendar value from your object
+            XMLGregorianCalendar xmlGregorianCalendar = camt05400108.getBkToCstmrDbtCdtNtfctn()
+                    .getNtfctn()
+                    .get(0)
+                    .getNtry()
+                    .get(0)
+                    .getNtryDtls()
+                    .get(0)
+                    .getTxDtls()
+                    .get(0)
+                    .getRltdDts()
+                    .getIntrBkSttlmDt();
+
+            // Convert XMLGregorianCalendar to OffsetDateTime
+            OffsetDateTime offsetDateTime = xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toOffsetDateTime();
+
+            // Output the result to verify
+            System.out.println("OffsetDateTime: " + offsetDateTime);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
