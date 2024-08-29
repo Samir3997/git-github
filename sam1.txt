@@ -1,1 +1,33 @@
-Hello World1
+package com.maybank.ilm.core.dao;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+
+public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
+
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndAccountType(Long entitySkey, String accountType);
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndCurrencySkeyAndAccountType(Long entitySkey,Long currencySkey,String accountType);
+	public EntityAccountMapDefinition findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(String entityIdentifier, String accountType, Long currencySkey);
+	public List<EntityAccountMapDefinition> findByAccountType(String accountType);
+	public EntityAccountMapDefinition findFirstByEntitySkey(Long entitySkey);
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndCountrySkeyAndCurrencySkey(Long entitySkey, Long countrySkey, Long currencySkey);
+	public List<EntityAccountMapDefinition> getDefnByNostroInd(Character nostroInd);
+	public List<EntityAccountMapDefinition> findByEntityAcctMapSkey(Long entityAcctMapSkey);
+	public List<EntityAccountMapDefinition> findByEntityIdentifier(String bic);
+	@Query("SELECT dic.currencyCode FROM DimCurrency dic WHERE dic.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
+	public String findCurrencyCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
+
+	@Query("SELECT dc.countryCode FROM DimCountry dc WHERE dc.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
+	public String findCountryCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
+
+	public Optional<EntityAccountMapDefinition> findFirstByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
+	public EntityAccountMapDefinition findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndNostroBankName(Long countrySkey, Long entitySkey, Long currencySkey, String nostroAgent);
+	public List <EntityAccountMapDefinition> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
+	public EntityAccountMapDefinition findByAccountNumber(String accountNumber);
+	
+}
