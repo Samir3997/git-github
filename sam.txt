@@ -1,78 +1,63 @@
-package com.maybank.ilm.entity;
+import org.junit.jupiter.api.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Entity
-@Table(name = "PRC_MT_FIELD")
-public class MTField {
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-	@Id
-	@Column(name = "N_MT_FIELD_SKEY")
-	@SequenceGenerator(name = "mtFieldSkey", sequenceName = "PRC_MT_FIELD_SEQ", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mtFieldSkey")
-	private Long mtFieldSkey;
-	
-	@Column(name = "N_MT_SEQUENCE_SKEY")
-	private Long mtSeqSkey;
-	
-	@Column(name = "V_FIELD_NAME")
-	private String fieldName;
-	
-	@Column(name = "V_FIELD_VALUE")
-	private String fieldValue;
-	
-	@Column(name = "V_FIELD_TYPE")
-	private String fieldType;
+import com.maybank.ilm.entity.MTSequence;
+import com.maybank.ilm.entity.MTField;
 
-	public Long getMtFieldSkey() {
-		return mtFieldSkey;
-	}
+public class MXMsgHandlerAbstractImplTest {
 
-	public void setMtFieldSkey(Long mtFieldSkey) {
-		this.mtFieldSkey = mtFieldSkey;
-	}
+    @Test
+    public void testGetTotalAmountForMT535_ValidData() {
+        // Create sample MT sequences
+        MTSequence sequence1 = new MTSequence();
+        sequence1.setSeqName("B1");
+        List<MTField> fields1 = new ArrayList<>();
+        fields1.add(new MTField("93B_BALANCE_AMOUNT_AVAI", "100.00", "BigDecimal"));
+        sequence1.setMtFields(fields1);
 
-	public Long getMtSeqSkey() {
-		return mtSeqSkey;
-	}
+        MTSequence sequence2 = new MTSequence();
+        sequence2.setSeqName("B1");
+        List<MTField> fields2 = new ArrayList<>();
+        fields2.add(new MTField("93B_BALANCE_AMOUNT_AVAI", "200.00", "BigDecimal"));
+        sequence2.setMtFields(fields2);
 
-	public void setMtSeqSkey(Long mtSeqSkey) {
-		this.mtSeqSkey = mtSeqSkey;
-	}
+        List<MTSequence> sequences = new ArrayList<>();
+        sequences.add(sequence1);
+        sequences.add(sequence2);
 
-	public String getFieldName() {
-		return fieldName;
-	}
+        // Call the method
+        BigDecimal totalAmount = MXMsgHandlerAbstractImpl.getTotalAmountForMT535(sequences);
 
-	public void setFieldName(String fieldName) {
-		this.fieldName = fieldName;
-	}
+        // Assert the result
+        assertEquals(new BigDecimal("300.00"), totalAmount);
+    }
 
-	public String getFieldValue() {
-		return fieldValue;
-	}
+    @Test
+    public void testGetTotalAmountForMT535_EmptyData() {
+        List<MTSequence> sequences = new ArrayList<>();
+        BigDecimal totalAmount = MXMsgHandlerAbstractImpl.getTotalAmountForMT535(sequences);
+        assertEquals(BigDecimal.ZERO, totalAmount);
+    }
 
-	public void setFieldValue(String fieldValue) {
-		this.fieldValue = fieldValue;
-	}
+    @Test
+    public void testGetTotalAmountForMT535_InvalidData() {
+        // Create a sequence with an invalid field value
+        MTSequence sequence = new MTSequence();
+        sequence.setSeqName("B1");
+        List<MTField> fields = new ArrayList<>();
+        fields.add(new MTField("93B_BALANCE_AMOUNT_AVAI", "invalid", "String")); // Field value is invalid
+        sequence.setMtFields(fields);
 
-	public String getFieldType() {
-		return fieldType;
-	}
+        List<MTSequence> sequences = new ArrayList<>();
+        sequences.add(sequence);
 
-	public void setFieldType(String fieldType) {
-		this.fieldType = fieldType;
-	}
-
-	@Override
-	public String toString() {
-		return "MTField [mtFieldSkey=" + mtFieldSkey + ", mtSeqSkey=" + mtSeqSkey + ", fieldName=" + fieldName
-				+ ", fieldValue=" + fieldValue + ", fieldType=" + fieldType + "]";
-	}
+        // Expect an exception when the field value cannot be converted to BigDecimal
+        assertThrows(NumberFormatException.class, () -> MXMsgHandlerAbstractImpl.getTotalAmountForMT535(sequences));
+    }
 }
