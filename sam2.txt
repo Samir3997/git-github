@@ -1,62 +1,24 @@
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.prowidesoftware.swift.model.mx.MxCamt05400108;
-import com.prowidesoftware.swift.model.mx.dic.*; // Import the classes that are part of the parsing process
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-public class MXcamt05400108HandlerTest {
-
-    private MXcamt05400108Handler handler;
-    private MxCamt05400108 mxMessage;
-
-    @BeforeEach
-    void setUp() {
-        handler = new MXcamt05400108Handler();
-
-        // Manually create and set up the MxCamt05400108 object with mock data
-        mxMessage = new MxCamt05400108();
-
-        // Create the inner objects step by step
-        BankToCustomerDebitCreditNotificationV08 notification = new BankToCustomerDebitCreditNotificationV08();
-        List<AccountNotification17> notifications = new ArrayList<>();
-        AccountNotification17 accountNotification = new AccountNotification17();
-        List<ReportEntry10> entries = new ArrayList<>();
-        ReportEntry10 entry = new ReportEntry10();
-        ActiveOrHistoricCurrencyAndAmount amount = new ActiveOrHistoricCurrencyAndAmount();
-        
-        // Set the amount and currency
-        amount.setCcy("MYR");
-        amount.setValue(BigDecimal.valueOf(1000));
-        entry.setAmt(amount);
-        entry.setCdtDbtInd(CreditDebitCode.DBIT);
-
-        entries.add(entry);
-        accountNotification.setNtry(entries);
-        notifications.add(accountNotification);
-        notification.setNtfctn(notifications);
-
-        mxMessage.setBkToCstmrDbtCdtNtfctn(notification);
+MxCamt05400108 contains " public BankToCustomerDebitCreditNotificationV08 getBkToCstmrDbtCdtNtfctn() {
+        return bkToCstmrDbtCdtNtfctn;
+    }" object and BankToCustomerDebitCreditNotificationV08 contains " public List<AccountNotification17> getNtfctn() {
+        if (ntfctn == null) {
+            ntfctn = new ArrayList<AccountNotification17>();
+        }
+        return this.ntfctn;
+    }" object and AccountNotification17 contains "  public List<ReportEntry10> getNtry() {
+        if (ntry == null) {
+            ntry = new ArrayList<ReportEntry10>();
+        }
+        return this.ntry;
+    }" object and ReportEntry10 contains " public List<EntryDetails9> getNtryDtls() {
+        if (ntryDtls == null) {
+            ntryDtls = new ArrayList<EntryDetails9>();
+        }
+        return this.ntryDtls;
+    }and EntryDetails9 contains  "  public List<EntryTransaction10> getTxDtls() {
+        if (txDtls == null) {
+            txDtls = new ArrayList<EntryTransaction10>();
+        }
+        return this.txDtls;
     }
-
-    @Test
-    void testSaveToAcctBalMgmtAndMapping() {
-        // Call the method to test
-        handler.saveToAcctBalMgmtAndMapping(mxMessage, 12345L);
-
-        // Add assertions as needed
-        // Since we don't have the full code, we'll assume it interacts with some other method or state
-        // Example (pseudo-code):
-        // assertEquals(expectedValue, actualValue);
-    }
-
-    @Test
-    void testGetMessageType() {
-        String messageType = handler.getMessageType();
-        assertEquals(ILMCoreConstants.MXTYPECAMT05400108, messageType);
-    }
-}
+"
