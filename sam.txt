@@ -1,103 +1,62 @@
-package com.maybank.ilm.entity;
+import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+import com.maybank.ilm.entity.MTSequence;
+import com.maybank.ilm.entity.MTField;
 
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
+public class MXMsgHandlerAbstractImplTest {
 
-@Entity
-@Table(name = "PRC_MT_SEQUENCE")
-public class MTSequence {
+    @Test
+    public void testGetTotalAmountForMT535_ValidData() {
+        // Create sample MT sequences
+        MTSequence sequence1 = new MTSequence();
+        sequence1.setSeqName("B1");
+        List<MTField> fields1 = new ArrayList<>();
+        fields1.add(new MTField("93B_BALANCE_AMOUNT_AVAI", "100.00"));
+        sequence1.setMtFields(fields1);
 
-	@Id
-	@Column(name = "N_MT_SEQUENCE_SKEY")
-	@SequenceGenerator(name = "mtSeqSkey", sequenceName = "PRC_MT_SEQUENCE_SEQ", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mtSeqSkey")
-	private Long mtSeqSkey;
-	
-	@Column(name = "N_MT_SKEY")
-	private Long mtSkey;
-	
-	@Column(name = "V_SEQUENCE_NAME")
-	private String seqName;
-	
-	@ManyToOne(fetch = FetchType.LAZY, optional=true)
-	@JoinColumn(name="N_PARENT_SEQ_SKEY")
-	private MTSequence parentSeq;
-	
-	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@LazyCollection(LazyCollectionOption.FALSE)
-	@JoinColumn(name = "N_MT_SEQUENCE_SKEY")
-	private List<MTField> mtFields;
-	
-	@OneToMany(mappedBy = "parentSeq", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@LazyCollection(LazyCollectionOption.FALSE)
-	private List<MTSequence> mtSequences;
+        MTSequence sequence2 = new MTSequence();
+        sequence2.setSeqName("B1");
+        List<MTField> fields2 = new ArrayList<>();
+        fields2.add(new MTField("93B_BALANCE_AMOUNT_AVAI", "200.00"));
+        sequence2.setMtFields(fields2);
 
-	public Long getMtSeqSkey() {
-		return mtSeqSkey;
-	}
+        List<MTSequence> sequences = new ArrayList<>();
+        sequences.add(sequence1);
+        sequences.add(sequence2);
 
-	public void setMtSeqSkey(Long mtSeqSkey) {
-		this.mtSeqSkey = mtSeqSkey;
-	}
+        // Call the method
+        BigDecimal totalAmount = MXMsgHandlerAbstractImpl.getTotalAmountForMT535(sequences);
 
-	public Long getMtSkey() {
-		return mtSkey;
-	}
+        // Assert the result
+        assertEquals(new BigDecimal("300.00"), totalAmount);
+    }
 
-	public void setMtSkey(Long mtSkey) {
-		this.mtSkey = mtSkey;
-	}
+    @Test
+    public void testGetTotalAmountForMT535_EmptyData() {
+        List<MTSequence> sequences = new ArrayList<>();
+        BigDecimal totalAmount = MXMsgHandlerAbstractImpl.getTotalAmountForMT535(sequences);
+        assertEquals(BigDecimal.ZERO, totalAmount);
+    }
 
-	public String getSeqName() {
-		return seqName;
-	}
+    @Test
+    public void testGetTotalAmountForMT535_InvalidData() {
+        // Create a sequence with an invalid field value
+        MTSequence sequence = new MTSequence();
+        sequence.setSeqName("B1");
+        List<MTField> fields = new ArrayList<>();
+        fields.add(new MTField("93B_BALANCE_AMOUNT_AVAI", "invalid"));
+        sequence.setMtFields(fields);
 
-	public void setSeqName(String seqName) {
-		this.seqName = seqName;
-	}
+        List<MTSequence> sequences = new ArrayList<>();
+        sequences.add(sequence);
 
-	public List<MTField> getMtFields() {
-		return mtFields;
-	}
-
-	public void setMtFields(List<MTField> mtFields) {
-		this.mtFields = mtFields;
-	}
-
-	public List<MTSequence> getMtSequences() {
-		return mtSequences;
-	}
-
-	public void setMtSequences(List<MTSequence> mtSequences) {
-		this.mtSequences = mtSequences;
-	}
-
-	public MTSequence getParentSeq() {
-		return parentSeq;
-	}
-
-	public void setParentSeq(MTSequence parentSeq) {
-		this.parentSeq = parentSeq;
-	}
-
-	@Override
-	public String toString() {
-		return "MTSequence [mtSeqSkey=" + mtSeqSkey + ", mtSkey=" + mtSkey + ", seqName=" + seqName + ", parentSeq="
-				+ parentSeq + ", mtFields=" + mtFields + ", mtSequences=" + mtSequences + "]";
-	}	
+        // Call the method and expect an exception (adjust the expected exception type if necessary)
+        // ...
+    }
 }
