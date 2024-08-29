@@ -1,18 +1,43 @@
-MxCamt05400108 contains " public BankToCustomerDebitCreditNotificationV08 getBkToCstmrDbtCdtNtfctn() {
-        return bkToCstmrDbtCdtNtfctn;
-    }" object and BankToCustomerDebitCreditNotificationV08 contains " public List<AccountNotification17> getNtfctn() {
-        if (ntfctn == null) {
-            ntfctn = new ArrayList<AccountNotification17>();
-        }
-        return this.ntfctn;
-    }" object and AccountNotification17 contains "  public List<ReportEntry10> getNtry() {
-        if (ntry == null) {
-            ntry = new ArrayList<ReportEntry10>();
-        }
-        return this.ntry;
-    }" object and ReportEntry10 contains " public ActiveOrHistoricCurrencyAndAmount getAmt() {
-        return amt;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.maybank.ilm.core.service.EntityAccountMappingServiceImpl;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+
+class EntityAccountMappingServiceImplTest {
+
+    @Mock
+    private EntityAccountMappingRepo entityAcctMapRepo;
+
+    @InjectMocks
+    private EntityAccountMappingServiceImpl entityAccountMappingService;
+
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
-" and ActiveOrHistoricCurrencyAndAmount contains currency as " public String getCcy() {
-        return ccy;
-    }"
+
+    @Test
+    void testGetEntityAcctMapDefnByAcctNum() {
+        // Arrange
+        String accountNo = "123456789";
+        Long currencySkey = 1L;
+        EntityAccountMapDefinition expectedDefn = new EntityAccountMapDefinition();
+        when(entityAcctMapRepo.getEntityAcctMapDefnByAcctNum(accountNo, currencySkey)).thenReturn(expectedDefn);
+
+        // Act
+        EntityAccountMapDefinition result = entityAccountMappingService.getEntityAcctMapDefnByAcctNum(accountNo, currencySkey);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(expectedDefn, result);
+        verify(entityAcctMapRepo, times(1)).getEntityAcctMapDefnByAcctNum(accountNo, currencySkey);
+    }
+}
