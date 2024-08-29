@@ -1,1 +1,26 @@
-TransactionDates3 com.prowidesoftware.swift.model.mx.dic.TransactionDates3.setIntrBkSttlmDt(XMLGregorianCalendar value)
+public class Main {
+    public static void main(String[] args) {
+        try {
+            // Create a GregorianCalendar instance for the desired date
+            GregorianCalendar gregorianCalendar = new GregorianCalendar();
+            gregorianCalendar.set(Calendar.YEAR, 2024);
+            gregorianCalendar.set(Calendar.MONTH, Calendar.AUGUST);  // Months are 0-based
+            gregorianCalendar.set(Calendar.DAY_OF_MONTH, 30);
+
+            // Convert GregorianCalendar to XMLGregorianCalendar
+            DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+            XMLGregorianCalendar xmlGregorianCalendar = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+
+            // Create an instance of TransactionDates3
+            com.prowidesoftware.swift.model.mx.dic.TransactionDates3 transactionDates = new com.prowidesoftware.swift.model.mx.dic.TransactionDates3();
+
+            // Set the intrBkSttlmDt
+            transactionDates.setIntrBkSttlmDt(xmlGregorianCalendar);
+
+            // Output the date to verify
+            System.out.println("Settlement Date: " + transactionDates.getIntrBkSttlmDt());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
