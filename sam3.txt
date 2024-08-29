@@ -1,2 +1,17 @@
-org.mockito.exceptions.misusing.NotAMockException: 
-Argument passed to when() is not a mock!
+@Test
+public void testExtractCurrencyCode() {
+    // Create a sample MxCamt05400108 object with known currency code
+    MxCamt05400108 camt05400108 = new MxCamt05400108();
+    camt05400108.setBkToCstmrDbtCdtNtfctn(new BankToCustomerDebitCreditNotificationV08());
+    camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().add(new AccountNotification17());
+    camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().add(new ReportEntry10());
+    camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).setAmt(new ActiveOrHistoricCurrencyAndAmount());
+    camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().setCcy("MYR");
+
+    // Extract the currency code
+    String actualMessageType = camt05400108.getMxId().toString();
+    String currencyCode = camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy();
+
+    // Assert the extracted currency code
+    assertEquals("MYR", currencyCode);
+}
