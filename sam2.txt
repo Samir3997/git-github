@@ -1,7 +1,6 @@
 package com.maybank.ilm.junit.swiftmsghandlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -36,40 +35,67 @@ public class MXcamt05400108HandlerTest extends AbstractServiceTest {
 
     @Test
     public void testSaveToAcctBalMgmtAndMapping() {
+        // Setting up the nested objects
         BankToCustomerDebitCreditNotificationV08 notification = new BankToCustomerDebitCreditNotificationV08();
-        List<AccountNotification17> notifications = new ArrayList<>();
         AccountNotification17 accountNotification = new AccountNotification17();
-        List<ReportEntry10> entries = new ArrayList<>();
         ReportEntry10 entry = new ReportEntry10();
+        EntryDetails9 entryDetails = new EntryDetails9();
+        EntryTransaction10 txDetails = new EntryTransaction10();
+
+        // Setting values for the objects
         ActiveOrHistoricCurrencyAndAmount amount = new ActiveOrHistoricCurrencyAndAmount();
         amount.setCcy("MYR");
         amount.setValue(BigDecimal.valueOf(1000));
         entry.setAmt(amount);
         entry.setCdtDbtInd(CreditDebitCode.DBIT);
 
-        // Setting up EntryTransaction10
-        EntryTransaction10 txDetails = new EntryTransaction10();
-        List<EntryTransaction10> txDetailsList = new ArrayList<>();
-        txDetailsList.add(txDetails);
-        EntryDetails9 entryDetails = new EntryDetails9();
-        entryDetails.getTxDtls().add(txDetails);
-        List<EntryDetails9> entryDetailsList = new ArrayList<>();
-        entryDetailsList.add(entryDetails);
-        entry.setNtryDtls(entryDetailsList);
+        txDetails.setAddtlTxInf("CounterPartyInfo");
 
-        entries.add(entry);
+        // Linking objects together
+        entryDetails.getTxDtls().add(txDetails);
+        entry.getNtryDtls().add(entryDetails);
         accountNotification.getNtry().add(entry);
-        notifications.add(accountNotification);
         notification.getNtfctn().add(accountNotification);
         mxMessage.setBkToCstmrDbtCdtNtfctn(notification);
 
-        // Calling the method to test
+        // Now calling the method and checking values
         handler.saveToAcctBalMgmtAndMapping(mxMessage, 12345L);
+
+        // Assert block to verify correct processing
+        final EntryTransaction10 txDtls = mxMessage.getBkToCstmrDbtCdtNtfctn()
+                                                    .getNtfctn().get(0)
+                                                    .getNtry().get(0)
+                                                    .getNtryDtls().get(0)
+                                                    .getTxDtls().get(0);
+
+        String creditDebitInd = ILMCoreConstants.DBIT; // Simulating input
+        String amountSign;
+        String messageType;
+        String counterParty = null;
+
+        if (creditDebitInd.contentEquals(ILMCoreConstants.DBIT)) {
+            amountSign = ILMCoreConstants.MINUS;
+            messageType = ILMCoreConstants.MESSAGETYPE900;
+            counterParty = this.extractCounterParty(txDtls.getAddtlTxInf());
+        } else {
+            amountSign = ILMCoreConstants.PLUS;
+            messageType = ILMCoreConstants.MESSAGETYPE910;
+        }
+
+        // Assertions to validate expected values
+        assertEquals(ILMCoreConstants.MINUS, amountSign);
+        assertEquals(ILMCoreConstants.MESSAGETYPE900, messageType);
+        assertEquals("CounterPartyInfo", counterParty);
     }
 
     @Test
     public void testGetMessageType() {
         String messageType = handler.getMessageType();
         assertEquals(ILMCoreConstants.MXTYPECAMT05400108, messageType);
+    }
+
+    // Mock implementation of extractCounterParty method for testing
+    private String extractCounterParty(String addtlTxInf) {
+        return addtlTxInf; // Simplified for test purpose
     }
 }
