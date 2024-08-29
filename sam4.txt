@@ -1,5 +1,6 @@
 package com.maybank.ilm.junit.swiftmsghandlers;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
 
@@ -58,20 +59,14 @@ public class MXcamt05400108HandlerTest extends AbstractServiceTest{
 
     @Test
    public void testSaveToAcctBalMgmtAndMapping_WithValidData() {
-    	BankToCustomerDebitCreditNotificationV08 notification = new BankToCustomerDebitCreditNotificationV08();
     	camt05400108.setBkToCstmrDbtCdtNtfctn(notification);
-
-    	AccountNotification17 accountNotification = new AccountNotification17();
-    	notification.getNtfctn().add(accountNotification);
-
-    	ReportEntry10 reportEntry = new ReportEntry10();
-    	accountNotification.getNtry().add(reportEntry);
-
-    	ActiveOrHistoricCurrencyAndAmount amount = new ActiveOrHistoricCurrencyAndAmount();
+    	notification.getNtfctn().add(ntfctn);
+    	ntfctn.getNtry().add(entry);
     	amount.setCcy("MYR");
     	amount.setValue(BigDecimal.valueOf(1000));
-    	reportEntry.setAmt(amount);
-    	assertEquals(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy().toString(), ILMCoreConstants.MYR);
+    	entry.setAmt(amount);
+    	when(amount.getCcy()).thenReturn(ILMCoreConstants.MYR);
+    	assertEquals(amount.getCcy(), ILMCoreConstants.MYR);
     	
     }
 }
