@@ -1,29 +1,43 @@
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-public class Main {
-    public static void main(String[] args) {
-        try {
-            // Retrieve the XMLGregorianCalendar value from your object
-            XMLGregorianCalendar xmlGregorianCalendar = camt05400108.getBkToCstmrDbtCdtNtfctn()
-                    .getNtfctn()
-                    .get(0)
-                    .getNtry()
-                    .get(0)
-                    .getNtryDtls()
-                    .get(0)
-                    .getTxDtls()
-                    .get(0)
-                    .getRltdDts()
-                    .getIntrBkSttlmDt();
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.time.LocalDate;
+import java.util.GregorianCalendar;
 
-            // Convert XMLGregorianCalendar to OffsetDateTime
-            OffsetDateTime offsetDateTime = xmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toOffsetDateTime();
+public class YourClassTest {
 
-            // Output the result to verify
-            System.out.println("OffsetDateTime: " + offsetDateTime);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Test
+    public void testSetAndParseDate() throws Exception {
+        // Create a mock of the object containing getIntrBkSttlmDt()
+        YourObject camt05400108 = mock(YourObject.class);
+        
+        // Create XMLGregorianCalendar with a specific date
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+        gregorianCalendar.set(2024, GregorianCalendar.AUGUST, 12);  // Date: 2024-08-12
+        XMLGregorianCalendar xmlGregorianCalendar = DatatypeFactory.newInstance().newXMLGregorianCalendar(gregorianCalendar);
+        
+        // Mock the nested method calls to return the XMLGregorianCalendar
+        When(camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0)
+            .getNtryDtls().get(0).getTxDtls().get(0).getRltdDts().getIntrBkSttlmDt())
+            .thenReturn(xmlGregorianCalendar);
+        
+        // Retrieve the XMLGregorianCalendar from the mock
+        XMLGregorianCalendar retrievedXmlGregorianCalendar = camt05400108.getBkToCstmrDbtCdtNtfctn()
+                .getNtfctn().get(0).getNtry().get(0).getNtryDtls().get(0).getTxDtls().get(0)
+                .getRltdDts().getIntrBkSttlmDt();
+
+        // Convert XMLGregorianCalendar to LocalDate
+        LocalDate valueDate = retrievedXmlGregorianCalendar.toGregorianCalendar().toZonedDateTime().toLocalDate();
+        
+        // Expected LocalDate
+        LocalDate expectedDate = LocalDate.of(2024, 8, 12);
+        
+        // Assert the date
+        assertEquals(expectedDate, valueDate, "The LocalDate should match the expected date");
     }
 }
