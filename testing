@@ -1,1 +1,45 @@
 camt05400108.getBkToCstmrDbtCdtNtfctn().getNtfctn().get(0).getNtry().get(0).getAmt().getCcy()
+
+
+public class Main {
+    public static void main(String[] args) {
+        // Create Amt object
+        Amt amt = new Amt();
+        amt.setCcy("USD");  // Set currency value
+
+        // Create Ntry object and set Amt
+        Ntry ntry = new Ntry();
+        ntry.setAmt(amt);
+
+        // Create List of Ntry and add the single Ntry object
+        List<Ntry> ntryList = new ArrayList<>();
+        ntryList.add(ntry);
+
+        // Create Ntfctn object and set List of Ntry
+        Ntfctn ntfctn = new Ntfctn();
+        ntfctn.setNtry(ntryList);
+
+        // Create List of Ntfctn and add the single Ntfctn object
+        List<Ntfctn> ntfctnList = new ArrayList<>();
+        ntfctnList.add(ntfctn);
+
+        // Create BkToCstmrDbtCdtNtfctn object and set List of Ntfctn
+        BkToCstmrDbtCdtNtfctn bkToCstmrDbtCdtNtfctn = new BkToCstmrDbtCdtNtfctn();
+        bkToCstmrDbtCdtNtfctn.setNtfctn(ntfctnList);
+
+        // Create Camt05400108 object and set BkToCstmrDbtCdtNtfctn
+        Camt05400108 camt05400108 = new Camt05400108();
+        camt05400108.setBkToCstmrDbtCdtNtfctn(bkToCstmrDbtCdtNtfctn);
+
+        // Access the currency value through the chain
+        String currency = camt05400108.getBkToCstmrDbtCdtNtfctn()
+                                       .getNtfctn()
+                                       .get(0)
+                                       .getNtry()
+                                       .get(0)
+                                       .getAmt()
+                                       .getCcy();
+
+        System.out.println("Currency: " + currency);
+    }
+}
