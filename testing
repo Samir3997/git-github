@@ -1,1 +1,2 @@
-The method thenReturn(BigDecimal) is undefined for the type BigDecimal
+String senderCode = pacs00800108.getFIToFICstmrCdtTrf().getCdtTrfTxInf().get(0).getInstgAgt().getFinInstnId().getBICFI().substring(0, 8);
+		String receiverCode = pacs00800108.getFIToFICstmrCdtTrf().getCdtTrfTxInf().get(0).getInstdAgt().getFinInstnId().getBICFI().substring(0, 8);
