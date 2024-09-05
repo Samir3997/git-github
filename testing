@@ -1,13 +1,47 @@
-if(blockMxPacs00800108OTypeCreditMsg(pacs00800108, currencyCode)) {
-					LOGGER.info("Message is blocked");
-					throwMsgBlockedException();
-				};
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+public class YourServiceTest {
 
+    @Mock
+    private SomeDependency someDependency; // Replace with the actual dependency needed for blockMxPacs00800108OTypeCreditMsg
 
+    @InjectMocks
+    private YourService yourService; // Replace with the actual class containing your method
 
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
 
-	public void throwMsgBlockedException() {
-		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.MSGBLOCKED);
-	}
+    @Test
+    public void testThrowMsgBlockedException() {
+        // Arrange
+        String pacs00800108 = "someValue"; // Replace with appropriate value
+        String currencyCode = "USD"; // Replace with appropriate value
+
+        // Mock the static method or make sure the behavior you need is setup
+        // Here we assume `blockMxPacs00800108OTypeCreditMsg` is a static method
+        // You might need to use PowerMockito for static method mocking if applicable
+        when(someDependency.blockMxPacs00800108OTypeCreditMsg(pacs00800108, currencyCode)).thenReturn(true);
+
+        // Mock ExceptionUtil.createIlmException
+        ExceptionUtil mockExceptionUtil = mock(ExceptionUtil.class);
+        when(mockExceptionUtil.createIlmException(anyString(), anyString())).thenThrow(new RuntimeException("Exception Message"));
+
+        // Replace ExceptionUtil with mock in the test context if possible
+
+        // Act and Assert
+        RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
+            yourService.methodUnderTest(pacs00800108, currencyCode); // Replace with the actual method you're testing
+        });
+
+        assertEquals("Exception Message", thrownException.getMessage());
+    }
+}
