@@ -1,1 +1,17 @@
-	List<String> messageTypes=new ArrayList<>(Arrays.asList("103","200","202","900","910"))
+import com.maybank.ilm.core.util.ExceptionUtil;
+import com.maybank.ilm.utility.exception.ILMException;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+class ExceptionUtilTest {
+
+    @Test
+    void testThrowMsgBlockedException() {
+        ILMException exception = assertThrows(ILMException.class, () -> ExceptionUtil.throwMsgBlockedException());
+
+        assertEquals(ExceptionConstants.FAILED, exception.getStatus());
+        assertEquals(ExceptionConstants.MSGBLOCKED, exception.getMessage());
+    }
+}
