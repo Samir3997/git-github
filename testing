@@ -1,47 +1,31 @@
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+if(blockMxPacs00800108OTypeCreditMsg(pacs00800108, currencyCode)) {
+					LOGGER.info("Message is blocked");
+					throwMsgBlockedException();
+				};
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-public class YourServiceTest {
 
-    @Mock
-    private SomeDependency someDependency; // Replace with the actual dependency needed for blockMxPacs00800108OTypeCreditMsg
 
-    @InjectMocks
-    private YourService yourService; // Replace with the actual class containing your method
+public void throwMsgBlockedException() {
+		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.MSGBLOCKED);
+	}
 
-    @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
-    @Test
-    public void testThrowMsgBlockedException() {
-        // Arrange
-        String pacs00800108 = "someValue"; // Replace with appropriate value
-        String currencyCode = "USD"; // Replace with appropriate value
+package com.maybank.ilm.core.util;
 
-        // Mock the static method or make sure the behavior you need is setup
-        // Here we assume `blockMxPacs00800108OTypeCreditMsg` is a static method
-        // You might need to use PowerMockito for static method mocking if applicable
-        when(someDependency.blockMxPacs00800108OTypeCreditMsg(pacs00800108, currencyCode)).thenReturn(true);
+import java.time.LocalDateTime;
 
-        // Mock ExceptionUtil.createIlmException
-        ExceptionUtil mockExceptionUtil = mock(ExceptionUtil.class);
-        when(mockExceptionUtil.createIlmException(anyString(), anyString())).thenThrow(new RuntimeException("Exception Message"));
+import com.maybank.ilm.utility.exception.ILMException;
 
-        // Replace ExceptionUtil with mock in the test context if possible
+public class ExceptionUtil {
 
-        // Act and Assert
-        RuntimeException thrownException = assertThrows(RuntimeException.class, () -> {
-            yourService.methodUnderTest(pacs00800108, currencyCode); // Replace with the actual method you're testing
-        });
+	public static ILMException createIlmException(String status, String exMessage) {		
+		ILMException exception = new ILMException(status, LocalDateTime.now(), exMessage);		
+		return exception;
+	}
+	
+	public static void setExceptionObject(ILMException ilmException,String key,String value) {		
+		ilmException.getObjectMap().put(key, value);
+	}
 
-        assertEquals("Exception Message", thrownException.getMessage());
-    }
 }
