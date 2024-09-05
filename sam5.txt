@@ -1,17 +1,143 @@
-import com.maybank.ilm.core.util.ExceptionUtil;
+	public void throwMsgBlockedException() {
+		throw ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.MSGBLOCKED);
+	}
+
+
+
+package com.maybank.ilm.core.util;
+
+import java.time.LocalDateTime;
+
 import com.maybank.ilm.utility.exception.ILMException;
-import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+public class ExceptionUtil {
 
-class ExceptionUtilTest {
+	public static ILMException createIlmException(String status, String exMessage) {		
+		ILMException exception = new ILMException(status, LocalDateTime.now(), exMessage);		
+		return exception;
+	}
+	
+	public static void setExceptionObject(ILMException ilmException,String key,String value) {		
+		ilmException.getObjectMap().put(key, value);
+	}
 
-    @Test
-    void testThrowMsgBlockedException() {
-        ILMException exception = assertThrows(ILMException.class, () -> ExceptionUtil.throwMsgBlockedException());
+}
 
-        assertEquals(ExceptionConstants.FAILED, exception.getStatus());
-        assertEquals(ExceptionConstants.MSGBLOCKED, exception.getMessage());
-    }
+
+package com.maybank.ilm.utility.exception;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class ILMException extends RuntimeException {
+
+	private static final long serialVersionUID = 1L;
+
+	private String status;
+
+	@SuppressWarnings("squid:S3437")
+	private LocalDateTime localDateTime;
+
+	private String errorLog;
+	
+	private String msgType;
+	
+	private Boolean isMailRequired=Boolean.FALSE;
+	
+	private String templateType;
+	
+	Map<String, String> objectMap=new HashMap<String, String>();
+	
+	private Exception exception;
+	
+	
+
+	public ILMException() {
+		super();
+	}
+
+	public ILMException(String status, LocalDateTime localDateTime, String errorLog, String msgType) {
+		super();
+		this.status = status;
+		this.localDateTime = localDateTime;
+		this.errorLog = errorLog;
+		this.msgType = msgType;
+	}
+
+	public ILMException(String status, LocalDateTime localDateTime, String errorLog) {
+		super(errorLog);
+		this.status = status;
+		this.localDateTime = localDateTime;
+		this.errorLog = errorLog;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getErrorLog() {
+		return errorLog;
+	}
+
+	public void setErrorLog(String errorLog) {
+		this.errorLog = errorLog;
+	}
+
+	public LocalDateTime getLocalDateTime() {
+		return localDateTime;
+	}
+
+	public void setLocalDateTime(LocalDateTime localDateTime) {
+		this.localDateTime = localDateTime;
+	}
+
+	public String getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
+	}
+
+	public Map<String, String> getObjectMap() {
+		return objectMap;
+	}
+
+	public void setObjectMap(Map<String, String> objectMap) {
+		this.objectMap = objectMap;
+	}
+
+	public Boolean getIsMailRequired() {
+		return isMailRequired;
+	}
+
+	public void setIsMailRequired(Boolean isMailRequired) {
+		this.isMailRequired = isMailRequired;
+	}
+
+	public String getTemplateType() {
+		return templateType;
+	}
+
+	public void setTemplateType(String templateType) {
+		this.templateType = templateType;
+	}
+
+	public Exception getException() {
+		return exception;
+	}
+
+	public void setException(Exception exception) {
+		this.exception = exception;
+	}
+
+	
+
+	
 }
