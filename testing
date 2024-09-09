@@ -224,6 +224,27 @@ public class ThrowExceptionTest {
 
 
 
+org.opentest4j.AssertionFailedError: Expected com.maybank.ilm.utility.exception.ILMException to be thrown, but nothing was thrown.
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:71)
+	at org.junit.jupiter.api.AssertThrows.assertThrows(AssertThrows.java:37)
+	at org.junit.jupiter.api.Assertions.assertThrows(Assertions.java:2952)
+	at com.maybank.ilm.junit.swiftmsghandlers.MXpacs00800108HandlerTest.testThrowMsgBlockedException(MXpacs00800108HandlerTest.java:217)
+
+
+
+
+	 @Test
+	    public void testThrowMsgBlockedException() {
+
+	        ILMException thrownException = assertThrows(ILMException.class, () -> {
+	        	mxMsgHandler.throwMsgBlockedException();
+	        });
+
+	        assertEquals(ExceptionConstants.FAILED, thrownException.getStatus());
+	        assertEquals(ExceptionConstants.MSGBLOCKED, thrownException.getErrorLog());
+	    }
+
+
 
 
 
