@@ -194,3 +194,38 @@ public class ILMException extends RuntimeException {
 
 
 
+
+
+
+
+
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class ThrowExceptionTest {
+
+    @Test
+    public void testThrowMsgBlockedException() {
+        ThrowException throwException = new ThrowException();
+
+        // Use assertThrows to assert that the exception is thrown
+        ILMException thrownException = assertThrows(ILMException.class, () -> {
+            throwException.throwMsgBlockedException();
+        });
+
+        // Verify the exception's properties
+        assertEquals(ExceptionConstants.FAILED, thrownException.getStatus());
+        assertEquals(ExceptionConstants.MSGBLOCKED, thrownException.getErrorLog());
+    }
+}
+
+
+
+
+
+
+
+
+
