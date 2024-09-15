@@ -1,45 +1,5 @@
-Certainly! Here are five additional questions related to the provided Java code:
-
-### Additional Questions
-
-16. **What is the purpose of the `saveEntitiesForMX` method call in the `saveToAcctBalMgmtAndMapping` method?**
-    - A) To validate the financial transactions
-    - B) To persist the `AccountBalanceManagement` entities to the database
-    - C) To send data to an external system
-    - D) To log the details of the transaction
-
-    **Answer:** B) To persist the `AccountBalanceManagement` entities to the database
-
-17. **Which class is used to parse and handle MX pacs009 messages?**
-    - A) `FinMT103`
-    - B) `MxPacs00900108`
-    - C) `InstructionForNextAgent1`
-    - D) `AccountBalanceAggregation`
-
-    **Answer:** B) `MxPacs00900108`
-
-18. **In the `blockMxPacs00900108MsgForOType` method, what is checked to determine if a message should be blocked?**
-    - A) The BIC of the sender
-    - B) The BIC of the receiver or the name of the receiver
-    - C) The amount of the transaction
-    - D) The transaction reference number
-
-    **Answer:** B) The BIC of the receiver or the name of the receiver
-
-19. **What does `ILMCoreConstants.NIND` represent in the context of this code?**
-    - A) An indicator for a settled transaction
-    - B) An indicator for an unsettled transaction
-    - C) A currency code
-    - D) A message type
-
-    **Answer:** B) An indicator for an unsettled transaction
-
-20. **Which Java class is used to handle date and time information in this code?**
-    - A) `Date`
-    - B) `Calendar`
-    - C) `LocalDate` and `LocalDateTime`
-    - D) `Timestamp`
-
-    **Answer:** C) `LocalDate` and `LocalDateTime`
-
-These questions address additional details about the functionality, classes, and constants used in the code, providing a deeper understanding of the implementation.
+if (cdtrBicfi != null) {
+			blockMsg = cdtrBicfi.compareToIgnoreCase("MBBEMYKL") == 0 || cdtrBicfi.compareToIgnoreCase("MBISMYKL") == 0;
+		} else if (cdtrNm != null) {
+			blockMsg = cdtrNm.toUpperCase().contains("MAYBANK") || cdtrNm.toUpperCase().contains("MALAYAN BANKING BERHAD");
+		} 
