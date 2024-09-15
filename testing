@@ -1,1 +1,277 @@
-Also, there has been no increment etc from the original offer given by Collabera??
+package com.maybank.ilm.core.swiftmsghandlers;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.maybank.ilm.core.dao.DimDao;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.entity.DimCurrency;
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.entity.FinMT103;
+import com.prowidesoftware.swift.model.mx.MxPacs00900108;
+import com.prowidesoftware.swift.model.mx.dic.InstructionForNextAgent1;
+
+@Component
+public class MXpacs00900108Handler extends MXMsgHandlerAbstractImpl {
+
+	@Autowired
+	private EntityAccountMappingRepo eamRepo;
+
+	@Autowired
+	private DimDao dimDao;
+
+	private static final Logger LOGGER = LogManager.getLogger(MXpacs00900108Handler.class);
+
+	/**
+	 * Instantiates a new MX pacs00900108 parser.
+	 *
+	 */
+	@Transactional
+	@Override
+	public <T> void saveToAcctBalMgmtAndMapping(T t, Long trackerId) {
+		MxPacs00900108 pacs00900108 = (MxPacs00900108) t;
+		String messageType = pacs00900108.getMxId().toString();
+		String sendersRef = pacs00900108.getAppHdr().reference();
+		String currencyCode = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getIntrBkSttlmAmt().getCcy();
+		DimCurrency currency = dimDao.getCurrDetailsByCode(currencyCode);
+		BigDecimal amount = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getIntrBkSttlmAmt().getValue();
+		LocalDate valueDate = LocalDate
+				.parse(pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getIntrBkSttlmDt().toString());
+		Character settled = ILMCoreConstants.NIND;
+		LocalDateTime businessDtTime = LocalDateTime.now();
+		String senderCode = pacs00900108.getAppHdr().from();
+		String receiverCode = pacs00900108.getAppHdr().to();
+		List<AccountBalanceManagement> allEntries = new ArrayList<>();
+		if (currencyCode.equals(ILMCoreConstants.MYR)) {
+			String dbtr = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstgAgt().getFinInstnId().getBICFI()
+					.substring(0, 8);
+			String cdtr = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstdAgt().getFinInstnId().getBICFI()
+					.substring(0, 8);
+			String trnCode = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getPmtTpInf().getCtgyPurp().getPrtry();
+			String instrInf = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstrForNxtAgt().get(0)
+					.getInstrInf();
+			String counterParty = this.extractCounterParty(instrInf);
+			final EntityAccountMapDefinition eamDefnIn = this.findEamDefn(pacs00900108, currency, receiverCode,
+					senderCode, trnCode, dbtr, cdtr);
+			if (eamDefnIn != null) {
+				LOGGER.info("Entity account mapping found for {}", eamDefnIn);
+				Long entityAcctMapSkey = eamDefnIn.getEntityAcctMapSkey();
+				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+				AccountBalanceManagement mgmt = new AccountBalanceManagement(entityAcctMapSkey, amount,
+						ILMCoreConstants.PLUS, trackerId, businessDtTime, valueDate, null,
+						ILMCoreConstants.MESSAGETYPE202, dbtr, cdtr, counterParty, trnCode, sendersRef, currencyCode,
+						ILMCoreConstants.NIND, null, messageType);
+				allEntries.add(mgmt);
+				String aggrInd = ILMCoreConstants.OTHERS;
+				getAggregations(allEntries, aggregations, aggrInd);
+				saveEntitiesForMX(allEntries);
+			} else {
+				LOGGER.info("Entity defination not found for {} {} {} ", receiverCode, ILMCoreConstants.MAINACCOUNT,
+						currencyCode);
+				throwEntityNotFountException();
+			}
+		} else {
+			if (receiverCode.contains(ILMCoreConstants.BASE_BICCODE)) {
+
+				LOGGER.info("Inside handler for MXpacs00900108 Nostro {} and O Indicator", currencyCode);
+
+				if (blockMxPacs00900108MsgForOType(pacs00900108, currencyCode)) {
+					LOGGER.info("Message is blocked");
+					throwMsgBlockedException();
+				}
+
+				String bizSvcTag = pacs00900108.getAppHdr().serviceName();
+				if (!bizSvcTag.isEmpty() && bizSvcTag.contains("cov")) {
+					LOGGER.info("Message is Cover Message");
+					throwCoverMgsException();
+				}
+
+				String creditToBIC = senderCode.substring(0, 8);
+				EntityAccountMapDefinition creditToEAM = getDefnByEntityIDAndAcctType(creditToBIC,
+						ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+				String relatedRef = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getPmtId().getInstrId();
+				if (creditToEAM != null) {
+					if (checkRelatedRefForNostro(valueDate, creditToEAM.getEntityAcctMapSkey(), relatedRef)) {
+						settled = ILMCoreConstants.YIND;
+					}
+					AccountBalanceManagement mgmt = new AccountBalanceManagement(creditToEAM.getEntityAcctMapSkey(),
+							amount, ILMCoreConstants.PLUS, trackerId, businessDtTime, valueDate, null,
+							ILMCoreConstants.MESSAGETYPE202, senderCode, receiverCode, null, relatedRef, currencyCode,
+							ILMCoreConstants.NIND, settled, messageType);
+					allEntries.add(mgmt);
+
+				} else {
+					LOGGER.info("Entity defination not found for {} {} {} ", creditToBIC,
+							ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+					throwEntityNotFountException();
+				}
+
+			} else {
+				String amountSign = ILMCoreConstants.negativeSign;
+				
+				LOGGER.info("Inside handler for MXpacs00900108 Nostro {} and I Indicator", currencyCode);
+				if (blockMxPacs00900108MsgForIType(pacs00900108, currencyCode)) {
+					LOGGER.info("Message is blocked");
+					throwMsgBlockedException();
+				}
+
+				String bizSvcTag = pacs00900108.getAppHdr().serviceName();
+				if (!bizSvcTag.isEmpty() && bizSvcTag.contains("cov")) {
+					LOGGER.info("Message is Cover Message");
+					throwCoverMgsException();
+				}
+
+				String deductFromBIC = receiverCode.substring(0, 8);
+				//tag57a
+				String cdtrAgt = Optional.ofNullable(pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtrAgt().getFinInstnId().getBICFI()).orElse(null);
+				if(receiverCode.startsWith("MGTCBEBEXECL") && cdtrAgt!=null) {
+					deductFromBIC = cdtrAgt.substring(0,8);
+					amountSign = ILMCoreConstants.plusSign;
+				}
+				
+				EntityAccountMapDefinition deductFromEAM = getDefnByEntityIDAndAcctType(deductFromBIC,
+						ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+				String relatedRef = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getPmtId().getInstrId();
+				if (deductFromEAM != null) {
+					if (checkRelatedRefForNostro(valueDate, deductFromEAM.getEntityAcctMapSkey(), relatedRef)) {
+						settled = ILMCoreConstants.YIND;
+					}
+					AccountBalanceManagement mgmt = new AccountBalanceManagement(deductFromEAM.getEntityAcctMapSkey(),
+							amount, amountSign, trackerId, businessDtTime, valueDate, null,
+							ILMCoreConstants.MESSAGETYPE202, senderCode, receiverCode, null, relatedRef, currencyCode,
+							ILMCoreConstants.NIND, settled, messageType);
+					allEntries.add(mgmt);
+				} else {
+					LOGGER.info("Entity defination not found for {} {} {} ", deductFromBIC,
+							ILMCoreConstants.NOSTROACCOUNT, currencyCode);
+					throwEntityNotFountException();
+				}
+			}
+
+		}
+		saveEntitiesForMX(allEntries);
+	}
+
+	private EntityAccountMapDefinition findEamDefn(final MxPacs00900108 pacs00900108, final DimCurrency currency,
+			final String receiverCode, final String senderCode, final String trnCode, final String dbtr,
+			final String cdtr) {
+		if (senderCode.contains("BNM") && trnCode.contains("STR") && dbtr.compareTo(cdtr) == 0) {
+			return pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstrForNxtAgt().stream()
+					.map(value -> this.extractFromAddlTxInf(value.getInstrInf(), "CPRA"))
+					.filter(acctNum -> acctNum != null).findFirst()
+					.map(acctNum -> this.getEntityAcctMapDefnByAcctNum(acctNum, currency.getCurrencyCode()))
+					.orElseGet(() -> this.getDefnByEntityIDAndAcctType(receiverCode, ILMCoreConstants.MAINACCOUNT,
+							currency.getCurrencyCode()));
+		} else {
+			return Optional.ofNullable(pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtrAcct())
+					.map(cdtrAcct -> this.getEntityAcctMapDefnByAcctNum(cdtrAcct.getId().getOthr().getId(),
+							currency.getCurrencyCode()))
+					.orElseGet(() -> this.getDefnByEntityIDAndAcctType(receiverCode, ILMCoreConstants.MAINACCOUNT,
+							currency.getCurrencyCode()));
+		}
+
+	}
+
+	private String extractFromAddlTxInf(final String addtlTxInf, final String ind) {
+		final List<String> segs = Arrays.asList(addtlTxInf.split("/"));
+		final Integer index = segs.indexOf(ind);
+		if (index != -1) {
+			final String result = StringUtils.trimToNull(segs.get(index + 1));
+			LOGGER.info("AddtlTxInf {} {}", ind, result);
+			return result;
+		}
+		return null;
+	}
+
+	private String extractCounterParty(final String addtlTxInf) {
+		String bic = this.extractFromAddlTxInf(addtlTxInf, "PAYB");
+		if (bic != null) {
+			return bic;
+		} else {
+			String acctNo = this.extractFromAddlTxInf(addtlTxInf, "PAYA");
+			String bicFromAcctNo = eamRepo.findByAccountNumber(acctNo) != null
+					? eamRepo.findByAccountNumber(acctNo).getEntityIdentifier()
+					: null;
+			return bicFromAcctNo;
+		}
+	}
+
+	private Boolean blockMxPacs00900108MsgForIType(MxPacs00900108 mxPacs00900108, String currencyCode) {
+		LOGGER.info("Inside block msg method");
+		Boolean blockMsg = false;
+		String dbtrBIC = null;
+		try {
+
+			dbtrBIC = Optional
+					.ofNullable(
+							mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getDbtr().getFinInstnId().getBICFI())
+					.map(String::toUpperCase).orElse(null);
+		} catch (NullPointerException e) {
+			LOGGER.warn("Creditor Identifier not found: " + e.getMessage());
+		}
+
+		if (dbtrBIC != null) {
+			blockMsg = dbtrBIC.contains("MBEAMYKL") || dbtrBIC.contains("MBEAMY21");
+		}
+
+		return blockMsg;
+	}
+
+	private Boolean blockMxPacs00900108MsgForOType(MxPacs00900108 mxPacs00900108, String currencyCode) {
+		LOGGER.info("Inside block msg method");
+		Boolean blockMsg = false;
+		String cdtrBicfi = null;
+		String cdtrNm = null;
+		try {
+			cdtrBicfi = Optional
+					.ofNullable(
+							mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtr().getFinInstnId().getBICFI().substring(0, 8))
+					.orElse(null);
+			cdtrNm = Optional
+					.ofNullable(mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtr().getFinInstnId().getNm())
+					.orElse(null);
+			
+		} catch (NullPointerException e) {
+			LOGGER.warn("Creditor Identifier not found: " + e.getMessage());
+		}
+
+		if (cdtrBicfi != null) {
+			blockMsg = cdtrBicfi.compareToIgnoreCase("MBBEMYKL") == 0 || cdtrBicfi.compareToIgnoreCase("MBISMYKL") == 0;
+		} else if (cdtrNm != null) {
+			blockMsg = cdtrNm.toUpperCase().contains("MAYBANK") || cdtrNm.toUpperCase().contains("MALAYAN BANKING BERHAD");
+		} 
+
+		return blockMsg;
+	}
+
+	@Override
+	public String getMessageType() {
+		return ILMCoreConstants.MXTYPEPACS00900108;
+	}
+
+	@Override
+	public <T> AccountBalanceMgmtDTO validateMessage(T t) {
+		FinMT103 finMT103 = (FinMT103) t;
+		return super.validateMessage(finMT103.getTags57().getBlock4Tag57aBic(), finMT103.getTags72(),
+				finMT103.getBlock1().getBlock1LogicalTerminal(), finMT103.getBlock4().getBlock4Tag32aCurrency(),
+				finMT103.getBlock4().getBlock4Tag32aDate(), finMT103.getBlock4().getBlock4Tag20(),
+				ILMCoreConstants.MESSAGETYPE103, finMT103.getBlock4().getBlock4Tag32aSettledAmnt(), null, Boolean.TRUE);
+	}
+}
