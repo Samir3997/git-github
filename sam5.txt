@@ -1,125 +1,45 @@
-Sure! Here are 15 multiple-choice questions based on the provided Java code:
+Certainly! Here are five additional questions related to the provided Java code:
 
-### Questions
+### Additional Questions
 
-1. **What is the primary role of the `MXpacs00900108Handler` class?**
-   - A) To handle MX pacs008 messages
-   - B) To process and save data from MX pacs009 messages
-   - C) To validate financial transactions
-   - D) To convert currencies
+16. **What is the purpose of the `saveEntitiesForMX` method call in the `saveToAcctBalMgmtAndMapping` method?**
+    - A) To validate the financial transactions
+    - B) To persist the `AccountBalanceManagement` entities to the database
+    - C) To send data to an external system
+    - D) To log the details of the transaction
 
-   **Answer:** B) To process and save data from MX pacs009 messages
+    **Answer:** B) To persist the `AccountBalanceManagement` entities to the database
 
-2. **Which annotation is used to mark the `MXpacs00900108Handler` class for automatic component scanning in Spring?**
-   - A) `@Service`
-   - B) `@Controller`
-   - C) `@Component`
-   - D) `@Repository`
+17. **Which class is used to parse and handle MX pacs009 messages?**
+    - A) `FinMT103`
+    - B) `MxPacs00900108`
+    - C) `InstructionForNextAgent1`
+    - D) `AccountBalanceAggregation`
 
-   **Answer:** C) `@Component`
+    **Answer:** B) `MxPacs00900108`
 
-3. **What does the `saveToAcctBalMgmtAndMapping` method primarily do?**
-   - A) Sends a message to a remote server
-   - B) Saves account balance management data and performs mappings
-   - C) Fetches account balance details from the database
-   - D) Logs the incoming message details
+18. **In the `blockMxPacs00900108MsgForOType` method, what is checked to determine if a message should be blocked?**
+    - A) The BIC of the sender
+    - B) The BIC of the receiver or the name of the receiver
+    - C) The amount of the transaction
+    - D) The transaction reference number
 
-   **Answer:** B) Saves account balance management data and performs mappings
+    **Answer:** B) The BIC of the receiver or the name of the receiver
 
-4. **Which method is used to retrieve currency details by its code?**
-   - A) `getEntityAcctMapDefnByAcctNum`
-   - B) `getDefnByEntityIDAndAcctType`
-   - C) `dimDao.getCurrDetailsByCode`
-   - D) `findEamDefn`
+19. **What does `ILMCoreConstants.NIND` represent in the context of this code?**
+    - A) An indicator for a settled transaction
+    - B) An indicator for an unsettled transaction
+    - C) A currency code
+    - D) A message type
 
-   **Answer:** C) `dimDao.getCurrDetailsByCode`
+    **Answer:** B) An indicator for an unsettled transaction
 
-5. **What is the significance of `ILMCoreConstants.PLUS` in the `AccountBalanceManagement` constructor?**
-   - A) Indicates a debit transaction
-   - B) Indicates a credit transaction
-   - C) Indicates a currency type
-   - D) Indicates a specific account type
+20. **Which Java class is used to handle date and time information in this code?**
+    - A) `Date`
+    - B) `Calendar`
+    - C) `LocalDate` and `LocalDateTime`
+    - D) `Timestamp`
 
-   **Answer:** B) Indicates a credit transaction
+    **Answer:** C) `LocalDate` and `LocalDateTime`
 
-6. **Which log level is used for logging general information about the process in this code?**
-   - A) ERROR
-   - B) WARN
-   - C) INFO
-   - D) DEBUG
-
-   **Answer:** C) INFO
-
-7. **In the `blockMxPacs00900108MsgForIType` method, which BIC codes are used to block messages?**
-   - A) MBEAMYKL and MBEAMY21
-   - B) MBBEMYKL and MBISMYKL
-   - C) MGTCBEBEXECL and MBEAMYKL
-   - D) MBISMYKL and MGTCBEBEXECL
-
-   **Answer:** A) MBEAMYKL and MBEAMY21
-
-8. **Which method is used to extract additional transaction information from a string?**
-   - A) `extractCounterParty`
-   - B) `extractFromAddlTxInf`
-   - C) `blockMxPacs00900108MsgForOType`
-   - D) `findEamDefn`
-
-   **Answer:** B) `extractFromAddlTxInf`
-
-9. **What is the role of the `findEamDefn` method?**
-   - A) To find the entity account mapping definition based on several criteria
-   - B) To validate the message format
-   - C) To extract the counterparty information
-   - D) To block messages based on certain conditions
-
-   **Answer:** A) To find the entity account mapping definition based on several criteria
-
-10. **What is the purpose of the `blockMxPacs00900108MsgForOType` method?**
-    - A) To validate the message format
-    - B) To block messages based on the creditor's BIC or name
-    - C) To extract transaction details from the message
-    - D) To log the incoming message details
-
-    **Answer:** B) To block messages based on the creditor's BIC or name
-
-11. **What does `ILMCoreConstants.NOSTROACCOUNT` refer to?**
-    - A) A specific type of account
-    - B) A currency code
-    - C) A message type
-    - D) A business service tag
-
-    **Answer:** A) A specific type of account
-
-12. **Which Java class represents the currency information in the provided code?**
-    - A) `DimCurrency`
-    - B) `AccountBalanceAggregation`
-    - C) `AccountBalanceManagement`
-    - D) `EntityAccountMapDefinition`
-
-    **Answer:** A) `DimCurrency`
-
-13. **In the `extractCounterParty` method, how is the counterparty's BIC code retrieved if it is not directly found?**
-    - A) By extracting it from additional transaction information
-    - B) By looking up the account number in `eamRepo`
-    - C) By querying the database directly
-    - D) By parsing the message header
-
-    **Answer:** B) By looking up the account number in `eamRepo`
-
-14. **What does the `getAggregations` method do?**
-    - A) Aggregates the account balance management entries
-    - B) Validates the message format
-    - C) Extracts the counterparty information
-    - D) Maps entity account definitions
-
-    **Answer:** A) Aggregates the account balance management entries
-
-15. **What type of exception is thrown if the entity definition is not found?**
-    - A) `MsgBlockedException`
-    - B) `CoverMgsException`
-    - C) `EntityNotFoundException`
-    - D) `IllegalArgumentException`
-
-    **Answer:** C) `EntityNotFoundException`
-
-These questions cover various aspects of the code, including functionality, methods, and constants used.
+These questions address additional details about the functionality, classes, and constants used in the code, providing a deeper understanding of the implementation.
