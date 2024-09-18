@@ -1,277 +1,489 @@
-package com.maybank.ilm.core.swiftmsghandlers;
+package com.maybank.ilm.core.parser;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.maybank.ilm.core.dao.DimDao;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.ConversionUtil;
 import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.AccountBalanceMgmtDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
-import com.maybank.ilm.entity.DimCurrency;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
+import com.maybank.ilm.core.util.ParserUtil;
+import com.maybank.ilm.embeddable.Block4Tag50;
+import com.maybank.ilm.embeddable.Block4Tag52;
+import com.maybank.ilm.embeddable.Block4Tag53;
+import com.maybank.ilm.embeddable.Block4Tag54;
+import com.maybank.ilm.embeddable.Block4Tag55;
+import com.maybank.ilm.embeddable.Block4Tag56;
+import com.maybank.ilm.embeddable.Block4Tag57;
+import com.maybank.ilm.embeddable.Block4Tag59;
+import com.maybank.ilm.embeddable.Block4Tag70to71;
+import com.maybank.ilm.embeddable.Block4Tag72;
+import com.maybank.ilm.embeddable.Block4Tag77;
+import com.maybank.ilm.embeddable.CommonPk;
+import com.maybank.ilm.embeddable.MT103Block4;
+import com.maybank.ilm.embeddable.MTBlock1;
+import com.maybank.ilm.embeddable.MTBlock2;
 import com.maybank.ilm.entity.FinMT103;
-import com.prowidesoftware.swift.model.mx.MxPacs00900108;
-import com.prowidesoftware.swift.model.mx.dic.InstructionForNextAgent1;
+import com.maybank.ilm.entity.MT103Tag23E;
+import com.maybank.ilm.entity.MT103Tag71F;
+import com.maybank.ilm.entity.Tag13C;
+import com.prowidesoftware.swift.model.SwiftBlock3;
+import com.prowidesoftware.swift.model.SwiftBlock5;
+import com.prowidesoftware.swift.model.SwiftMessage;
+import com.prowidesoftware.swift.model.field.Field13C;
+import com.prowidesoftware.swift.model.field.Field23E;
+import com.prowidesoftware.swift.model.field.Field71F;
+import com.prowidesoftware.swift.model.mt.mt1xx.MT103;
 
-@Component
-public class MXpacs00900108Handler extends MXMsgHandlerAbstractImpl {
+/**
+ * The Class MT103Parser parses the message type 103.
+ */
+public class MT103Parser extends MTCommonParser {
 
-	@Autowired
-	private EntityAccountMappingRepo eamRepo;
-
-	@Autowired
-	private DimDao dimDao;
-
-	private static final Logger LOGGER = LogManager.getLogger(MXpacs00900108Handler.class);
+	/** The fin MT 103. */
+	private FinMT103 finMT103;
 
 	/**
-	 * Instantiates a new MX pacs00900108 parser.
-	 *
+	 * Instantiates a new MT 103 parser.
 	 */
-	@Transactional
+	public MT103Parser() {
+	}
+
+	/**
+	 * Instantiates a new MT 103 parser.
+	 *
+	 * @param finMT103 the fin MT 103
+	 */
+	public MT103Parser(FinMT103 finMT103) {
+		super();
+		this.finMT103 = finMT103;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.maybank.ilm.core.parser.MTCommonParser#setFieldsandSave(java.lang.String,
+	 * java.lang.Long)
+	 */
 	@Override
-	public <T> void saveToAcctBalMgmtAndMapping(T t, Long trackerId) {
-		MxPacs00900108 pacs00900108 = (MxPacs00900108) t;
-		String messageType = pacs00900108.getMxId().toString();
-		String sendersRef = pacs00900108.getAppHdr().reference();
-		String currencyCode = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getIntrBkSttlmAmt().getCcy();
-		DimCurrency currency = dimDao.getCurrDetailsByCode(currencyCode);
-		BigDecimal amount = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getIntrBkSttlmAmt().getValue();
-		LocalDate valueDate = LocalDate
-				.parse(pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getIntrBkSttlmDt().toString());
-		Character settled = ILMCoreConstants.NIND;
-		LocalDateTime businessDtTime = LocalDateTime.now();
-		String senderCode = pacs00900108.getAppHdr().from();
-		String receiverCode = pacs00900108.getAppHdr().to();
-		List<AccountBalanceManagement> allEntries = new ArrayList<>();
-		if (currencyCode.equals(ILMCoreConstants.MYR)) {
-			String dbtr = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstgAgt().getFinInstnId().getBICFI()
-					.substring(0, 8);
-			String cdtr = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstdAgt().getFinInstnId().getBICFI()
-					.substring(0, 8);
-			String trnCode = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getPmtTpInf().getCtgyPurp().getPrtry();
-			String instrInf = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstrForNxtAgt().get(0)
-					.getInstrInf();
-			String counterParty = this.extractCounterParty(instrInf);
-			final EntityAccountMapDefinition eamDefnIn = this.findEamDefn(pacs00900108, currency, receiverCode,
-					senderCode, trnCode, dbtr, cdtr);
-			if (eamDefnIn != null) {
-				LOGGER.info("Entity account mapping found for {}", eamDefnIn);
-				Long entityAcctMapSkey = eamDefnIn.getEntityAcctMapSkey();
-				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
-				AccountBalanceManagement mgmt = new AccountBalanceManagement(entityAcctMapSkey, amount,
-						ILMCoreConstants.PLUS, trackerId, businessDtTime, valueDate, null,
-						ILMCoreConstants.MESSAGETYPE202, dbtr, cdtr, counterParty, trnCode, sendersRef, currencyCode,
-						ILMCoreConstants.NIND, null, messageType);
-				allEntries.add(mgmt);
-				String aggrInd = ILMCoreConstants.OTHERS;
-				getAggregations(allEntries, aggregations, aggrInd);
-				saveEntitiesForMX(allEntries);
-			} else {
-				LOGGER.info("Entity defination not found for {} {} {} ", receiverCode, ILMCoreConstants.MAINACCOUNT,
-						currencyCode);
-				throwEntityNotFountException();
-			}
-		} else {
-			if (receiverCode.contains(ILMCoreConstants.BASE_BICCODE)) {
-
-				LOGGER.info("Inside handler for MXpacs00900108 Nostro {} and O Indicator", currencyCode);
-
-				if (blockMxPacs00900108MsgForOType(pacs00900108, currencyCode)) {
-					LOGGER.info("Message is blocked");
-					throwMsgBlockedException();
-				}
-
-				String bizSvcTag = pacs00900108.getAppHdr().serviceName();
-				if (!bizSvcTag.isEmpty() && bizSvcTag.contains("cov")) {
-					LOGGER.info("Message is Cover Message");
-					throwCoverMgsException();
-				}
-
-				String creditToBIC = senderCode.substring(0, 8);
-				EntityAccountMapDefinition creditToEAM = getDefnByEntityIDAndAcctType(creditToBIC,
-						ILMCoreConstants.NOSTROACCOUNT, currencyCode);
-				String relatedRef = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getPmtId().getInstrId();
-				if (creditToEAM != null) {
-					if (checkRelatedRefForNostro(valueDate, creditToEAM.getEntityAcctMapSkey(), relatedRef)) {
-						settled = ILMCoreConstants.YIND;
-					}
-					AccountBalanceManagement mgmt = new AccountBalanceManagement(creditToEAM.getEntityAcctMapSkey(),
-							amount, ILMCoreConstants.PLUS, trackerId, businessDtTime, valueDate, null,
-							ILMCoreConstants.MESSAGETYPE202, senderCode, receiverCode, null, relatedRef, currencyCode,
-							ILMCoreConstants.NIND, settled, messageType);
-					allEntries.add(mgmt);
-
-				} else {
-					LOGGER.info("Entity defination not found for {} {} {} ", creditToBIC,
-							ILMCoreConstants.NOSTROACCOUNT, currencyCode);
-					throwEntityNotFountException();
-				}
-
-			} else {
-				String amountSign = ILMCoreConstants.negativeSign;
-				
-				LOGGER.info("Inside handler for MXpacs00900108 Nostro {} and I Indicator", currencyCode);
-				if (blockMxPacs00900108MsgForIType(pacs00900108, currencyCode)) {
-					LOGGER.info("Message is blocked");
-					throwMsgBlockedException();
-				}
-
-				String bizSvcTag = pacs00900108.getAppHdr().serviceName();
-				if (!bizSvcTag.isEmpty() && bizSvcTag.contains("cov")) {
-					LOGGER.info("Message is Cover Message");
-					throwCoverMgsException();
-				}
-
-				String deductFromBIC = receiverCode.substring(0, 8);
-				//tag57a
-				String cdtrAgt = Optional.ofNullable(pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtrAgt().getFinInstnId().getBICFI()).orElse(null);
-				if(receiverCode.startsWith("MGTCBEBEXECL") && cdtrAgt!=null) {
-					deductFromBIC = cdtrAgt.substring(0,8);
-					amountSign = ILMCoreConstants.plusSign;
-				}
-				
-				EntityAccountMapDefinition deductFromEAM = getDefnByEntityIDAndAcctType(deductFromBIC,
-						ILMCoreConstants.NOSTROACCOUNT, currencyCode);
-				String relatedRef = pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getPmtId().getInstrId();
-				if (deductFromEAM != null) {
-					if (checkRelatedRefForNostro(valueDate, deductFromEAM.getEntityAcctMapSkey(), relatedRef)) {
-						settled = ILMCoreConstants.YIND;
-					}
-					AccountBalanceManagement mgmt = new AccountBalanceManagement(deductFromEAM.getEntityAcctMapSkey(),
-							amount, amountSign, trackerId, businessDtTime, valueDate, null,
-							ILMCoreConstants.MESSAGETYPE202, senderCode, receiverCode, null, relatedRef, currencyCode,
-							ILMCoreConstants.NIND, settled, messageType);
-					allEntries.add(mgmt);
-				} else {
-					LOGGER.info("Entity defination not found for {} {} {} ", deductFromBIC,
-							ILMCoreConstants.NOSTROACCOUNT, currencyCode);
-					throwEntityNotFountException();
-				}
-			}
-
+	public void setFieldsandSave(String message) {
+		SwiftMessage sm = ParserUtil.parseMessage(message);
+		MT103 mt103 = new MT103(sm);
+		MTBlock1 block1 = new MTBlock1();
+		MTBlock2 block2 = new MTBlock2();
+		if (sm.getBlock1() != null) {
+			setBlock1(block1, sm.getBlock1());
+			finMT103.setBlock1(block1);
 		}
-		saveEntitiesForMX(allEntries);
-	}
-
-	private EntityAccountMapDefinition findEamDefn(final MxPacs00900108 pacs00900108, final DimCurrency currency,
-			final String receiverCode, final String senderCode, final String trnCode, final String dbtr,
-			final String cdtr) {
-		if (senderCode.contains("BNM") && trnCode.contains("STR") && dbtr.compareTo(cdtr) == 0) {
-			return pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getInstrForNxtAgt().stream()
-					.map(value -> this.extractFromAddlTxInf(value.getInstrInf(), "CPRA"))
-					.filter(acctNum -> acctNum != null).findFirst()
-					.map(acctNum -> this.getEntityAcctMapDefnByAcctNum(acctNum, currency.getCurrencyCode()))
-					.orElseGet(() -> this.getDefnByEntityIDAndAcctType(receiverCode, ILMCoreConstants.MAINACCOUNT,
-							currency.getCurrencyCode()));
-		} else {
-			return Optional.ofNullable(pacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtrAcct())
-					.map(cdtrAcct -> this.getEntityAcctMapDefnByAcctNum(cdtrAcct.getId().getOthr().getId(),
-							currency.getCurrencyCode()))
-					.orElseGet(() -> this.getDefnByEntityIDAndAcctType(receiverCode, ILMCoreConstants.MAINACCOUNT,
-							currency.getCurrencyCode()));
+		if (sm.getBlock2() != null) {
+			setBlock2(block2, sm.getBlock2());
+			finMT103.setBlock2(block2);
 		}
-
+		if (sm.getBlock3() != null)
+			setMT103Block3(sm.getBlock3());
+		setMT103Block4All(mt103);
+		if (sm.getBlock5() != null)
+			setMT103Block5(sm.getBlock5());
+		finMT103.setBlock2MessageType(sm.getBlock2().getMessageType());
+		finMT103.setCreationDate(LocalDateTime.now());
 	}
 
-	private String extractFromAddlTxInf(final String addtlTxInf, final String ind) {
-		final List<String> segs = Arrays.asList(addtlTxInf.split("/"));
-		final Integer index = segs.indexOf(ind);
-		if (index != -1) {
-			final String result = StringUtils.trimToNull(segs.get(index + 1));
-			LOGGER.info("AddtlTxInf {} {}", ind, result);
-			return result;
+	/**
+	 * Sets the MT 103 block 3.
+	 *
+	 * @param swiftBlock3 the new MT 103 block 3
+	 */
+	private void setMT103Block3(SwiftBlock3 swiftBlock3) {
+		finMT103.setBlock3Tag108(swiftBlock3.getTagValue(ILMCoreConstants.TAG108));
+		finMT103.setBlock3Tag121(swiftBlock3.getTagValue(ILMCoreConstants.TAG121));
+	}
+
+	/**
+	 * Sets the MT 103 block 4.
+	 *
+	 * @param mt103 the new MT 103 block 4
+	 */
+	private void setMT103Block4(MT103 mt103) {
+		MT103Block4 mt103Block4 = new MT103Block4();
+		mt103Block4.setBlock4Tag20(mt103.getField20() != null ? mt103.getField20().getComponent1() : null);
+		mt103Block4.setBlock4Tag23b(mt103.getField23B() != null ? mt103.getField23B().getComponent1() : null);
+		mt103Block4.setBlock4Tag26t(mt103.getField26T() != null ? mt103.getField26T().getComponent1() : null);
+		if (!doNullCheckForObjects(mt103.getField32A())) {
+			mt103Block4.setBlock4Tag32aCurrency(mt103.getField32A().getCurrency());
+			mt103Block4.setBlock4Tag32aDate(mt103.getField32A().getDate());
+			mt103Block4.setBlock4Tag32aSettledAmnt(mt103.getField32A().getAmountBigDecimal());
 		}
-		return null;
-	}
-
-	private String extractCounterParty(final String addtlTxInf) {
-		String bic = this.extractFromAddlTxInf(addtlTxInf, "PAYB");
-		if (bic != null) {
-			return bic;
-		} else {
-			String acctNo = this.extractFromAddlTxInf(addtlTxInf, "PAYA");
-			String bicFromAcctNo = eamRepo.findByAccountNumber(acctNo) != null
-					? eamRepo.findByAccountNumber(acctNo).getEntityIdentifier()
-					: null;
-			return bicFromAcctNo;
+		if (mt103.getField33B() != null) {
+			mt103Block4.setBlock4Tag33bCurrency(mt103.getField33B().getCurrency());
+			mt103Block4
+					.setBlock4Tag33bInstrucAmnt(ConversionUtil.convertStrToBigDecimal(mt103.getField33B().getAmount()));
 		}
-	}
-
-	private Boolean blockMxPacs00900108MsgForIType(MxPacs00900108 mxPacs00900108, String currencyCode) {
-		LOGGER.info("Inside block msg method");
-		Boolean blockMsg = false;
-		String dbtrBIC = null;
-		try {
-
-			dbtrBIC = Optional
-					.ofNullable(
-							mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getDbtr().getFinInstnId().getBICFI())
-					.map(String::toUpperCase).orElse(null);
-		} catch (NullPointerException e) {
-			LOGGER.warn("Creditor Identifier not found: " + e.getMessage());
+		mt103Block4.setBlock4Tag36(mt103.getField36() != null ? mt103.getField36().getComponent1() : null);
+		if (mt103.getField51A() != null) {
+			mt103Block4.setBlock4Tag51aAcct(mt103.getField51A().getAccount());
+			mt103Block4.setBlock4Tag51aBic(mt103.getField51A().getIdentifierCode());
+			mt103Block4.setBlock4Tag51aDcmark(mt103.getField51A().getDCMark());
 		}
+		mt103Block4.setBlock4Tag56c(mt103.getField56C() != null ? mt103.getField56C().getComponent1() : null);
+		mt103Block4.setBlock4Tag57c(mt103.getField57C() != null ? mt103.getField57C().getComponent1() : null);
+		finMT103.setBlock4(mt103Block4);
+	}
 
-		if (dbtrBIC != null) {
-			blockMsg = dbtrBIC.contains("MBEAMYKL") || dbtrBIC.contains("MBEAMY21");
+	/**
+	 * Sets the MT 103 block 4 tag 50.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 50
+	 */
+	private void setMT103Block4Tag50(MT103 mt103) {
+		Block4Tag50 block4Tag50 = new Block4Tag50();
+		if (mt103.getField50A() != null) {
+			block4Tag50.setBlock4Tag50aAcct(mt103.getField50A().getAccount());
+			block4Tag50.setBlock4Tag50aBic(mt103.getField50A().getIdentifierCode());
 		}
-
-		return blockMsg;
-	}
-
-	private Boolean blockMxPacs00900108MsgForOType(MxPacs00900108 mxPacs00900108, String currencyCode) {
-		LOGGER.info("Inside block msg method");
-		Boolean blockMsg = false;
-		String cdtrBicfi = null;
-		String cdtrNm = null;
-		try {
-			cdtrBicfi = Optional
-					.ofNullable(
-							mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtr().getFinInstnId().getBICFI().substring(0, 8))
-					.orElse(null);
-			cdtrNm = Optional
-					.ofNullable(mxPacs00900108.getFICdtTrf().getCdtTrfTxInf().get(0).getCdtr().getFinInstnId().getNm())
-					.orElse(null);
-			
-		} catch (NullPointerException e) {
-			LOGGER.warn("Creditor Identifier not found: " + e.getMessage());
+		if (mt103.getField50F() != null) {
+			block4Tag50.setBlock4Tag50fNameAddr1(mt103.getField50F().getNameAndAddress1());
+			block4Tag50.setBlock4Tag50fNameAddr2(mt103.getField50F().getNameAndAddress2());
+			block4Tag50.setBlock4Tag50fNameAddr3(mt103.getField50F().getNameAndAddress3());
+			block4Tag50.setBlock4Tag50fNameAddr4(mt103.getField50F().getNameAndAddress4());
+			block4Tag50.setBlock4Tag50fNumber1(mt103.getField50F().getNumber1());
+			block4Tag50.setBlock4Tag50fNumber2(mt103.getField50F().getNumber2());
+			block4Tag50.setBlock4Tag50fNumber3(mt103.getField50F().getNumber3());
+			block4Tag50.setBlock4Tag50fNumber4(mt103.getField50F().getNumber4());
+			block4Tag50.setBlock4Tag50fPartyId(mt103.getField50F().getPartyIdentifier());
 		}
-
-		if (cdtrBicfi != null) {
-			blockMsg = cdtrBicfi.compareToIgnoreCase("MBBEMYKL") == 0 || cdtrBicfi.compareToIgnoreCase("MBISMYKL") == 0;
-		} else if (cdtrNm != null) {
-			blockMsg = cdtrNm.toUpperCase().contains("MAYBANK") || cdtrNm.toUpperCase().contains("MALAYAN BANKING BERHAD");
-		} 
-
-		return blockMsg;
+		if (mt103.getField50K() != null) {
+			block4Tag50.setBlock4Tag50kAccount(mt103.getField50K().getAccount());
+			block4Tag50.setBlock4Tag50kNameAddr(mt103.getField50K().getNameAndAddress());
+		}
+		finMT103.setTags50(block4Tag50);
 	}
 
-	@Override
-	public String getMessageType() {
-		return ILMCoreConstants.MXTYPEPACS00900108;
+	/**
+	 * Sets the MT 103 block 4 tag 52.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 52
+	 */
+	private void setMT103Block4Tag52(MT103 mt103) {
+		Block4Tag52 block4Tag52 = new Block4Tag52();
+		if (mt103.getField52A() != null) {
+			block4Tag52.setBlock4Tag52aAcct(mt103.getField52A().getAccount());
+			block4Tag52.setBlock4Tag52aBic(mt103.getField52A().getIdentifierCode());
+			block4Tag52.setBlock4Tag52aDcmark(mt103.getField52A().getDCMark());
+		}
+		if (mt103.getField52D() != null) {
+			block4Tag52.setBlock4Tag52dAcct(mt103.getField52D().getAccount());
+			block4Tag52.setBlock4Tag52dNameAddr(mt103.getField52D().getNameAndAddress());
+			block4Tag52.setBlock4Tag52dDcmark(mt103.getField52D().getDCMark());
+		}
+		finMT103.setTags52(block4Tag52);
 	}
 
-	@Override
-	public <T> AccountBalanceMgmtDTO validateMessage(T t) {
-		FinMT103 finMT103 = (FinMT103) t;
-		return super.validateMessage(finMT103.getTags57().getBlock4Tag57aBic(), finMT103.getTags72(),
-				finMT103.getBlock1().getBlock1LogicalTerminal(), finMT103.getBlock4().getBlock4Tag32aCurrency(),
-				finMT103.getBlock4().getBlock4Tag32aDate(), finMT103.getBlock4().getBlock4Tag20(),
-				ILMCoreConstants.MESSAGETYPE103, finMT103.getBlock4().getBlock4Tag32aSettledAmnt(), null, Boolean.TRUE);
+	/**
+	 * Sets the MT 103 block 4 tag 53.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 53
+	 */
+	private void setMT103Block4Tag53(MT103 mt103) {
+		Block4Tag53 block4Tag53 = new Block4Tag53();
+		if (mt103.getField53A() != null) {
+			block4Tag53.setBlock4Tag53aAcct(mt103.getField53A().getAccount());
+			block4Tag53.setBlock4Tag53aBic(mt103.getField53A().getIdentifierCode());
+			block4Tag53.setBlock4Tag53aDcmark(mt103.getField53A().getDCMark());
+		}
+		if (mt103.getField53B() != null) {
+			block4Tag53.setBlock4Tag53bAcct(mt103.getField53B().getAccount());
+			block4Tag53.setBlock4Tag53bLocation(mt103.getField53B().getLocation());
+			block4Tag53.setBlock4Tag53bDcmark(mt103.getField53B().getDCMark());
+		}
+		if (mt103.getField53D() != null) {
+			block4Tag53.setBlock4Tag53dAcct(mt103.getField53D().getAccount());
+			block4Tag53.setBlock4Tag53dNameAddr(mt103.getField53D().getNameAndAddress());
+			block4Tag53.setBlock4Tag53dDcmark(mt103.getField53D().getDCMark());
+		}
+		finMT103.setTags53(block4Tag53);
 	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 54.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 54
+	 */
+	private void setMT103Block4Tag54(MT103 mt103) {
+		Block4Tag54 block4Tag54 = new Block4Tag54();
+		if (mt103.getField54A() != null) {
+			block4Tag54.setBlock4Tag54aAcct(mt103.getField54A().getAccount());
+			block4Tag54.setBlock4Tag54aBic(mt103.getField54A().getIdentifierCode());
+			block4Tag54.setBlock4Tag54aDcmark(mt103.getField54A().getDCMark());
+		}
+		if (mt103.getField54B() != null) {
+			block4Tag54.setBlock4Tag54bAcct(mt103.getField54B().getAccount());
+			block4Tag54.setBlock4Tag54bLocation(mt103.getField54B().getLocation());
+			block4Tag54.setBlock4Tag54bDcmark(mt103.getField54B().getDCMark());
+		}
+		if (mt103.getField54D() != null) {
+			block4Tag54.setBlock4Tag54dAcct(mt103.getField54D().getAccount());
+			block4Tag54.setBlock4Tag54dNameAddr(mt103.getField54D().getNameAndAddress());
+			block4Tag54.setBlock4Tag54dDcmark(mt103.getField54D().getDCMark());
+		}
+		finMT103.setTags54(block4Tag54);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 55.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 55
+	 */
+	private void setMT103Block4Tag55(MT103 mt103) {
+		Block4Tag55 block4Tag55 = new Block4Tag55();
+		if (mt103.getField55A() != null) {
+			block4Tag55.setBlock4Tag55aAcct(mt103.getField55A().getAccount());
+			block4Tag55.setBlock4Tag55aBic(mt103.getField55A().getIdentifierCode());
+			block4Tag55.setBlock4Tag55aDcmark(mt103.getField55A().getDCMark());
+		}
+		if (mt103.getField55B() != null) {
+			block4Tag55.setBlock4Tag55bAcct(mt103.getField55B().getAccount());
+			block4Tag55.setBlock4Tag55bLocation(mt103.getField55B().getLocation());
+			block4Tag55.setBlock4Tag55bDcmark(mt103.getField55B().getDCMark());
+		}
+		if (mt103.getField55D() != null) {
+			block4Tag55.setBlock4Tag55dAcct(mt103.getField55D().getAccount());
+			block4Tag55.setBlock4Tag55dNameAddr(mt103.getField55D().getNameAndAddress());
+			block4Tag55.setBlock4Tag55dDcmark(mt103.getField55D().getDCMark());
+		}
+		finMT103.setTags55(block4Tag55);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 56.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 56
+	 */
+	private void setMT103Block4Tag56(MT103 mt103) {
+		Block4Tag56 block4Tag56 = new Block4Tag56();
+		if (mt103.getField56A() != null) {
+			block4Tag56.setBlock4Tag56aAcct(mt103.getField56A().getAccount());
+			block4Tag56.setBlock4Tag56aBic(mt103.getField56A().getIdentifierCode());
+			block4Tag56.setBlock4Tag56aDcmark(mt103.getField56A().getDCMark());
+		}
+		if (mt103.getField56D() != null) {
+			block4Tag56.setBlock4Tag56dAcct(mt103.getField56D().getAccount());
+			block4Tag56.setBlock4Tag56dNameAddr(mt103.getField56D().getNameAndAddress());
+			block4Tag56.setBlock4Tag56dDcmark(mt103.getField56D().getDCMark());
+		}
+		finMT103.setTags56(block4Tag56);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 57.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 57
+	 */
+	private void setMT103Block4Tag57(MT103 mt103) {
+		Block4Tag57 block4Tag57 = new Block4Tag57();
+		if (mt103.getField57A() != null) {
+			block4Tag57.setBlock4Tag57aAcct(mt103.getField57A().getAccount());
+			block4Tag57.setBlock4Tag57aBic(mt103.getField57A().getIdentifierCode());
+			block4Tag57.setBlock4Tag57aDcmark(mt103.getField57A().getDCMark());
+		}
+		if (mt103.getField57B() != null) {
+			block4Tag57.setBlock4Tag57bAcct(mt103.getField57B().getAccount());
+			block4Tag57.setBlock4Tag57bLocation(mt103.getField57B().getLocation());
+			block4Tag57.setBlock4Tag57bDcmark(mt103.getField57B().getDCMark());
+		}
+		if (mt103.getField57D() != null) {
+			block4Tag57.setBlock4Tag57dAcct(mt103.getField57D().getAccount());
+			block4Tag57.setBlock4Tag57dNameAddr(mt103.getField57D().getNameAndAddress());
+			block4Tag57.setBlock4Tag57dDcmark(mt103.getField57D().getDCMark());
+		}
+		finMT103.setTags57(block4Tag57);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 59.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 59
+	 */
+	private void setMT103Block4Tag59(MT103 mt103) {
+		Block4Tag59 block4Tag59 = new Block4Tag59();
+		if (mt103.getField59() != null) {
+			block4Tag59.setBlock4Tag59Acct(mt103.getField59().getAccount());
+			block4Tag59.setBlock4Tag59NameAddr(mt103.getField59().getNameAndAddress());
+		}
+		if (mt103.getField59A() != null) {
+			block4Tag59.setBlock4Tag59aAcct(mt103.getField59A().getAccount());
+			block4Tag59.setBlock4Tag59aBic(mt103.getField59A().getIdentifierCode());
+		}
+		if (mt103.getField59F() != null) {
+			block4Tag59.setBlock4Tag59fAcct(mt103.getField59F().getAccount());
+			block4Tag59.setBlock4Tag59fNameAddr1(mt103.getField59F().getNameAndAddress1());
+			block4Tag59.setBlock4Tag59fNameAddr2(mt103.getField59F().getNameAndAddress2());
+			block4Tag59.setBlock4Tag59fNameAddr3(mt103.getField59F().getNameAndAddress3());
+			block4Tag59.setBlock4Tag59fNameAddr4(mt103.getField59F().getNameAndAddress4());
+			block4Tag59.setBlock4Tag59fNumber1(mt103.getField59F().getNumber1());
+			block4Tag59.setBlock4Tag59fNumber2(mt103.getField59F().getNumber2());
+			block4Tag59.setBlock4Tag59fNumber3(mt103.getField59F().getNumber3());
+			block4Tag59.setBlock4Tag59fNumber4(mt103.getField59F().getNumber4());
+		}
+		finMT103.setTags59(block4Tag59);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 70 to 71.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 70 to 71
+	 */
+	private void setMT103Block4Tag70To71(MT103 mt103) {
+		Block4Tag70to71 block4Tag70To71 = new Block4Tag70to71();
+		if (mt103.getField70() != null) {
+			block4Tag70To71.setBlock4Tag70Nar1(mt103.getField70().getLine(1));
+			block4Tag70To71.setBlock4Tag70Nar2(mt103.getField70().getLine(2));
+			block4Tag70To71.setBlock4Tag70Nar3(mt103.getField70().getLine(3));
+			block4Tag70To71.setBlock4Tag70Nar4(mt103.getField70().getLine(4));
+		}
+		block4Tag70To71.setBlock4Tag71a(mt103.getField71A() != null ? mt103.getField71A().getComponent1() : null);
+		if (mt103.getField71G() != null) {
+			block4Tag70To71.setBlock4Tag71gCurrency(mt103.getField71G().getCurrency());
+			block4Tag70To71.setBlock4Tag71gReceivCharge(
+					ConversionUtil.convertStrToBigDecimal(mt103.getField71G().getAmount()));
+		}
+		finMT103.setTag70To71(block4Tag70To71);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 72.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 72
+	 */
+	private void setMT103Block4Tag72(MT103 mt103) {
+		Block4Tag72 block4Tag72 = new Block4Tag72();
+		if (mt103.getField72() != null) {
+			block4Tag72.setBlock4Tag72Nar1(mt103.getField72().getLine(1));
+			block4Tag72.setBlock4Tag72Nar2(mt103.getField72().getLine(2));
+			block4Tag72.setBlock4Tag72Nar3(mt103.getField72().getLine(3));
+			block4Tag72.setBlock4Tag72Nar4(mt103.getField72().getLine(4));
+			block4Tag72.setBlock4Tag72Nar5(mt103.getField72().getLine(5));
+			block4Tag72.setBlock4Tag72Nar6(mt103.getField72().getLine(6));
+		}
+		finMT103.setTags72(block4Tag72);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 tag 77.
+	 *
+	 * @param mt103 the new MT 103 block 4 tag 77
+	 */
+	@SuppressWarnings("deprecation")
+	private void setMT103Block4Tag77(MT103 mt103) {
+		Block4Tag77 block4Tag77 = new Block4Tag77();
+		if (mt103.getField77B() != null) {
+			block4Tag77.setBlock4Tag77bCode(mt103.getField77B().getCode());
+			block4Tag77.setBlock4Tag77bCountryCode(mt103.getField77B().getCountryCode());
+			block4Tag77.setBlock4Tag77bNarrative(mt103.getField77B().getNarrative());
+		}
+		finMT103.setTags77(block4Tag77);
+	}
+
+	/**
+	 * Sets the MT 103 block 4 all.
+	 *
+	 * @param mt103 the new MT 103 block 4 all
+	 */
+	private void setMT103Block4All(MT103 mt103) {
+		setMT103Block4(mt103);
+		setMT103Block4Tag50(mt103);
+		setMT103Block4Tag52(mt103);
+		setMT103Block4Tag53(mt103);
+		setMT103Block4Tag54(mt103);
+		setMT103Block4Tag55(mt103);
+		setMT103Block4Tag56(mt103);
+		setMT103Block4Tag57(mt103);
+		setMT103Block4Tag59(mt103);
+		setMT103Block4Tag70To71(mt103);
+		setMT103Block4Tag72(mt103);
+		setMT103Block4Tag77(mt103);
+
+		if (CollectionUtils.isNotEmpty(mt103.getField13C()))
+			setMT103Field13C(mt103.getField13C());
+
+		if (CollectionUtils.isNotEmpty(mt103.getField23E()))
+			setMT103Field23E(mt103.getField23E());
+
+		if (CollectionUtils.isNotEmpty(mt103.getField71F()))
+			setMT103Field71F(mt103.getField71F());
+	}
+
+	/**
+	 * Sets the MT 103 block 5.
+	 *
+	 * @param swiftBlock5 the new MT 103 block 5
+	 */
+	private void setMT103Block5(SwiftBlock5 swiftBlock5) {
+		finMT103.setBlock5Chk(swiftBlock5.getTagValue(ILMCoreConstants.TAGCHK));
+		finMT103.setBlock5Mac(swiftBlock5.getTagValue(ILMCoreConstants.TAGMAC));
+	}
+
+	/**
+	 * Sets the MT 103 field 13 C.
+	 *
+	 * @param field13Cs the new MT 103 field 13 C
+	 */
+	private void setMT103Field13C(List<Field13C> field13Cs) {
+		List<Tag13C> tag13Cs = new ArrayList<>();
+		Long index = 1l;
+		for (Field13C field13C : field13Cs) {
+			Tag13C tag13C = new Tag13C();
+			tag13C.setTag13CCode(field13C.getCode());
+			tag13C.setTag13COffset(field13C.getTimeOffset());
+			tag13C.setTag13CSign(field13C.getSign());
+			tag13C.setTag13CTime(field13C.getTimeIndication());
+			tag13C.setTag13CIndex(index);
+			CommonPk commonPk = new CommonPk();
+			commonPk.setMtType(ILMCoreConstants.MESSAGETYPE103);
+			tag13C.setCommonPk(commonPk);
+			index++;
+			tag13Cs.add(tag13C);
+		}
+		finMT103.setTag13C(tag13Cs);
+	}
+
+	/**
+	 * Sets the MT 103 field 23 E.
+	 *
+	 * @param field23Es the new MT 103 field 23 E
+	 */
+	private void setMT103Field23E(List<Field23E> field23Es) {
+		List<MT103Tag23E> tag23Es = new ArrayList<>();
+		Long index = 1l;
+		for (Field23E field23E : field23Es) {
+			MT103Tag23E mt103Tag23E = new MT103Tag23E();
+			mt103Tag23E.setMt103Tag23ECode(field23E.getInstructionCode());
+			mt103Tag23E.setMt103Tag23EAddnInfo(field23E.getAdditionalInformation());
+			mt103Tag23E.setMt103Tag23EIndex(index);
+			index++;
+			tag23Es.add(mt103Tag23E);
+		}
+		finMT103.setMt103Tag23E(tag23Es);
+	}
+
+	/**
+	 * Sets the MT 103 field 71 F.
+	 *
+	 * @param field71Fs the new MT 103 field 71 F
+	 */
+	private void setMT103Field71F(List<Field71F> field71Fs) {
+		List<MT103Tag71F> tag71Fs = new ArrayList<>();
+		Long index = 1l;
+		for (Field71F field71F : field71Fs) {
+			MT103Tag71F mt103Tag71F = new MT103Tag71F();
+			mt103Tag71F.setMt103Tag71FCurrency(field71F.getCurrency());
+			mt103Tag71F.setMt103Tag71FSenderCharge(ConversionUtil.convertStrToBigDecimal(field71F.getAmount()));
+			mt103Tag71F.setMt103Tag71FIndex(index);
+			index++;
+			tag71Fs.add(mt103Tag71F);
+		}
+		finMT103.setMt103Tag71F(tag71Fs);
+	}
+
 }
