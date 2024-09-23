@@ -3,14 +3,24 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DateUtilTest {
 
     @Test
-    public void testGetTimeFromTimeStamp() {
-        LocalDateTime dateTime = LocalDateTime.of(2023, 12, 31, 23, 59, 59);
-        String expectedTime = "11:59:59 PM";
-        String actualTime = DateUtil.getTimeFromTimeStamp(dateTime);
-        assertEquals(expectedTime, actualTime);
+    public void testGetLocalDateTimeFromString_ValidFormat() {
+        String dateString = "Dec 31 2023 11:59 PM";
+        LocalDateTime expectedDateTime = LocalDateTime.of(2023, 12, 31, 23, 59);
+        LocalDateTime actualDateTime = DateUtil.getlocalDateTimeFromString(dateString);
+        assertEquals(expectedDateTime, actualDateTime);
     }
+
+    @Test
+    public void testGetLocalDateTimeFromString_InvalidFormat() {
+        String dateString = "invalid date string";
+        LocalDateTime actualDateTime = DateUtil.getlocalDateTimeFromString(dateString);
+        assertNull(actualDateTime);
+    }
+
+    // Add more test cases with different valid and invalid date strings and formats
 }
