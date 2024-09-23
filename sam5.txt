@@ -1,42 +1,14 @@
-package com.maybank.ilm.core.util;
+@Test
+public void testGetDateFromString_ValidFormat() {
+    String dateString = "23092024";
+    LocalDate expectedDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyMMdd"));
+    LocalDate actualDate = DateUtil.getDateFromString(dateString);
+    assertEquals(expectedDate, actualDate);
+}
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-public class CustomDelimitedLineTokenizerTest {
-
-    private CustomDelimitedLineTokenizer tokenizer;
-
-    @BeforeEach
-    public void setUp() {
-        tokenizer = new CustomDelimitedLineTokenizer();
-    }
-
-    @Test
-    public void testDefaultConstructor() {
-        // Check if a new instance is created correctly
-        assertTrue(tokenizer instanceof CustomDelimitedLineTokenizer);
-    }
-
-    @Test
-    public void testParameterizedConstructor() {
-        String delimiter = ",";
-        CustomDelimitedLineTokenizer tokenizerWithDelimiter = new CustomDelimitedLineTokenizer(delimiter);
-        // Check if a new instance with the specified delimiter is created correctly
-        assertTrue(tokenizerWithDelimiter instanceof CustomDelimitedLineTokenizer);
-        // Optionally, you can check if the delimiter is set correctly if applicable
-    }
-
-    @Test
-    public void testIsQuoteCharacter() {
-        // Test that any character returns false
-        char[] testChars = {'"', '\'', 'a', '1', ' '};
-
-        for (char c : testChars) {
-            assertFalse(tokenizer.isQuoteCharacter(c), "Expected false for character: " + c);
-        }
-    }
+@Test
+public void testGetDateFromString_InvalidFormat() {
+    String dateString = "invalid date string";
+    LocalDate actualDate = DateUtil.getDateFromString(dateString);
+    assertNull(actualDate);
 }
