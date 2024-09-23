@@ -1,26 +1,16 @@
 import org.junit.jupiter.api.Test;
 
-import java.time.ZoneId;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 class DateUtilTest {
 
     @Test
-    public void testGetCurrentDateTimeByZone_ValidZone() {
-        String zone = "Asia/Kolkata";
-        LocalDateTime expectedDateTime = LocalDateTime.now(ZoneId.of(zone));
-        LocalDateTime actualDateTime = DateUtil.getCurrentDateTimeByZone(zone);
-        assertEquals(expectedDateTime, actualDateTime);
+    public void testGetTimeFromTimeStamp() {
+        LocalDateTime dateTime = LocalDateTime.of(2023, 12, 31, 23, 59, 59);
+        String expectedTime = "11:59:59 PM";
+        String actualTime = DateUtil.getTimeFromTimeStamp(dateTime);
+        assertEquals(expectedTime, actualTime);
     }
-
-    @Test
-    public void testGetCurrentDateTimeByZone_InvalidZone() {
-        String zone = "invalid zone";
-        LocalDateTime actualDateTime = DateUtil.getCurrentDateTimeByZone(zone);
-        assertNull(actualDateTime);
-    }
-
-    // Add more test cases with different valid and invalid time zone names
 }
