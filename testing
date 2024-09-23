@@ -1,37 +1,19 @@
 package com.maybank.ilm.core.util;
 
-import java.math.BigDecimal;
+import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+public class CustomDelimitedLineTokenizer extends DelimitedLineTokenizer{
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-public class ConversionUtil {
-
-	private static final Logger LOGGER = LogManager.getLogger(ConversionUtil.class);
-	private ConversionUtil() {
-		throw new AssertionError("Instantiating utility class.");
+	public CustomDelimitedLineTokenizer() {
+		super();
 	}
 
-	public static BigDecimal convertStrToBigDecimal(String sAmount) {
-		if (sAmount != null) {
-			String sDotAmount = sAmount.replaceAll(ILMCoreConstants.COMMA, ILMCoreConstants.DOT);
-			return BigDecimal.valueOf(Double.parseDouble(sDotAmount)).setScale(2, BigDecimal.ROUND_HALF_EVEN);
-		}
-		return null;
+	public CustomDelimitedLineTokenizer(String delimiter) {
+		super(delimiter);
 	}
 
-	public static String asJsonString(final Object obj) {
-		ObjectMapper mapper = new ObjectMapper();
-		String requestJson = null;
-		try {
-			requestJson = mapper.writeValueAsString(obj);
-		} catch (JsonProcessingException e) {
-			LOGGER.error("error during conversion"+e);
-		}
-		return requestJson;
-
-	}
+	@Override
+    protected boolean isQuoteCharacter(char c) {
+        return false;
+    }
 }
