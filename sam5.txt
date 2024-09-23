@@ -1,25 +1,16 @@
 import org.junit.jupiter.api.Test;
 
+import java.util.Date;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DateUtilTest {
 
     @Test
-    public void testConvertLdatetoLdatetime_ValidInput() {
-        LocalDate localDate = LocalDate.of(2023, 12, 31);
-        String hourmin = "2359";
-        LocalDateTime expectedDateTime = LocalDateTime.of(2023, 12, 31, 23, 59);
-        LocalDateTime actualDateTime = DateUtil.convertLdatetoLdatetime(localDate, hourmin);
+    public void testConvertToLocalDateTime() {
+        Date date = new Date();
+        LocalDateTime expectedDateTime = LocalDateTime.now();
+        LocalDateTime actualDateTime = DateUtil.convertToLocalDateTime(date);
         assertEquals(expectedDateTime, actualDateTime);
     }
-
-    @Test
-    public void testConvertLdatetoLdatetime_InvalidHourminFormat() {
-        LocalDate localDate = LocalDate.of(2023, 12, 31);
-        String hourmin = "invalid hourmin";
-        LocalDateTime actualDateTime = DateUtil.convertLdatetoLdatetime(localDate, hourmin);
-        assertNull(actualDateTime);
-    }
-
-    // Add more test cases with different valid and invalid hourmin values
 }
