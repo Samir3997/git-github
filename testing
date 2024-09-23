@@ -1,19 +1,280 @@
 package com.maybank.ilm.core.util;
 
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.TimeZone;
 
-public class CustomDelimitedLineTokenizer extends DelimitedLineTokenizer{
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-	public CustomDelimitedLineTokenizer() {
-		super();
+public class DateUtil {
+
+	private static final Logger logger = LogManager.getLogger(DateUtil.class.getName());
+
+	/**
+	 * Instantiates a new date utils.
+	 */
+	private DateUtil() {
+		throw new AssertionError("Instantiating utility class.");
 	}
 
-	public CustomDelimitedLineTokenizer(String delimiter) {
-		super(delimiter);
+	public static LocalDate getDateFromString(String dateString) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
+		}
+		return localDate;
+	}
+	
+	public static LocalDate getDateFromStringWithFormat(String dateString, String format) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
+		}
+		return localDate;
+	}
+	
+	public static LocalDate getDateFromStringWithFormatSimpleDate(String dateString, String format) {
+		LocalDate localDate = null;
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
+			Date date = dateFormat.parse(dateString);
+			localDate = convertToLocalDate(date);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
+		}
+		return localDate;
+	}
+	
+	public static LocalDateTime getDateTimeFromStringWithFormat(String dateString, String format) {
+		LocalDateTime localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			localDate = LocalDateTime.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateTimeFromStringWithFormat" + exception);
+		}
+		return localDate;
 	}
 
-	@Override
-    protected boolean isQuoteCharacter(char c) {
-        return false;
-    }
+	public static LocalDate getDateFromStringYYYYMMDD(String dateString) {
+		LocalDate localDate = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+			localDate = LocalDate.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
+		}
+		return localDate;
+	}
+
+	public static LocalDateTime convertLdatetoLdatetime(LocalDate date, String hourmin) {
+		String hour = hourmin.substring(0, 2);
+		String minute = hourmin.substring(2, 4);
+		return date.atTime(Integer.parseInt(hour), Integer.parseInt(minute));
+	}
+
+	public static LocalDate convertToLocalDate(Date dateToConvert) {
+		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+	}
+	
+	public static LocalDateTime convertToLocalDateTime(Date dateToConvert) {
+		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	}
+
+	public static LocalDateTime getCurrentDateTimeByZone(String zone) {
+		ZoneId zid = null;
+		if (zone != null) {
+			zid = ZoneId.of(zone);
+		}
+		return zid != null ? LocalDateTime.now(zid) : null;
+	}
+
+	public static String getTimeFromTimeStamp(LocalDateTime dateTime) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
+		return formatter.format(dateTime);
+	}
+
+	public static LocalDateTime getlocalDateTimeFromString(String date) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d yyyy h:mma");
+		LocalDateTime dateTime = LocalDateTime.parse(StringUtils.normalizeSpace(date), formatter);
+		return dateTime;
+	}
+
+	public static Integer daysBetween(LocalDate startDate, LocalDate endDate) {
+		Long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+		return daysBetween.intValue();
+	}
+
+	public static int getDiffOfDatesInDays(LocalDate fromDate, LocalDate toDate) {
+		Period period = Period.between(fromDate, toDate);
+		return period.getDays();
+	}
+
+	public static void main(String[] args) {
+		LocalDate localDate=LocalDate.of(9999, 12, 31);
+		System.out.println(localDate);
+	}
+	
+	public static Long getSkeyFromLocalDate(LocalDate localDate) {
+		String formattedString = null;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+			formattedString = localDate.format(formatter);
+		}catch (Exception e) {
+			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return Long.parseLong(formattedString);
+
+	}
+	
+	public static Long getSkeyFromLocalDateTime(LocalDateTime localDateTime, String format) {
+		String formattedString = null;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+			formattedString = localDateTime.format(formatter);
+		}catch (Exception e) {
+			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return Long.parseLong(formattedString);
+
+	}
+	
+	public static LocalDateTime getDateTimeFromSkey(Long dateSkey, String format) {
+		LocalDateTime localDateTime = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			String dateString = Long.toString(dateSkey);
+			localDateTime = LocalDateTime.parse(dateString, stringformatter);
+		} catch (Exception exception) {
+			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
+		}
+		return localDateTime;
+	}
+	
+	public static LocalTime getLocalTimeFromSkey(Long timeSkey, String format) {
+		LocalTime localTime = null;
+		try {
+			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
+			String timeString = Long.toString(timeSkey);
+			String finalTimeString = null;
+			if(timeString.length() == 5) {
+				finalTimeString = "0"+timeString;
+			}else {
+				finalTimeString = timeString;
+			}
+			localTime = LocalTime.parse(finalTimeString, stringformatter);
+		} catch (Exception exception) {
+			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
+		}
+		return localTime;
+	}
+	
+	public static LocalDateTime getLocalDateTimeFromLongFiles(Long dateModified) {
+		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
+		return getDateTimeFromStringWithFormat(sdf.format(dateModified), "dd-MM-yyyy HH:mm:ss");
+	}
+	
+	public static String getDateFormatYYYYMMDD(LocalDate localDate) {		
+		return localDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+	}
+	
+	public static LocalDate convertJulianSkeyToLocalDate(String skey) {
+		LocalDate localDate = null;
+		try {
+			if(skey != null && !skey.contentEquals("0")) {
+				Date date = new SimpleDateFormat("yyyyDDD").parse(skey);
+				localDate = convertToLocalDate(date);
+			}
+		}catch (Exception e) {
+			logger.error(String.format("Error while  convertJulianSkeyToLocalDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return localDate;
+	}
+	
+	public static String getStringFromLDate(LocalDate ldate, String format) {
+		String formattedString = null;
+		try {
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+			formattedString = ldate.format(formatter);
+		}catch (Exception e) {
+			logger.error(String.format("Error while  getStringFromLDate : {}", ExceptionUtils.getStackTrace(e)));
+		}
+		return formattedString;
+	}
+	
+	/**
+	 * Find if the given date is before the current date.
+	 */
+	public static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
+		Boolean pastDt = Boolean.FALSE;
+		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
+		if(currentDtTime != null && localDate != null) {
+			LocalDate currentDt = currentDtTime.toLocalDate();
+			if(localDate.isBefore(currentDt)) {
+				pastDt = Boolean.TRUE;
+			}
+		}
+		return pastDt;
+	}
+	
+	/**
+	 * Find if the given date is equal to the current date.
+	 */
+	public static Boolean findDtEqualsCurrenctDt(LocalDate localDate) {
+		Boolean sameDt = Boolean.FALSE;
+		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
+		if(currentDtTime != null && localDate != null) {
+			LocalDate currentDt = currentDtTime.toLocalDate();
+			if(localDate.isEqual(currentDt)) {
+				sameDt = Boolean.TRUE;
+			}
+		}
+		return sameDt;
+	}
+	
+	/**
+	 * Find if date is not Saturday or Sunday
+	 */
+	
+	public static Boolean isWeekend(LocalDate date) {
+		DayOfWeek dayOfWeek = DayOfWeek.of(date.get(ChronoField.DAY_OF_WEEK));
+		return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY ;
+	}
+	
+	
+	/**
+	 * find no of business days
+	 */
+	public static long noOfBusinessDays(LocalDate fromDate , LocalDate toDate) {
+		long days = ChronoUnit.DAYS.between(fromDate, toDate)+1 ;
+		long weekDays = 0;
+		for(int day = 0 ; day < days ; day++ ) {
+			LocalDate date = fromDate.plusDays(day);
+			if(!isWeekend(date)) {
+				weekDays+=1;
+			}
+		}
+		return weekDays;
+	}
+	
+	
+	 
 }
