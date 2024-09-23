@@ -1,5 +1,27 @@
-if (cdtrBicfi != null) {
-			blockMsg = cdtrBicfi.compareToIgnoreCase("MBBEMYKL") == 0 || cdtrBicfi.compareToIgnoreCase("MBISMYKL") == 0;
-		} else if (cdtrNm != null) {
-			blockMsg = cdtrNm.toUpperCase().contains("MAYBANK") || cdtrNm.toUpperCase().contains("MALAYAN BANKING BERHAD");
-		} 
+public class ConversionUtilTest {
+
+    @Test
+    public void testConvertStrToBigDecimal_nullInput() {
+        BigDecimal result = ConversionUtil.convertStrToBigDecimal(null);
+        assertNull(result);
+    }
+
+    @Test
+    public void testConvertStrToBigDecimal_validInput() {
+        String amount = "1,234.56";
+        BigDecimal expectedResult = new BigDecimal("1234.56").setScale(2, BigDecimal.ROUND_HALF_EVEN);
+        BigDecimal result = ConversionUtil.convertStrToBigDecimal(amount);
+        assertEquals(expectedResult, result);
+    }
+
+    @Test
+    public void testConvertStrToBigDecimal_invalidInput() {
+        String amount = "invalid";
+        try {
+            ConversionUtil.convertStrToBigDecimal(amount);
+            fail("Expected NumberFormatException");
+        } catch (NumberFormatException e) {
+            // Expected exception
+        }
+    }
+}
