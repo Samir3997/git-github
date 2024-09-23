@@ -6,21 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class DateUtilTest {
 
     @Test
-    public void testGetDateTimeFromStringWithFormat_ValidFormat() {
-        String dateString = "2023-12-31T23:59:59";
-        String format = "yyyy-MM-dd'T'HH:mm:ss";
-        LocalDateTime expectedDateTime = LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern(format));
-        LocalDateTime actualDateTime = DateUtil.getDateTimeFromStringWithFormat(dateString, format);
-        assertEquals(expectedDateTime, actualDateTime);
+    public void testGetDateFromStringYYYYMMDD_ValidFormat() {
+        String dateString = "20231231";
+        LocalDate expectedDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyyyMMdd"));
+        LocalDate actualDate = DateUtil.getDateFromStringYYYYMMDD(dateString);
+        assertEquals(expectedDate, actualDate);
     }
 
     @Test
-    public void testGetDateTimeFromStringWithFormat_InvalidFormat() {
+    public void testGetDateFromStringYYYYMMDD_InvalidFormat() {
         String dateString = "invalid date string";
-        String format = "yyyy-MM-dd'T'HH:mm:ss";
-        LocalDateTime actualDateTime = DateUtil.getDateTimeFromStringWithFormat(dateString, format);
-        assertNull(actualDateTime);
+        LocalDate actualDate = DateUtil.getDateFromStringYYYYMMDD(dateString);
+        assertNull(actualDate);
     }
 
-    // Add more test cases with different valid and invalid date strings and formats
+    // Add more test cases with different valid and invalid date strings
 }
