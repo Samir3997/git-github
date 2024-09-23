@@ -5,61 +5,49 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
 
 public class ConversionUtilTest {
 
-    private static final String JSON_FILE_PATH = "src/test/resources/test.json"; // Update this path if necessary
-
     @Test
     void testConvertStrToBigDecimal_ValidInput() {
-        // Given
         String amountWithComma = "1,234.56";
         
-        // When
         BigDecimal result = ConversionUtil.convertStrToBigDecimal(amountWithComma);
         
-        // Then
         assertNotNull(result);
         assertEquals(new BigDecimal("1234.56").setScale(2, BigDecimal.ROUND_HALF_EVEN), result);
     }
 
     @Test
     void testConvertStrToBigDecimal_NullInput() {
-        // Given
-        String amount = null;
+        BigDecimal result = ConversionUtil.convertStrToBigDecimal(null);
         
-        // When
-        BigDecimal result = ConversionUtil.convertStrToBigDecimal(amount);
-        
-        // Then
         assertNull(result);
     }
 
     @Test
     void testConvertStrToBigDecimal_InvalidInput() {
-        // Given
-        String invalidAmount = "abc";
-        
-        // When / Then
         assertThrows(NumberFormatException.class, () -> {
-            ConversionUtil.convertStrToBigDecimal(invalidAmount);
+            ConversionUtil.convertStrToBigDecimal("abc");
         });
     }
 
     @Test
-    void testAsJsonString_ValidObject() throws IOException {
-        // Read the JSON file
-        ObjectMapper objectMapper = new ObjectMapper();
-        TestObject testObject = objectMapper.readValue(Files.readAllBytes(Paths.get(JSON_FILE_PATH)), TestObject.class);
+    void testAsJsonString_ValidMap() throws IOException {
+        // Create a Map to represent the JSON
+        Map<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("name", "value1");
+        jsonMap.put("value", 100);
         
         // When
-        String jsonResult = ConversionUtil.asJsonString(testObject);
+        String jsonResult = ConversionUtil.asJsonString(jsonMap);
         
         // Then
         assertNotNull(jsonResult);
@@ -69,13 +57,8 @@ public class ConversionUtilTest {
 
     @Test
     void testAsJsonString_NullObject() {
-        // Given
-        Object testObject = null;
+        String jsonResult = ConversionUtil.asJsonString(null);
         
-        // When
-        String jsonResult = ConversionUtil.asJsonString(testObject);
-        
-        // Then
         assertEquals("null", jsonResult);
     }
 
@@ -85,46 +68,16 @@ public class ConversionUtilTest {
         ObjectMapper mockMapper = mock(ObjectMapper.class);
         when(mockMapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("Mocked Exception") {});
 
-        // Use reflection to set the mock ObjectMapper into the ConversionUtil
-        // (Assuming you have access to change this or use dependency injection)
-        // ConversionUtil.setObjectMapper(mockMapper); // Example method to set ObjectMapper
+        // You may need to adjust the ConversionUtil to use this mocked mapper
+        // For demonstration purposes, we're showing the intended behavior.
+        ConversionUtil.setObjectMapper(mockMapper); // Hypothetical setter for testing
 
-        // Given
-        TestObject testObject = new TestObject("value1", 100);
+        Map<String, Object> jsonMap = new HashMap<>();
+        jsonMap.put("name", "value1");
+        jsonMap.put("value", 100);
 
-        // When
-        String jsonResult = ConversionUtil.asJsonString(testObject);
+        String jsonResult = ConversionUtil.asJsonString(jsonMap);
 
-        // Then
         assertNull(jsonResult); // Assuming that in the case of error, it returns null
-    }
-
-    static class TestObject {
-        private String name;
-        private int value;
-
-        public TestObject() { } // Default constructor needed for Jackson
-
-        public TestObject(String name, int value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        // Getters and Setters
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        public void setValue(int value) {
-            this.value = value;
-        }
     }
 }
