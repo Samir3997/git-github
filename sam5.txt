@@ -1,27 +1,9 @@
-public class ConversionUtilTest {
-
-    @Test
-    public void testConvertStrToBigDecimal_nullInput() {
-        BigDecimal result = ConversionUtil.convertStrToBigDecimal(null);
-        assertNull(result);
-    }
-
-    @Test
-    public void testConvertStrToBigDecimal_validInput() {
-        String amount = "1,234.56";
-        BigDecimal expectedResult = new BigDecimal("1234.56").setScale(2, BigDecimal.ROUND_HALF_EVEN);
-        BigDecimal result = ConversionUtil.convertStrToBigDecimal(amount);
-        assertEquals(expectedResult, result);
-    }
-
-    @Test
-    public void testConvertStrToBigDecimal_invalidInput() {
-        String amount = "invalid";
-        try {
-            ConversionUtil.convertStrToBigDecimal(amount);
-            fail("Expected NumberFormatException");
-        } catch (NumberFormatException e) {
-            // Expected exception
-        }
-    }
+@Test
+public void testAsJsonString() throws JsonProcessingException {
+    ObjectMapper mockMapper = Mockito.mock(ObjectMapper.class);
+    String mockJson = "{\"<key>\":\"<value>\"}";
+    Object mockObject = new Object();
+    Mockito.when(mockMapper.writeValueAsString(mockObject)).thenReturn(mockJson);
+    ConversionUtil.asJsonString(mockObject);
+    Mockito.verify(mockMapper).writeValueAsString(mockObject);
 }
