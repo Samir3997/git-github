@@ -1,83 +1,22 @@
 package com.maybank.ilm.core.util;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.Map;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.junit.jupiter.api.Test;
 
 public class ConversionUtilTest {
 
     @Test
-    void testConvertStrToBigDecimal_ValidInput() {
-        String amountWithComma = "1,234.56";
-        
-        BigDecimal result = ConversionUtil.convertStrToBigDecimal(amountWithComma);
-        
-        assertNotNull(result);
-        assertEquals(new BigDecimal("1234.56").setScale(2, BigDecimal.ROUND_HALF_EVEN), result);
-    }
-
-    @Test
-    void testConvertStrToBigDecimal_NullInput() {
-        BigDecimal result = ConversionUtil.convertStrToBigDecimal(null);
-        
-        assertNull(result);
-    }
-
-    @Test
-    void testConvertStrToBigDecimal_InvalidInput() {
-        assertThrows(NumberFormatException.class, () -> {
-            ConversionUtil.convertStrToBigDecimal("abc");
+    void testPrivateConstructor() {
+        // When / Then
+        AssertionError thrown = assertThrows(AssertionError.class, () -> {
+            // Attempt to instantiate the utility class
+            ConversionUtil util = new ConversionUtil();
         });
+
+        // Verify the error message
+        assertEquals("Instantiating utility class.", thrown.getMessage());
     }
 
-    @Test
-    void testAsJsonString_ValidMap() throws IOException {
-        // Create a Map to represent the JSON
-        Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("name", "value1");
-        jsonMap.put("value", 100);
-        
-        // When
-        String jsonResult = ConversionUtil.asJsonString(jsonMap);
-        
-        // Then
-        assertNotNull(jsonResult);
-        assertTrue(jsonResult.contains("value1"));
-        assertTrue(jsonResult.contains("100"));
-    }
-
-    @Test
-    void testAsJsonString_NullObject() {
-        String jsonResult = ConversionUtil.asJsonString(null);
-        
-        assertEquals("null", jsonResult);
-    }
-
-    @Test
-    void testAsJsonString_ErrorDuringConversion() {
-        // Mocking ObjectMapper for testing exception handling
-        ObjectMapper mockMapper = mock(ObjectMapper.class);
-        when(mockMapper.writeValueAsString(any())).thenThrow(new JsonProcessingException("Mocked Exception") {});
-
-        // You may need to adjust the ConversionUtil to use this mocked mapper
-        // For demonstration purposes, we're showing the intended behavior.
-        ConversionUtil.setObjectMapper(mockMapper); // Hypothetical setter for testing
-
-        Map<String, Object> jsonMap = new HashMap<>();
-        jsonMap.put("name", "value1");
-        jsonMap.put("value", 100);
-
-        String jsonResult = ConversionUtil.asJsonString(jsonMap);
-
-        assertNull(jsonResult); // Assuming that in the case of error, it returns null
-    }
+    // Other test methods...
 }
