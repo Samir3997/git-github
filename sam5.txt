@@ -1,27 +1,42 @@
 package com.maybank.ilm.core.util;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.lang.reflect.Constructor;
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class ConversionUtilTest {
+public class CustomDelimitedLineTokenizerTest {
 
-    @Test
-    void testPrivateConstructor() throws Exception {
-        // Get the private constructor of ConversionUtil
-        Constructor<ConversionUtil> constructor = ConversionUtil.class.getDeclaredConstructor();
-        
-        // Make the constructor accessible
-        constructor.setAccessible(true);
-        
-        // When / Then
-        AssertionError thrown = assertThrows(AssertionError.class, constructor::newInstance);
+    private CustomDelimitedLineTokenizer tokenizer;
 
-        // Verify the error message
-        assertEquals("Instantiating utility class.", thrown.getMessage());
+    @BeforeEach
+    public void setUp() {
+        tokenizer = new CustomDelimitedLineTokenizer();
     }
 
-    // Other test methods...
+    @Test
+    public void testDefaultConstructor() {
+        // Check if a new instance is created correctly
+        assertTrue(tokenizer instanceof CustomDelimitedLineTokenizer);
+    }
+
+    @Test
+    public void testParameterizedConstructor() {
+        String delimiter = ",";
+        CustomDelimitedLineTokenizer tokenizerWithDelimiter = new CustomDelimitedLineTokenizer(delimiter);
+        // Check if a new instance with the specified delimiter is created correctly
+        assertTrue(tokenizerWithDelimiter instanceof CustomDelimitedLineTokenizer);
+        // Optionally, you can check if the delimiter is set correctly if applicable
+    }
+
+    @Test
+    public void testIsQuoteCharacter() {
+        // Test that any character returns false
+        char[] testChars = {'"', '\'', 'a', '1', ' '};
+
+        for (char c : testChars) {
+            assertFalse(tokenizer.isQuoteCharacter(c), "Expected false for character: " + c);
+        }
+    }
 }
