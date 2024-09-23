@@ -1,14 +1,16 @@
 @Test
-public void testGetDateFromString_ValidFormat() {
-    String dateString = "23092024";
-    LocalDate expectedDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern("yyMMdd"));
-    LocalDate actualDate = DateUtil.getDateFromString(dateString);
+public void testGetDateFromStringWithFormat_ValidFormat() {
+    String dateString = "2023-12-31";
+    String format = "yyyy-MM-dd";
+    LocalDate expectedDate = LocalDate.parse(dateString, DateTimeFormatter.ofPattern(format));
+    LocalDate actualDate = DateUtil.getDateFromStringWithFormat(dateString, format);
     assertEquals(expectedDate, actualDate);
 }
 
 @Test
-public void testGetDateFromString_InvalidFormat() {
+public void testGetDateFromStringWithFormat_InvalidFormat() {
     String dateString = "invalid date string";
-    LocalDate actualDate = DateUtil.getDateFromString(dateString);
+    String format = "yyyy-MM-dd";
+    LocalDate actualDate = DateUtil.getDateFromStringWithFormat(dateString, format);
     assertNull(actualDate);
 }
