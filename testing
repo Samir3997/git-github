@@ -1,528 +1,360 @@
-package com.maybank.ilm.core.util;
+package com.maybank.ilm.core.dao;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
-public class MTFieldDataTypeMap {
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
-	private Map<String, String> fieldDTMap = new HashMap<>();
-	private Map<String, List<String>> parentChildSeqMap = new HashMap<>();
-	private Map<String, List<String>> seqTagMap = new HashMap<>();
-	private Map<String, List<String>> seqTagMap102 = new HashMap<>();
-	private Map<String, List<String>> seqTagMap204 = new HashMap<>();
-	private Map<String, List<String>> seqTagMap203 = new HashMap<>();
-	private Map<String, List<String>> parentChildSeqMap566 = new HashMap<>();
-	private Map<String, List<String>> seqTagMap566 = new HashMap<>();
-	private Map<String, List<String>> parentChildSeqMap535 = new HashMap<>();
-	private Map<String, List<String>> seqTagMap535 = new HashMap<>();
+import com.maybank.ilm.dto.PastPosDTO;
+import com.maybank.ilm.entity.AccountBalanceManagement;
+
+@Repository
+public class PaymentPosAnalyticsDaoImpl implements PaymentPosAnalyticsDao {
+
+	@Autowired
+	private EntityManager em;
 	
-	public MTFieldDataTypeMap() {
-		super();
-	}
+	
+	
 
-	@PostConstruct
-	public void init() {
-		setFieldDTMap();
-		setParentChildSeqMap();
-		setSeqTagMap();
-		setSeqTagMap102();
-		setSeqTagMap204();
-		setSeqTagMap203();
-		setParentChildSeqMap566();
-		setSeqTagMap566();
-		setParentChildSeqMap535();
-		setSeqTagMap535();
+	private List<PastPosDTO> collectQueryToDTO(Query query,Integer nHighest){//NOSONAR
+		List<Object[]> rows=query.getResultList();
+		System.out.println(rows+"Rows");
+		List<PastPosDTO> pastPeriod=new ArrayList<PastPosDTO>();
+		if(rows.size()>0) {
+			for (Object[] row : rows) {
+				PastPosDTO pastResult = new PastPosDTO();
+				pastResult.setAmount((BigDecimal) row[1]);
+				pastResult.setDate((String) row[0]);
+				pastPeriod.add(pastResult);
+				
+			}
+			}
+		System.out.println(pastPeriod+"past dto");
+		return pastPeriod;
 	}
 	
-	private void setFieldDTMap() {
-		fieldDTMap.put("16R_BLOCKNAME", ILMCoreConstants.STRING);
-		fieldDTMap.put("20C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("20C_REFERENCE", ILMCoreConstants.STRING);
-		fieldDTMap.put("23G_FUNCTION", ILMCoreConstants.STRING);
-		fieldDTMap.put("23G_SUBFUNCTION", ILMCoreConstants.STRING);
-		fieldDTMap.put("98A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("98A_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("98B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("98B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("98B_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("98C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("98C_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("98C_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("98E_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("98E_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("98E_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("98E_DECIMALS", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("98E_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("98E_UTC_INDICATOR", ILMCoreConstants.STRING);
-		fieldDTMap.put("12A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("12A_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("12A_INSTRUMENT_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("12C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("12C_CFI_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("12B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("12B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("12B_INSTRUMENT_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92A_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("92A_RATE_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("17B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("17B_FLAG", ILMCoreConstants.STRING);
-		fieldDTMap.put("90A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90A_PERCENTAGE_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90A_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("90A_PRICE", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90B_AMOUNT_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90B_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("90B_CURRENCY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90B_PRICE", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("36B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("36B_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("36B_QUANTITY", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("35B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("35B_ISIN", ILMCoreConstants.STRING);
-		fieldDTMap.put("35B_DESCRIPTION", ILMCoreConstants.STRING);
-		fieldDTMap.put("35B_DESCRIPTION_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("35B_DESCRIPTION_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("35B_DESCRIPTION_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_5", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_6", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_7", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_8", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_9", ILMCoreConstants.STRING);
-		fieldDTMap.put("70E_NARRATIVE_10", ILMCoreConstants.STRING);
-		fieldDTMap.put("19A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("19A_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("19A_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("19A_CURRENCY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("19A_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("95P_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("95P_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("95P_IDENTIFIER_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("95R_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("95R_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("95R_PROPRIETARY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("95L_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("95L_LEGAL_ENTITY_IDENTIFIER_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("95L_LEGAL_ENTITY_IDENTIFIER_NUMBER", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("97A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("97A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("97A_ACCOUNT_NUMBER", ILMCoreConstants.STRING);
-		fieldDTMap.put("97B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("97B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("97B_ACCOUNT_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("97B_ACCOUNT_NUMBER", ILMCoreConstants.STRING);
-		fieldDTMap.put("97E_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("97E_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("94C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94C_COUNTRY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94F_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94F_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94F_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("92C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92C_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("92C_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("99B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("99B_NUMBER", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("95C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("95C_COUNTRY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("95Q_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("95Q_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("95Q_NAME_AND_ADDRESS_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("95Q_NAME_AND_ADDRESS_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("95Q_NAME_AND_ADDRESS_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("95S_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("95S_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("95S_TYPE_OF_ID", ILMCoreConstants.STRING);
-		fieldDTMap.put("95S_COUNTRY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("95S_ALTERNATE_ID", ILMCoreConstants.STRING);
-		fieldDTMap.put("70C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("70C_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("70C_NARRATIVE_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("70C_NARRATIVE_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("70C_NARRATIVE_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("70D_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("70D_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92B_FIRST_CURRENCY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92B_SECOND_CURRENCY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92B_RATE", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("99A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("99A_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("99A_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("11A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("11A_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("11A_CURRENCY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("22H_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("22H_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("22F_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("22F_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("22F_INDICATOR", ILMCoreConstants.STRING);
-		fieldDTMap.put("13A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("13A_NUMBER_ID", ILMCoreConstants.STRING);
-		fieldDTMap.put("13B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("13B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("13B_NUMBER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("94B_PLACE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94B_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94H_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94H_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("94L_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94L_LEGAL_ENTITY_IDENTIFIER_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94L_LEGAL_ENTITY_IDENTIFIER_NUMBER", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("16S_BLOCKNAME", ILMCoreConstants.STRING);
-		fieldDTMap.put("51A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("51A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("51A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("50A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("50A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_PARTY_IDENTIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NUMBER_1", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NAME_AND_ADDRESS_1", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NUMBER_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NAME_AND_ADDRESS_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NUMBER_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NAME_AND_ADDRESS_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NUMBER_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("50F_NAME_AND_ADDRESS_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("50K_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("50K_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("52A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("52A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("52A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("52B_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("52B_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("52B_LOCATION", ILMCoreConstants.STRING);
-		fieldDTMap.put("52C_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("26T_TYPE", ILMCoreConstants.STRING);
-		fieldDTMap.put("77B_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("77B_COUNTRY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("77B_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("71A_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("36_RATE", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("21_REFERENCE", ILMCoreConstants.STRING);
-		fieldDTMap.put("32B_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("32B_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("57A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("57A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("57A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("57C_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("59_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("59_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("59A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("59A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NUMBER_1", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NAME_AND_ADDRESS_1", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NUMBER_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NAME_AND_ADDRESS_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NUMBER_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NAME_AND_ADDRESS_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NUMBER_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("59F_NAME_AND_ADDRESS_4", ILMCoreConstants.STRING);
-		fieldDTMap.put("70_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("33B_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("33B_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("71F_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("71F_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("71G_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("71G_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("32A_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("32A_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("32A_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("19_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("13C_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("13C_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("13C_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("13C_OFFSET", ILMCoreConstants.STRING);
-		fieldDTMap.put("53A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("53A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("53A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("53A_IDENTIFIER_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("53C_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("54A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("54A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("54A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("72_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("20_REFERENCE", ILMCoreConstants.STRING);
-		fieldDTMap.put("30_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("57B_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("57B_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("57B_LOCATION", ILMCoreConstants.STRING);
-		fieldDTMap.put("57D_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("57D_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("57D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("58A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("58A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("58A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("58A_IDENTIFIER_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("58D_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("58D_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("58D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("53B_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("53B_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("53B_LOCATION", ILMCoreConstants.STRING);
-		fieldDTMap.put("53D_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("53D_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("53D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("23_CODE_1", ILMCoreConstants.STRING);
-		fieldDTMap.put("23_CODE_2", ILMCoreConstants.STRING);
-		fieldDTMap.put("23_CODE_3", ILMCoreConstants.STRING);
-		fieldDTMap.put("23_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("52D_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("52D_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("52D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("54B_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("54B_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("54B_LOCATION", ILMCoreConstants.STRING);
-		fieldDTMap.put("54D_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("54D_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("54D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
-		fieldDTMap.put("56A_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("56A_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("56A_BIC", ILMCoreConstants.STRING);
-		fieldDTMap.put("56D_DC_MARK", ILMCoreConstants.STRING);
-		fieldDTMap.put("56D_ACCOUNT", ILMCoreConstants.STRING);
-		fieldDTMap.put("56D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+	
+
+	
+
+	
+
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<AccountBalanceManagement> singleDayPayments(Integer nHighest, LocalDateTime toDate,
+			LocalDateTime fromDate, List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
+	
+			Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT DESC) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
+					+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign  AND N_ENTITY_ACCT_MAP_SKEY"
+					+ " IN (:entityAcctMapSkey) order by N_AMOUNT desc) where rnk=1 ",AccountBalanceManagement.class).unwrap(org.hibernate.query.NativeQuery.class);;
+			query.setParameter("toDate", toDate);
+			query.setParameter("fromDate", fromDate);
+			query.setParameter("entityAcctMapSkey", entityMapSkey);
+			query.setParameter("amtSign", amtSign);
+			if(!CollectionUtils.isEmpty(holidaysList)) {
+				query.setParameter("holidays", holidaysList);
+			}else {
+				query.setParameter("holidays", LocalDate.now().plusDays(1));
+			}
+			query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+			query.setFirstResult(0);
+			query.setMaxResults(nHighest);
+			
+			return query.getResultList();
+	}
+	
+	
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<AccountBalanceManagement> singleDayLowestPayments(Integer nHighest, LocalDateTime toDate,
+			LocalDateTime fromDate, List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
+	
+			Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT asc) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
+					+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign  AND N_ENTITY_ACCT_MAP_SKEY"
+					+ " IN (:entityAcctMapSkey) order by N_AMOUNT asc ) where rnk=1",AccountBalanceManagement.class).unwrap(org.hibernate.query.NativeQuery.class);;
+			query.setParameter("toDate", toDate);
+			query.setParameter("fromDate", fromDate);
+			query.setParameter("entityAcctMapSkey", entityMapSkey);
+			query.setParameter("amtSign", amtSign);
+			if(!CollectionUtils.isEmpty(holidaysList)) {
+				query.setParameter("holidays", holidaysList);
+			}else {
+				query.setParameter("holidays", LocalDate.now().plusDays(1));
+			}
+			query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+			query.setFirstResult(0);
+			query.setMaxResults(nHighest);
+			
+			return query.getResultList();
+	}
+	
+
+	@Override
+	public List<PastPosDTO> pastPeriodPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
+			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
 		
-		fieldDTMap.put("93B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("93B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("93B_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("93B_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("93B_BALANCE_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("93B_BALANCE", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("93C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("93C_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("93C_BALANCE_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("93C_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("93C_BALANCE_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92D_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92D_QUANTITY1", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92D_QUANTITY2", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92F_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92F_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("92F_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92K_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92K_RATE_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92P_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92P_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92H_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92H_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("92H_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		//fieldDTMap.put("92H_", ILMCoreConstants.STRING);
-		fieldDTMap.put("92J_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92J_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("92J_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92J_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("92J_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92J_NARRATIVE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92R_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92R_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
-		fieldDTMap.put("92R_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("92R_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92L_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92L_CURRENCY1", ILMCoreConstants.STRING);
-		fieldDTMap.put("92L_AMOUNT1", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92L_CURRENCY2", ILMCoreConstants.STRING);
-		fieldDTMap.put("92L_AMOUNT2", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92M_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92M_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("92M_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92M_QUANTITY", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92N_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("92N_QUANTITY", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("92N_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("92N_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("69A_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("69A_DATE1", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("69A_DATE2", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("69B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("69B_START_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69B_START_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("69B_END_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69B_END_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("69C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("69C_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69C_DATE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69D_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("69D_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69D_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("69D_DATE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69E_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("69E_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69E_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69F_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("69F_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69F_DATE", ILMCoreConstants.STRING);
-		fieldDTMap.put("69F_TIME", ILMCoreConstants.STRING);
-		fieldDTMap.put("19B_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("19B_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("19B_CURRENCY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("19B_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90F_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90F_AMOUNT_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90F_CURRENCY", ILMCoreConstants.STRING);
-		fieldDTMap.put("90F_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90F_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90F_QUANTITY", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90J_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90J_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90J_CURRENCY1", ILMCoreConstants.STRING);
-		fieldDTMap.put("90J_AMOUNT1", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90J_CURRENCY2", ILMCoreConstants.STRING);
-		fieldDTMap.put("90J_AMOUNT2", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90K_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90K_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("90L_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90L_SIGN", ILMCoreConstants.STRING);
-		fieldDTMap.put("90L_AMOUNT", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("36C_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("36C_CODE", ILMCoreConstants.STRING);
-		
-		fieldDTMap.put("28E_PAGE_NUMBER", ILMCoreConstants.BIGDECIMAL);
-		fieldDTMap.put("28E_CONTINUATION_INDICATOR", ILMCoreConstants.STRING);
-		fieldDTMap.put("13J_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("13J_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("90E_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("90E_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94D_QUALIFIER", ILMCoreConstants.STRING);
-		fieldDTMap.put("94D_COUNTRY_CODE", ILMCoreConstants.STRING);
-		fieldDTMap.put("94D_PLACE", ILMCoreConstants.STRING);
+				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) DESC) where ROWNUM<=:nHighest");
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("nHighest", nHighest);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+		return collectQueryToDTO(query,nHighest);
 		
 	}
+	
+	@Override
+	public List<PastPosDTO> pastPeriodIndividualPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
+			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM (SELECT CAST(D_BUSINESS_DT AS VARCHAR(100)), N_AMOUNT FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
+		
+				" ORDER BY N_AMOUNT DESC) where ROWNUM<=:nHighest");
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("nHighest", nHighest);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+		return collectQueryToDTO(query,nHighest);
+		
+	}
+	
+	
+	@Override
+	public List<PastPosDTO> pastPeriodLowestPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
+			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
+		
+				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) ASC) where ROWNUM<=:nHighest");
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("nHighest", nHighest);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+		return collectQueryToDTO(query,nHighest);
+		
+	}
+	
+	
+	@Override
+	public List<PastPosDTO> pastPeriodIndividualLowestPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
+			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM (SELECT CAST(D_BUSINESS_DT AS VARCHAR(100)), N_AMOUNT FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
+		
+				" ORDER BY N_AMOUNT ASC) where ROWNUM<=:nHighest");
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("nHighest", nHighest);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+		return collectQueryToDTO(query,nHighest);
+		
+	}
+	
+
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<PastPosDTO> pastPeriodTRNPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
+			List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode) AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
+		
+				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) DESC) where ROWNUM<=:nHighest");
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("trnCode", TRNCode);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("nHighest", nHighest);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+
+		return collectQueryToDTO(query,nHighest);
+		
+	}
+	
+	
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<PastPosDTO> pastPeriodLowestTRNPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
+			List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode) AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
+		
+				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) ASC) where ROWNUM<=:nHighest");
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("trnCode", TRNCode);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("nHighest", nHighest);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		return collectQueryToDTO(query,nHighest);
+		
+	}
+	
+
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<AccountBalanceManagement> getSingleDayTRNPayments(Integer nHighest, LocalDateTime toDate,
+			LocalDateTime fromDate, List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT DESC) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
+				+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode)  "
+				+ " AND N_ENTITY_ACCT_MAP_SKEY IN "
+				+ "(:entityAcctMapSkey) order by N_AMOUNT desc) where rnk=1",AccountBalanceManagement.class ).unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("trnCode", TRNCode);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setFirstResult(0);
+		query.setMaxResults(nHighest);
+		System.out.println(nHighest+"sd "+TRNCode+" "+toDate+" "+fromDate+" "+entityMapSkey+""+query.getResultList());
+		return query.getResultList();
+	}
+	
+	
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<AccountBalanceManagement> getSingleDayLowestTRNPayments(Integer nHighest, LocalDateTime toDate,
+			LocalDateTime fromDate, List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT DESC) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
+				+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode)  "
+				+ " AND N_ENTITY_ACCT_MAP_SKEY IN "
+				+ "(:entityAcctMapSkey) order by N_AMOUNT asc) where rnk=1",AccountBalanceManagement.class ).unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("trnCode", TRNCode);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setFirstResult(0);
+		query.setMaxResults(nHighest);
+		System.out.println(nHighest+"sd "+TRNCode+" "+toDate+" "+fromDate+" "+entityMapSkey+""+query.getResultList());
+		return query.getResultList();
+	}
 
 	
-	private void setParentChildSeqMap() {
-		parentChildSeqMap.put("A", new ArrayList<String>(Arrays.asList("A1_LINK_R")));
-		parentChildSeqMap.put("B", new ArrayList<String>(Arrays.asList("B1_FIA_NR")));
-		parentChildSeqMap.put("C", new ArrayList<String>(Arrays.asList("C1_BREAK_R")));
-		parentChildSeqMap.put("D", new ArrayList<String>());
-		parentChildSeqMap.put("E", new ArrayList<String>(Arrays.asList("E1_SETPRTY_R", "E2_CSHPRTY_R", "E3_AMT_R")));
-		parentChildSeqMap.put("F", new ArrayList<String>());
-	}
-	
-	private void setSeqTagMap() {
-		seqTagMap.put("A", new ArrayList<String>(Arrays.asList("16R","20C","23G","98A","98C","98E","22F","22H","16S")));
-		seqTagMap.put("A1", new ArrayList<String>(Arrays.asList("16R","22F","13A","13B","20C","16S")));
-		seqTagMap.put("B", new ArrayList<String>(Arrays.asList("16R",	"94B",	"94H",	"94L",	"98A",	"98B",	"98C",	"98E",	"90A",	"90B",	"99A",	"35B",	"22F",	"70E",	"16S")));
-		seqTagMap.put("B1", new ArrayList<String>(Arrays.asList("16R",	"94B",	"22F",	"12A",	"12B",	"12C",	"11A",	"98A",	"92A",	"13A",	"13B",	"17B",	"90A",	"90B",	"36B",	"35B",	"70E",	"16S")));
-		seqTagMap.put("C", new ArrayList<String>(Arrays.asList("16R",	"36B",	"19A",	"70D",	"13B",	"95L",	"95P",	"95R",	"97A",	"97B",	"97E",	"94B",	"94C",	"94F",	"94L",	"16S")));
-		seqTagMap.put("C1", new ArrayList<String>(Arrays.asList("16R",	"13B",	"36B",	"98A",	"98C",	"98E",	"90A",	"90B",	"22F",	"16S")));
-		seqTagMap.put("D", new ArrayList<String>(Arrays.asList("16R",	"98A",	"98B",	"98C",	"22F",	"20C",	"92A",	"92C",	"99B",	"19A",	"70C",	"16S")));
-		seqTagMap.put("E", new ArrayList<String>(Arrays.asList("16R",	"22F",	"16S")));
-		seqTagMap.put("E1", new ArrayList<String>(Arrays.asList("16R",	"95C",	"95L",	"95P",	"95Q",	"95R",	"95S",	"97A",	"97B",	"98A",	"98C",	"20C",	"70C",	"70D",	"70E",	"16S")));
-		seqTagMap.put("E2", new ArrayList<String>(Arrays.asList("16R",	"95L",	"95P",	"95Q",	"95R",	"95S",	"97A",	"97E",	"20C",	"70C",	"70E",	"16S")));
-		seqTagMap.put("E3", new ArrayList<String>(Arrays.asList("16R",	"17B",	"19A",	"98A",	"98C",	"92B",	"16S")));
-		seqTagMap.put("F", new ArrayList<String>(Arrays.asList("16R",	"95C",	"95L",	"95P",	"95Q",	"95R",	"95S",	"97A",	"70C",	"70D",	"70E",	"20C",	"16S")));
-	} 
-	
-	private void setSeqTagMap102() {
-		seqTagMap102.put("A", new ArrayList<String>(Arrays.asList("20","23","51A","50A","50F","50K","52A","52B","52C","26T","77B","71A","36")));
-		seqTagMap102.put("B", new ArrayList<String>(Arrays.asList("21","32B","50A","50F","50K","52A","52B","52C","57A","57C","59","59A","59F","70","26T","77B","33B","71A","71F","71G","36")));
-		seqTagMap102.put("C", new ArrayList<String>(Arrays.asList("32A","19","71G","13C","53A","53C","54A","72")));
-	} 
-	
-	private void setSeqTagMap204() {
-		seqTagMap204.put("A", new ArrayList<String>(Arrays.asList("20","19","30","57A","57B","57D","58A","58D","72")));
-		seqTagMap204.put("B", new ArrayList<String>(Arrays.asList("20","21","32B","53A","53B","53D","72")));
-	} 
-	
-	private void setSeqTagMap203() {
-		seqTagMap203.put("A", new ArrayList<String>(Arrays.asList("19","30","52A","52D","53A","53B","53D","54A","54B","54D","72")));
-		seqTagMap203.put("B", new ArrayList<String>(Arrays.asList("20","21","32B","56A","56D","57A","57B","57D","58A","58D","72")));
-	} 
-	
-	private void setParentChildSeqMap566() {
-		parentChildSeqMap566.put("A", new ArrayList<String>(Arrays.asList("A1_LINK_R")));
-		parentChildSeqMap566.put("B", new ArrayList<String>(Arrays.asList("B1_FIA_R")));
-		parentChildSeqMap566.put("C", new ArrayList<String>());
-		parentChildSeqMap566.put("D", new ArrayList<String>(Arrays.asList("D1_SECMOVE_R", "D1a_FIA_R", "D1b_RECDEL_R", "D2_CASHMOVE_R", "D2a_CSHPRTY_R", "D2b_TAXVODET_R")));
-		parentChildSeqMap566.put("E", new ArrayList<String>());
-	}
-	
-	private void setSeqTagMap566() {
-		seqTagMap566.put("A", new ArrayList<String>(Arrays.asList("16R","20C","23G","22F","98A","98C","16S")));
-		seqTagMap566.put("A1", new ArrayList<String>(Arrays.asList("16R","22F","13A","13B","20C","16S")));
-		seqTagMap566.put("B", new ArrayList<String>(Arrays.asList("16R","95P","95R","97A","94B","94C","94F","35B","93B","93C","16S")));
-		seqTagMap566.put("B1", new ArrayList<String>(Arrays.asList("16R","94B","22F","12A","12C","11A","98A","92A","92D","36B","16S")));
-		seqTagMap566.put("C", new ArrayList<String>(Arrays.asList("16R","98A","98B","98C","98E","69A","69B","69C","69D","69E","69F","99A","92A","92F","92K","92P","90A","90B","90L","36B","36C","13A","13B","17B","22F","16S")));
-		seqTagMap566.put("D", new ArrayList<String>(Arrays.asList("16R","13A","22F","22H","11A","98A","98B","98C","98E","69A","69B","69C","69D","69E","69F","92A","92F","92H","92J","92R","90A","90B","94B","16S")));
-		seqTagMap566.put("D1", new ArrayList<String>(Arrays.asList("16R","22F","22H","35B","36B","94B","94C","94F","11A","90A","90B","90F","90J","90K","90L","92A","92D","92F","92J","92L","92M","92N","98A","98B","98C","98E","16S")));
-		seqTagMap566.put("D1a", new ArrayList<String>(Arrays.asList("16R","94B","22F","12A","12C","11A","98A","90A","90B","92A","36B","16S")));
-		seqTagMap566.put("D1b", new ArrayList<String>(Arrays.asList("16R","95C","95P","95Q","95R","95S","97A","20C","16S")));
-		seqTagMap566.put("D2", new ArrayList<String>(Arrays.asList("16R","22F","22H","94C","97A","97E","19B","98A","98C","98E","92A","92B","92F","92H","92J","92M","92R","90A","90B","90F","90J","90K","90L","16S")));
-		seqTagMap566.put("D2a", new ArrayList<String>(Arrays.asList("16R","95P","95Q","95R","95S","97A","97E","20C","16S")));
-		seqTagMap566.put("D2b", new ArrayList<String>(Arrays.asList("16R","20C","98A","98C","16S")));
-		seqTagMap566.put("E", new ArrayList<String>(Arrays.asList("16R","70E","95P","95Q","95R","16S")));
-	} 
-	
-	private void setParentChildSeqMap535() {
-		parentChildSeqMap535.put("A", new ArrayList<String>(Arrays.asList("A1_LINK_R")));
-		parentChildSeqMap535.put("B", new ArrayList<String>(Arrays.asList("B1_FIN_R","B1a_FIA_R", "B1b_SUBBAL_R", "B1b1_BREAK_R", "B1c_BREAK_R")));
-		parentChildSeqMap535.put("C", new ArrayList<String>());
-	}
-	
-	private void setSeqTagMap535() {
-		seqTagMap535.put("A", new ArrayList<String>(Arrays.asList("16R","28E","13A","13J","20C","23G","22F","98A","98C","98E","22F","95L","95P","95R","97A","97B","17B","16S")));
-		seqTagMap535.put("A1", new ArrayList<String>(Arrays.asList("16R","13A","13B","20C","16S")));
-		seqTagMap535.put("B", new ArrayList<String>(Arrays.asList("16R","95L","95P","95R","97A","97B","94B","94C","94F","94L","17B","16S")));
-		seqTagMap535.put("B1", new ArrayList<String>(Arrays.asList("16R","35B","22H","90A","90B","90E","94B","98A","98C","93B","99A","19A","92B","70E","16S")));
-		seqTagMap535.put("B1a", new ArrayList<String>(Arrays.asList("16R","94B","94D","22F","12A","12B","12C","11A","98A","92A","13A","13B","13C","17B","90A","90B","36B","35B","70E","16S")));
-		seqTagMap535.put("B1b", new ArrayList<String>(Arrays.asList("16R","93B","93C","22F","22H","94B","94C","94F","94L","90A","90B","90E","98A","98C","99A","19A","92B","70C","16S")));
-		seqTagMap535.put("B1b1", new ArrayList<String>(Arrays.asList("16R","13B","93B","98A","98C","98E","90A","90B","22F","19A","16S")));
-		seqTagMap535.put("B1c", new ArrayList<String>(Arrays.asList("16R","13B","93B","98A","98C","98E","90A","90B","22F","19A","16S")));
-		seqTagMap535.put("C", new ArrayList<String>(Arrays.asList("16R","95P","95Q","95R","19A","16S")));
-	} 
-	
-	public Map<String, String> getFieldDTMap() {
-		return fieldDTMap;
+
+	@Override
+	public BigDecimal getAveragePayment(LocalDateTime toDate, LocalDateTime fromDate, List<Long> entityMapSkey,
+			String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT AVG(SUM(N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate  and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " + 
+				" AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes)" +
+				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10)").unwrap(org.hibernate.query.NativeQuery.class);;
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+		BigDecimal res=(BigDecimal)query.getSingleResult();
+		return res;
 	}
 
-	public Map<String, List<String>> getParentChildSeqMap() {
-		return parentChildSeqMap;
-	}
-
-	public Map<String, List<String>> getSeqTagMap() {
-		return seqTagMap;
-	}
-
-	public Map<String, List<String>> getSeqTagMap102() {
-		return seqTagMap102;
-	}
-
-	public Map<String, List<String>> getSeqTagMap204() {
-		return seqTagMap204;
+	
+	@Override
+	public BigDecimal getTotalPayment(LocalDateTime toDate, LocalDateTime fromDate, List<Long> entityMapSkey,
+			String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT SUM(SUM(N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate  and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
+				" AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes)" +
+				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10)").unwrap(org.hibernate.query.NativeQuery.class);;
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("amtSign", amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
+		BigDecimal res=(BigDecimal)query.getSingleResult();
+		return res;
 	}
 	
-	public Map<String, List<String>> getSeqTagMap203() {
-		return seqTagMap203;
-	}
 
-	public Map<String, List<String>> getParentChildSeqMap566() {
-		return parentChildSeqMap566;
-	}
-
-	public Map<String, List<String>> getSeqTagMap566() {
-		return seqTagMap566;
-	}
-	
-	public Map<String, List<String>> getParentChildSeqMap535() {
-		return parentChildSeqMap535;
-	}
-
-	public Map<String, List<String>> getSeqTagMap535() {
-		return seqTagMap535;
+	@Override
+	public BigDecimal getAverageTRNPayment(LocalDateTime toDate, LocalDateTime fromDate, List<Long> entityMapSkey,
+			List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery("SELECT (SUM(N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
+				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode) AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) ").unwrap(org.hibernate.query.NativeQuery.class);;
+		query.setParameter("toDate", toDate);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("trnCode",TRNCode);
+		query.setParameter("amtSign",amtSign);
+		query.setParameter("entityAcctMapSkey", entityMapSkey);
+		if(!CollectionUtils.isEmpty(holidaysList)) {
+			query.setParameter("holidays", holidaysList);
+		}else {
+			query.setParameter("holidays", LocalDate.now().plusDays(1));
+		}
+		BigDecimal res=(BigDecimal)query.getSingleResult();
+		System.out.println(res);
+		return res;
 	}
 }
