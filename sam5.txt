@@ -7,40 +7,44 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testGetSkeyFromLocalDateTime() {
-        // Test case 1: A valid LocalDateTime with format "yyyyMMddHHmmss"
-        LocalDateTime localDateTime1 = LocalDateTime.of(2023, 11, 10, 12, 34, 56);
+    public void testGetDateTimeFromSkey() {
+        // Test case 1: A valid skey with format "yyyyMMddHHmmss"
+        long skey1 = 20231110123456L;
         String format1 = "yyyyMMddHHmmss";
-        long expectedSkey1 = 20231110123456L;
-        long actualSkey1 = DateUtil.getSkeyFromLocalDateTime(localDateTime1, format1);
-        assertEquals(expectedSkey1, actualSkey1);
+        LocalDateTime expectedDateTime1 = LocalDateTime.of(2023, 11, 10, 12, 34, 56);
+        LocalDateTime actualDateTime1 = DateUtil.getDateTimeFromSkey(skey1, format1);
+        assertEquals(expectedDateTime1, actualDateTime1);
 
-        // Test case 2: A valid LocalDateTime with format "yyyyMMddHHmm"
-        LocalDateTime localDateTime2 = LocalDateTime.of(2001, 02, 03, 04, 05);
+        // Test case 2: A valid skey with format "yyyyMMddHHmm"
+        long skey2 = 200102030405L;
         String format2 = "yyyyMMddHHmm";
-        long expectedSkey2 = 200102030405L;
-        long actualSkey2 = DateUtil.getSkeyFromLocalDateTime(localDateTime2, format2);
-        assertEquals(expectedSkey2, actualSkey2);
+        LocalDateTime expectedDateTime2 = LocalDateTime.of(2001, 2, 3, 4, 5);
+        LocalDateTime actualDateTime2 = DateUtil.getDateTimeFromSkey(skey2, format2);
+        assertEquals(expectedDateTime2, actualDateTime2);
 
-        // Test case 3: A valid LocalDateTime with format "yyyyMMdd"
-        LocalDateTime localDateTime3 = LocalDateTime.of(9999, 12, 31, 23, 59, 59);
+        // Test case 3: A valid skey with format "yyyyMMdd"
+        long skey3 = 99991231L;
         String format3 = "yyyyMMdd";
-        long expectedSkey3 = 99991231L;
-        long actualSkey3 = DateUtil.getSkeyFromLocalDateTime(localDateTime3, format3);
-        assertEquals(expectedSkey3, actualSkey3);
+        LocalDateTime expectedDateTime3 = LocalDateTime.of(9999, 12, 31, 0, 0); // Default time is 00:00:00
+        LocalDateTime actualDateTime3 = DateUtil.getDateTimeFromSkey(skey3, format3);
+        assertEquals(expectedDateTime3, actualDateTime3);
 
-        // Test case 4: A null LocalDateTime
-        LocalDateTime localDateTime4 = null;
+        // Test case 4: An invalid skey
+        long skey4 = 123456789L;
         String format4 = "yyyyMMddHHmmss";
-        long expectedSkey4 = 0L;
-        long actualSkey4 = DateUtil.getSkeyFromLocalDateTime(localDateTime4, format4);
-        assertEquals(expectedSkey4, actualSkey4);
+        try {
+            DateUtil.getDateTimeFromSkey(skey4, format4);
+            // If the code reaches here, the test case has failed
+            fail("Expected an exception to be thrown");
+        } catch (Exception e) {
+            // The exception is expected
+        }
 
         // Test case 5: An invalid format
-        LocalDateTime localDateTime5 = LocalDateTime.now();
+        long skey5 = 20231110123456L;
         String format5 = "invalid_format";
         try {
-            DateUtil.getSkeyFromLocalDateTime(localDateTime5, format5);
+            DateUtil.getDateTimeFromSkey(skey5, format5);
             // If the code reaches here, the test case has failed
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
