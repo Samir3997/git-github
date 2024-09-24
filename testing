@@ -1,280 +1,528 @@
 package com.maybank.ilm.core.util;
 
-import java.text.SimpleDateFormat;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.Period;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import javax.annotation.PostConstruct;
 
-public class DateUtil {
+public class MTFieldDataTypeMap {
 
-	private static final Logger logger = LogManager.getLogger(DateUtil.class.getName());
-
-	/**
-	 * Instantiates a new date utils.
-	 */
-	private DateUtil() {
-		throw new AssertionError("Instantiating utility class.");
+	private Map<String, String> fieldDTMap = new HashMap<>();
+	private Map<String, List<String>> parentChildSeqMap = new HashMap<>();
+	private Map<String, List<String>> seqTagMap = new HashMap<>();
+	private Map<String, List<String>> seqTagMap102 = new HashMap<>();
+	private Map<String, List<String>> seqTagMap204 = new HashMap<>();
+	private Map<String, List<String>> seqTagMap203 = new HashMap<>();
+	private Map<String, List<String>> parentChildSeqMap566 = new HashMap<>();
+	private Map<String, List<String>> seqTagMap566 = new HashMap<>();
+	private Map<String, List<String>> parentChildSeqMap535 = new HashMap<>();
+	private Map<String, List<String>> seqTagMap535 = new HashMap<>();
+	
+	public MTFieldDataTypeMap() {
+		super();
 	}
 
-	public static LocalDate getDateFromString(String dateString) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
-		}
-		return localDate;
+	@PostConstruct
+	public void init() {
+		setFieldDTMap();
+		setParentChildSeqMap();
+		setSeqTagMap();
+		setSeqTagMap102();
+		setSeqTagMap204();
+		setSeqTagMap203();
+		setParentChildSeqMap566();
+		setSeqTagMap566();
+		setParentChildSeqMap535();
+		setSeqTagMap535();
 	}
 	
-	public static LocalDate getDateFromStringWithFormat(String dateString, String format) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
-		}
-		return localDate;
-	}
-	
-	public static LocalDate getDateFromStringWithFormatSimpleDate(String dateString, String format) {
-		LocalDate localDate = null;
-		try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat(format);
-			Date date = dateFormat.parse(dateString);
-			localDate = convertToLocalDate(date);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromStringWithFormat" + exception);
-		}
-		return localDate;
-	}
-	
-	public static LocalDateTime getDateTimeFromStringWithFormat(String dateString, String format) {
-		LocalDateTime localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			localDate = LocalDateTime.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateTimeFromStringWithFormat" + exception);
-		}
-		return localDate;
+	private void setFieldDTMap() {
+		fieldDTMap.put("16R_BLOCKNAME", ILMCoreConstants.STRING);
+		fieldDTMap.put("20C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("20C_REFERENCE", ILMCoreConstants.STRING);
+		fieldDTMap.put("23G_FUNCTION", ILMCoreConstants.STRING);
+		fieldDTMap.put("23G_SUBFUNCTION", ILMCoreConstants.STRING);
+		fieldDTMap.put("98A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("98A_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("98B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("98B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("98B_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("98C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("98C_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("98C_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("98E_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("98E_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("98E_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("98E_DECIMALS", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("98E_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("98E_UTC_INDICATOR", ILMCoreConstants.STRING);
+		fieldDTMap.put("12A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("12A_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("12A_INSTRUMENT_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("12C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("12C_CFI_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("12B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("12B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("12B_INSTRUMENT_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92A_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("92A_RATE_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("17B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("17B_FLAG", ILMCoreConstants.STRING);
+		fieldDTMap.put("90A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90A_PERCENTAGE_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90A_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("90A_PRICE", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90B_AMOUNT_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90B_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("90B_CURRENCY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90B_PRICE", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("36B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("36B_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("36B_QUANTITY", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("35B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("35B_ISIN", ILMCoreConstants.STRING);
+		fieldDTMap.put("35B_DESCRIPTION", ILMCoreConstants.STRING);
+		fieldDTMap.put("35B_DESCRIPTION_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("35B_DESCRIPTION_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("35B_DESCRIPTION_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_5", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_6", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_7", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_8", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_9", ILMCoreConstants.STRING);
+		fieldDTMap.put("70E_NARRATIVE_10", ILMCoreConstants.STRING);
+		fieldDTMap.put("19A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("19A_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("19A_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("19A_CURRENCY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("19A_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("95P_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("95P_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("95P_IDENTIFIER_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("95R_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("95R_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("95R_PROPRIETARY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("95L_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("95L_LEGAL_ENTITY_IDENTIFIER_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("95L_LEGAL_ENTITY_IDENTIFIER_NUMBER", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("97A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("97A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("97A_ACCOUNT_NUMBER", ILMCoreConstants.STRING);
+		fieldDTMap.put("97B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("97B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("97B_ACCOUNT_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("97B_ACCOUNT_NUMBER", ILMCoreConstants.STRING);
+		fieldDTMap.put("97E_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("97E_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("94C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94C_COUNTRY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94F_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94F_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94F_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("92C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92C_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("92C_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("99B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("99B_NUMBER", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("95C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("95C_COUNTRY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("95Q_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("95Q_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("95Q_NAME_AND_ADDRESS_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("95Q_NAME_AND_ADDRESS_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("95Q_NAME_AND_ADDRESS_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("95S_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("95S_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("95S_TYPE_OF_ID", ILMCoreConstants.STRING);
+		fieldDTMap.put("95S_COUNTRY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("95S_ALTERNATE_ID", ILMCoreConstants.STRING);
+		fieldDTMap.put("70C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("70C_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("70C_NARRATIVE_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("70C_NARRATIVE_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("70C_NARRATIVE_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("70D_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("70D_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92B_FIRST_CURRENCY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92B_SECOND_CURRENCY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92B_RATE", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("99A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("99A_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("99A_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("11A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("11A_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("11A_CURRENCY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("22H_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("22H_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("22F_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("22F_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("22F_INDICATOR", ILMCoreConstants.STRING);
+		fieldDTMap.put("13A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("13A_NUMBER_ID", ILMCoreConstants.STRING);
+		fieldDTMap.put("13B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("13B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("13B_NUMBER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("94B_PLACE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94B_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94H_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94H_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("94L_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94L_LEGAL_ENTITY_IDENTIFIER_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94L_LEGAL_ENTITY_IDENTIFIER_NUMBER", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("16S_BLOCKNAME", ILMCoreConstants.STRING);
+		fieldDTMap.put("51A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("51A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("51A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("50A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("50A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_PARTY_IDENTIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NUMBER_1", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NAME_AND_ADDRESS_1", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NUMBER_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NAME_AND_ADDRESS_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NUMBER_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NAME_AND_ADDRESS_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NUMBER_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("50F_NAME_AND_ADDRESS_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("50K_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("50K_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("52A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("52A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("52A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("52B_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("52B_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("52B_LOCATION", ILMCoreConstants.STRING);
+		fieldDTMap.put("52C_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("26T_TYPE", ILMCoreConstants.STRING);
+		fieldDTMap.put("77B_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("77B_COUNTRY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("77B_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("71A_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("36_RATE", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("21_REFERENCE", ILMCoreConstants.STRING);
+		fieldDTMap.put("32B_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("32B_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("57A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("57A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("57A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("57C_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("59_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("59_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("59A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("59A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NUMBER_1", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NAME_AND_ADDRESS_1", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NUMBER_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NAME_AND_ADDRESS_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NUMBER_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NAME_AND_ADDRESS_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NUMBER_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("59F_NAME_AND_ADDRESS_4", ILMCoreConstants.STRING);
+		fieldDTMap.put("70_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("33B_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("33B_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("71F_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("71F_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("71G_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("71G_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("32A_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("32A_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("32A_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("19_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("13C_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("13C_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("13C_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("13C_OFFSET", ILMCoreConstants.STRING);
+		fieldDTMap.put("53A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("53A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("53A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("53A_IDENTIFIER_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("53C_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("54A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("54A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("54A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("72_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("20_REFERENCE", ILMCoreConstants.STRING);
+		fieldDTMap.put("30_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("57B_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("57B_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("57B_LOCATION", ILMCoreConstants.STRING);
+		fieldDTMap.put("57D_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("57D_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("57D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("58A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("58A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("58A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("58A_IDENTIFIER_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("58D_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("58D_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("58D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("53B_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("53B_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("53B_LOCATION", ILMCoreConstants.STRING);
+		fieldDTMap.put("53D_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("53D_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("53D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("23_CODE_1", ILMCoreConstants.STRING);
+		fieldDTMap.put("23_CODE_2", ILMCoreConstants.STRING);
+		fieldDTMap.put("23_CODE_3", ILMCoreConstants.STRING);
+		fieldDTMap.put("23_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("52D_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("52D_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("52D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("54B_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("54B_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("54B_LOCATION", ILMCoreConstants.STRING);
+		fieldDTMap.put("54D_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("54D_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("54D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		fieldDTMap.put("56A_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("56A_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("56A_BIC", ILMCoreConstants.STRING);
+		fieldDTMap.put("56D_DC_MARK", ILMCoreConstants.STRING);
+		fieldDTMap.put("56D_ACCOUNT", ILMCoreConstants.STRING);
+		fieldDTMap.put("56D_NAME_AND_ADDRESS", ILMCoreConstants.STRING);
+		
+		fieldDTMap.put("93B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("93B_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("93B_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("93B_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("93B_BALANCE_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("93B_BALANCE", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("93C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("93C_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("93C_BALANCE_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("93C_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("93C_BALANCE_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92D_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92D_QUANTITY1", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92D_QUANTITY2", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92F_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92F_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("92F_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92K_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92K_RATE_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92P_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92P_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92H_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92H_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("92H_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		//fieldDTMap.put("92H_", ILMCoreConstants.STRING);
+		fieldDTMap.put("92J_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92J_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("92J_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92J_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("92J_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92J_NARRATIVE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92R_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92R_DATA_SOURCE_SCHEME", ILMCoreConstants.STRING);
+		fieldDTMap.put("92R_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("92R_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92L_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92L_CURRENCY1", ILMCoreConstants.STRING);
+		fieldDTMap.put("92L_AMOUNT1", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92L_CURRENCY2", ILMCoreConstants.STRING);
+		fieldDTMap.put("92L_AMOUNT2", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92M_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92M_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("92M_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92M_QUANTITY", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92N_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("92N_QUANTITY", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("92N_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("92N_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("69A_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("69A_DATE1", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("69A_DATE2", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("69B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("69B_START_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69B_START_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("69B_END_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69B_END_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("69C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("69C_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69C_DATE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69D_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("69D_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69D_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("69D_DATE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69E_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("69E_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69E_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69F_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("69F_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69F_DATE", ILMCoreConstants.STRING);
+		fieldDTMap.put("69F_TIME", ILMCoreConstants.STRING);
+		fieldDTMap.put("19B_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("19B_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("19B_CURRENCY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("19B_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90F_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90F_AMOUNT_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90F_CURRENCY", ILMCoreConstants.STRING);
+		fieldDTMap.put("90F_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90F_QUANTITY_TYPE_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90F_QUANTITY", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90J_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90J_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90J_CURRENCY1", ILMCoreConstants.STRING);
+		fieldDTMap.put("90J_AMOUNT1", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90J_CURRENCY2", ILMCoreConstants.STRING);
+		fieldDTMap.put("90J_AMOUNT2", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90K_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90K_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("90L_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90L_SIGN", ILMCoreConstants.STRING);
+		fieldDTMap.put("90L_AMOUNT", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("36C_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("36C_CODE", ILMCoreConstants.STRING);
+		
+		fieldDTMap.put("28E_PAGE_NUMBER", ILMCoreConstants.BIGDECIMAL);
+		fieldDTMap.put("28E_CONTINUATION_INDICATOR", ILMCoreConstants.STRING);
+		fieldDTMap.put("13J_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("13J_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("90E_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("90E_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94D_QUALIFIER", ILMCoreConstants.STRING);
+		fieldDTMap.put("94D_COUNTRY_CODE", ILMCoreConstants.STRING);
+		fieldDTMap.put("94D_PLACE", ILMCoreConstants.STRING);
+		
 	}
 
-	public static LocalDate getDateFromStringYYYYMMDD(String dateString) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
-		}
-		return localDate;
+	
+	private void setParentChildSeqMap() {
+		parentChildSeqMap.put("A", new ArrayList<String>(Arrays.asList("A1_LINK_R")));
+		parentChildSeqMap.put("B", new ArrayList<String>(Arrays.asList("B1_FIA_NR")));
+		parentChildSeqMap.put("C", new ArrayList<String>(Arrays.asList("C1_BREAK_R")));
+		parentChildSeqMap.put("D", new ArrayList<String>());
+		parentChildSeqMap.put("E", new ArrayList<String>(Arrays.asList("E1_SETPRTY_R", "E2_CSHPRTY_R", "E3_AMT_R")));
+		parentChildSeqMap.put("F", new ArrayList<String>());
+	}
+	
+	private void setSeqTagMap() {
+		seqTagMap.put("A", new ArrayList<String>(Arrays.asList("16R","20C","23G","98A","98C","98E","22F","22H","16S")));
+		seqTagMap.put("A1", new ArrayList<String>(Arrays.asList("16R","22F","13A","13B","20C","16S")));
+		seqTagMap.put("B", new ArrayList<String>(Arrays.asList("16R",	"94B",	"94H",	"94L",	"98A",	"98B",	"98C",	"98E",	"90A",	"90B",	"99A",	"35B",	"22F",	"70E",	"16S")));
+		seqTagMap.put("B1", new ArrayList<String>(Arrays.asList("16R",	"94B",	"22F",	"12A",	"12B",	"12C",	"11A",	"98A",	"92A",	"13A",	"13B",	"17B",	"90A",	"90B",	"36B",	"35B",	"70E",	"16S")));
+		seqTagMap.put("C", new ArrayList<String>(Arrays.asList("16R",	"36B",	"19A",	"70D",	"13B",	"95L",	"95P",	"95R",	"97A",	"97B",	"97E",	"94B",	"94C",	"94F",	"94L",	"16S")));
+		seqTagMap.put("C1", new ArrayList<String>(Arrays.asList("16R",	"13B",	"36B",	"98A",	"98C",	"98E",	"90A",	"90B",	"22F",	"16S")));
+		seqTagMap.put("D", new ArrayList<String>(Arrays.asList("16R",	"98A",	"98B",	"98C",	"22F",	"20C",	"92A",	"92C",	"99B",	"19A",	"70C",	"16S")));
+		seqTagMap.put("E", new ArrayList<String>(Arrays.asList("16R",	"22F",	"16S")));
+		seqTagMap.put("E1", new ArrayList<String>(Arrays.asList("16R",	"95C",	"95L",	"95P",	"95Q",	"95R",	"95S",	"97A",	"97B",	"98A",	"98C",	"20C",	"70C",	"70D",	"70E",	"16S")));
+		seqTagMap.put("E2", new ArrayList<String>(Arrays.asList("16R",	"95L",	"95P",	"95Q",	"95R",	"95S",	"97A",	"97E",	"20C",	"70C",	"70E",	"16S")));
+		seqTagMap.put("E3", new ArrayList<String>(Arrays.asList("16R",	"17B",	"19A",	"98A",	"98C",	"92B",	"16S")));
+		seqTagMap.put("F", new ArrayList<String>(Arrays.asList("16R",	"95C",	"95L",	"95P",	"95Q",	"95R",	"95S",	"97A",	"70C",	"70D",	"70E",	"20C",	"16S")));
+	} 
+	
+	private void setSeqTagMap102() {
+		seqTagMap102.put("A", new ArrayList<String>(Arrays.asList("20","23","51A","50A","50F","50K","52A","52B","52C","26T","77B","71A","36")));
+		seqTagMap102.put("B", new ArrayList<String>(Arrays.asList("21","32B","50A","50F","50K","52A","52B","52C","57A","57C","59","59A","59F","70","26T","77B","33B","71A","71F","71G","36")));
+		seqTagMap102.put("C", new ArrayList<String>(Arrays.asList("32A","19","71G","13C","53A","53C","54A","72")));
+	} 
+	
+	private void setSeqTagMap204() {
+		seqTagMap204.put("A", new ArrayList<String>(Arrays.asList("20","19","30","57A","57B","57D","58A","58D","72")));
+		seqTagMap204.put("B", new ArrayList<String>(Arrays.asList("20","21","32B","53A","53B","53D","72")));
+	} 
+	
+	private void setSeqTagMap203() {
+		seqTagMap203.put("A", new ArrayList<String>(Arrays.asList("19","30","52A","52D","53A","53B","53D","54A","54B","54D","72")));
+		seqTagMap203.put("B", new ArrayList<String>(Arrays.asList("20","21","32B","56A","56D","57A","57B","57D","58A","58D","72")));
+	} 
+	
+	private void setParentChildSeqMap566() {
+		parentChildSeqMap566.put("A", new ArrayList<String>(Arrays.asList("A1_LINK_R")));
+		parentChildSeqMap566.put("B", new ArrayList<String>(Arrays.asList("B1_FIA_R")));
+		parentChildSeqMap566.put("C", new ArrayList<String>());
+		parentChildSeqMap566.put("D", new ArrayList<String>(Arrays.asList("D1_SECMOVE_R", "D1a_FIA_R", "D1b_RECDEL_R", "D2_CASHMOVE_R", "D2a_CSHPRTY_R", "D2b_TAXVODET_R")));
+		parentChildSeqMap566.put("E", new ArrayList<String>());
+	}
+	
+	private void setSeqTagMap566() {
+		seqTagMap566.put("A", new ArrayList<String>(Arrays.asList("16R","20C","23G","22F","98A","98C","16S")));
+		seqTagMap566.put("A1", new ArrayList<String>(Arrays.asList("16R","22F","13A","13B","20C","16S")));
+		seqTagMap566.put("B", new ArrayList<String>(Arrays.asList("16R","95P","95R","97A","94B","94C","94F","35B","93B","93C","16S")));
+		seqTagMap566.put("B1", new ArrayList<String>(Arrays.asList("16R","94B","22F","12A","12C","11A","98A","92A","92D","36B","16S")));
+		seqTagMap566.put("C", new ArrayList<String>(Arrays.asList("16R","98A","98B","98C","98E","69A","69B","69C","69D","69E","69F","99A","92A","92F","92K","92P","90A","90B","90L","36B","36C","13A","13B","17B","22F","16S")));
+		seqTagMap566.put("D", new ArrayList<String>(Arrays.asList("16R","13A","22F","22H","11A","98A","98B","98C","98E","69A","69B","69C","69D","69E","69F","92A","92F","92H","92J","92R","90A","90B","94B","16S")));
+		seqTagMap566.put("D1", new ArrayList<String>(Arrays.asList("16R","22F","22H","35B","36B","94B","94C","94F","11A","90A","90B","90F","90J","90K","90L","92A","92D","92F","92J","92L","92M","92N","98A","98B","98C","98E","16S")));
+		seqTagMap566.put("D1a", new ArrayList<String>(Arrays.asList("16R","94B","22F","12A","12C","11A","98A","90A","90B","92A","36B","16S")));
+		seqTagMap566.put("D1b", new ArrayList<String>(Arrays.asList("16R","95C","95P","95Q","95R","95S","97A","20C","16S")));
+		seqTagMap566.put("D2", new ArrayList<String>(Arrays.asList("16R","22F","22H","94C","97A","97E","19B","98A","98C","98E","92A","92B","92F","92H","92J","92M","92R","90A","90B","90F","90J","90K","90L","16S")));
+		seqTagMap566.put("D2a", new ArrayList<String>(Arrays.asList("16R","95P","95Q","95R","95S","97A","97E","20C","16S")));
+		seqTagMap566.put("D2b", new ArrayList<String>(Arrays.asList("16R","20C","98A","98C","16S")));
+		seqTagMap566.put("E", new ArrayList<String>(Arrays.asList("16R","70E","95P","95Q","95R","16S")));
+	} 
+	
+	private void setParentChildSeqMap535() {
+		parentChildSeqMap535.put("A", new ArrayList<String>(Arrays.asList("A1_LINK_R")));
+		parentChildSeqMap535.put("B", new ArrayList<String>(Arrays.asList("B1_FIN_R","B1a_FIA_R", "B1b_SUBBAL_R", "B1b1_BREAK_R", "B1c_BREAK_R")));
+		parentChildSeqMap535.put("C", new ArrayList<String>());
+	}
+	
+	private void setSeqTagMap535() {
+		seqTagMap535.put("A", new ArrayList<String>(Arrays.asList("16R","28E","13A","13J","20C","23G","22F","98A","98C","98E","22F","95L","95P","95R","97A","97B","17B","16S")));
+		seqTagMap535.put("A1", new ArrayList<String>(Arrays.asList("16R","13A","13B","20C","16S")));
+		seqTagMap535.put("B", new ArrayList<String>(Arrays.asList("16R","95L","95P","95R","97A","97B","94B","94C","94F","94L","17B","16S")));
+		seqTagMap535.put("B1", new ArrayList<String>(Arrays.asList("16R","35B","22H","90A","90B","90E","94B","98A","98C","93B","99A","19A","92B","70E","16S")));
+		seqTagMap535.put("B1a", new ArrayList<String>(Arrays.asList("16R","94B","94D","22F","12A","12B","12C","11A","98A","92A","13A","13B","13C","17B","90A","90B","36B","35B","70E","16S")));
+		seqTagMap535.put("B1b", new ArrayList<String>(Arrays.asList("16R","93B","93C","22F","22H","94B","94C","94F","94L","90A","90B","90E","98A","98C","99A","19A","92B","70C","16S")));
+		seqTagMap535.put("B1b1", new ArrayList<String>(Arrays.asList("16R","13B","93B","98A","98C","98E","90A","90B","22F","19A","16S")));
+		seqTagMap535.put("B1c", new ArrayList<String>(Arrays.asList("16R","13B","93B","98A","98C","98E","90A","90B","22F","19A","16S")));
+		seqTagMap535.put("C", new ArrayList<String>(Arrays.asList("16R","95P","95Q","95R","19A","16S")));
+	} 
+	
+	public Map<String, String> getFieldDTMap() {
+		return fieldDTMap;
 	}
 
-	public static LocalDateTime convertLdatetoLdatetime(LocalDate date, String hourmin) {
-		String hour = hourmin.substring(0, 2);
-		String minute = hourmin.substring(2, 4);
-		return date.atTime(Integer.parseInt(hour), Integer.parseInt(minute));
+	public Map<String, List<String>> getParentChildSeqMap() {
+		return parentChildSeqMap;
 	}
 
-	public static LocalDate convertToLocalDate(Date dateToConvert) {
-		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-	}
-	
-	public static LocalDateTime convertToLocalDateTime(Date dateToConvert) {
-		return dateToConvert.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+	public Map<String, List<String>> getSeqTagMap() {
+		return seqTagMap;
 	}
 
-	public static LocalDateTime getCurrentDateTimeByZone(String zone) {
-		ZoneId zid = null;
-		if (zone != null) {
-			zid = ZoneId.of(zone);
-		}
-		return zid != null ? LocalDateTime.now(zid) : null;
+	public Map<String, List<String>> getSeqTagMap102() {
+		return seqTagMap102;
 	}
 
-	public static String getTimeFromTimeStamp(LocalDateTime dateTime) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm:ss a");
-		return formatter.format(dateTime);
+	public Map<String, List<String>> getSeqTagMap204() {
+		return seqTagMap204;
+	}
+	
+	public Map<String, List<String>> getSeqTagMap203() {
+		return seqTagMap203;
 	}
 
-	public static LocalDateTime getlocalDateTimeFromString(String date) {
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM d yyyy h:mma");
-		LocalDateTime dateTime = LocalDateTime.parse(StringUtils.normalizeSpace(date), formatter);
-		return dateTime;
+	public Map<String, List<String>> getParentChildSeqMap566() {
+		return parentChildSeqMap566;
 	}
 
-	public static Integer daysBetween(LocalDate startDate, LocalDate endDate) {
-		Long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-		return daysBetween.intValue();
+	public Map<String, List<String>> getSeqTagMap566() {
+		return seqTagMap566;
+	}
+	
+	public Map<String, List<String>> getParentChildSeqMap535() {
+		return parentChildSeqMap535;
 	}
 
-	public static int getDiffOfDatesInDays(LocalDate fromDate, LocalDate toDate) {
-		Period period = Period.between(fromDate, toDate);
-		return period.getDays();
+	public Map<String, List<String>> getSeqTagMap535() {
+		return seqTagMap535;
 	}
-
-	public static void main(String[] args) {
-		LocalDate localDate=LocalDate.of(9999, 12, 31);
-		System.out.println(localDate);
-	}
-	
-	public static Long getSkeyFromLocalDate(LocalDate localDate) {
-		String formattedString = null;
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-			formattedString = localDate.format(formatter);
-		}catch (Exception e) {
-			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return Long.parseLong(formattedString);
-
-	}
-	
-	public static Long getSkeyFromLocalDateTime(LocalDateTime localDateTime, String format) {
-		String formattedString = null;
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-			formattedString = localDateTime.format(formatter);
-		}catch (Exception e) {
-			logger.error(String.format("Error while  getSkeyFromLocalDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return Long.parseLong(formattedString);
-
-	}
-	
-	public static LocalDateTime getDateTimeFromSkey(Long dateSkey, String format) {
-		LocalDateTime localDateTime = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			String dateString = Long.toString(dateSkey);
-			localDateTime = LocalDateTime.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
-		}
-		return localDateTime;
-	}
-	
-	public static LocalTime getLocalTimeFromSkey(Long timeSkey, String format) {
-		LocalTime localTime = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern(format);
-			String timeString = Long.toString(timeSkey);
-			String finalTimeString = null;
-			if(timeString.length() == 5) {
-				finalTimeString = "0"+timeString;
-			}else {
-				finalTimeString = timeString;
-			}
-			localTime = LocalTime.parse(finalTimeString, stringformatter);
-		} catch (Exception exception) {
-			logger.error("Error while  getDateFromSkey :" + ExceptionUtils.getStackTrace(exception));
-		}
-		return localTime;
-	}
-	
-	public static LocalDateTime getLocalDateTimeFromLongFiles(Long dateModified) {
-		SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
-		return getDateTimeFromStringWithFormat(sdf.format(dateModified), "dd-MM-yyyy HH:mm:ss");
-	}
-	
-	public static String getDateFormatYYYYMMDD(LocalDate localDate) {		
-		return localDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-	}
-	
-	public static LocalDate convertJulianSkeyToLocalDate(String skey) {
-		LocalDate localDate = null;
-		try {
-			if(skey != null && !skey.contentEquals("0")) {
-				Date date = new SimpleDateFormat("yyyyDDD").parse(skey);
-				localDate = convertToLocalDate(date);
-			}
-		}catch (Exception e) {
-			logger.error(String.format("Error while  convertJulianSkeyToLocalDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return localDate;
-	}
-	
-	public static String getStringFromLDate(LocalDate ldate, String format) {
-		String formattedString = null;
-		try {
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
-			formattedString = ldate.format(formatter);
-		}catch (Exception e) {
-			logger.error(String.format("Error while  getStringFromLDate : {}", ExceptionUtils.getStackTrace(e)));
-		}
-		return formattedString;
-	}
-	
-	/**
-	 * Find if the given date is before the current date.
-	 */
-	public static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
-		Boolean pastDt = Boolean.FALSE;
-		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-		if(currentDtTime != null && localDate != null) {
-			LocalDate currentDt = currentDtTime.toLocalDate();
-			if(localDate.isBefore(currentDt)) {
-				pastDt = Boolean.TRUE;
-			}
-		}
-		return pastDt;
-	}
-	
-	/**
-	 * Find if the given date is equal to the current date.
-	 */
-	public static Boolean findDtEqualsCurrenctDt(LocalDate localDate) {
-		Boolean sameDt = Boolean.FALSE;
-		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-		if(currentDtTime != null && localDate != null) {
-			LocalDate currentDt = currentDtTime.toLocalDate();
-			if(localDate.isEqual(currentDt)) {
-				sameDt = Boolean.TRUE;
-			}
-		}
-		return sameDt;
-	}
-	
-	/**
-	 * Find if date is not Saturday or Sunday
-	 */
-	
-	public static Boolean isWeekend(LocalDate date) {
-		DayOfWeek dayOfWeek = DayOfWeek.of(date.get(ChronoField.DAY_OF_WEEK));
-		return dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY ;
-	}
-	
-	
-	/**
-	 * find no of business days
-	 */
-	public static long noOfBusinessDays(LocalDate fromDate , LocalDate toDate) {
-		long days = ChronoUnit.DAYS.between(fromDate, toDate)+1 ;
-		long weekDays = 0;
-		for(int day = 0 ; day < days ; day++ ) {
-			LocalDate date = fromDate.plusDays(day);
-			if(!isWeekend(date)) {
-				weekDays+=1;
-			}
-		}
-		return weekDays;
-	}
-	
-	
-	 
 }
