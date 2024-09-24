@@ -1,50 +1,29 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
 public class DateUtilTest {
 
     @Test
-    public void testGetLocalTimeFromSkey() {
-        // Test case 1: A valid time skey with format "HHmmss"
-        long timeSkey1 = 123456L;
-        String format1 = "HHmmss";
-        LocalTime expectedLocalTime1 = LocalTime.of(12, 34, 56);
-        LocalTime actualLocalTime1 = DateUtil.getLocalTimeFromSkey(timeSkey1, format1);
-        assertEquals(expectedLocalTime1, actualLocalTime1);
+    public void testGetLocalDateTimeFromLongFiles() {
+        // Test case 1: A valid date modified value
+        long dateModified1 = 1695527200000L; // 2023-11-21 18:00:00 UTC
+        LocalDateTime expectedDateTime1 = LocalDateTime.of(2023, 11, 21, 18, 0);
+        LocalDateTime actualDateTime1 = DateUtil.getLocalDateTimeFromLongFiles(dateModified1);
+        assertEquals(expectedDateTime1, actualDateTime1);
 
-        // Test case 2: A valid time skey with format "HHmm"
-        long timeSkey2 = 0405L;
-        String format2 = "HHmm";
-        LocalTime expectedLocalTime2 = LocalTime.of(4, 5);
-        LocalTime actualLocalTime2 = DateUtil.getLocalTimeFromSkey(timeSkey2, format2);
-        assertEquals(expectedLocalTime2, actualLocalTime2);
+        // Test case 2: A date modified value with milliseconds
+        long dateModified2 = 1695527200123L; // 2023-11-21 18:00:00 UTC with milliseconds
+        LocalDateTime expectedDateTime2 = LocalDateTime.of(2023, 11, 21, 18, 0); // Milliseconds are ignored
+        LocalDateTime actualDateTime2 = DateUtil.getLocalDateTimeFromLongFiles(dateModified2);
+        assertEquals(expectedDateTime2, actualDateTime2);
 
-        // Test case 3: A valid time skey with format "HHmm" with leading zero
-        long timeSkey3 = 5L;
-        String format3 = "HHmm";
-        LocalTime expectedLocalTime3 = LocalTime.of(0, 5);
-        LocalTime actualLocalTime3 = DateUtil.getLocalTimeFromSkey(timeSkey3, format3);
-        assertEquals(expectedLocalTime3, actualLocalTime3);
-
-        // Test case 4: An invalid time skey with format "HHmmss"
-        long timeSkey4 = 1234567L;
-        String format4 = "HHmmss";
+        // Test case 3: An invalid date modified value
+        long dateModified3 = -1L;
         try {
-            DateUtil.getLocalTimeFromSkey(timeSkey4, format4);
-            // If the code reaches here, the test case has failed
-            fail("Expected an exception to be thrown");
-        } catch (Exception e) {
-            // The exception is expected
-        }
-
-        // Test case 5: An invalid format
-        long timeSkey5 = 123456L;
-        String format5 = "invalid_format";
-        try {
-            DateUtil.getLocalTimeFromSkey(timeSkey5, format5);
+            DateUtil.getLocalDateTimeFromLongFiles(dateModified3);
             // If the code reaches here, the test case has failed
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
