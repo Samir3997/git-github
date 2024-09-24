@@ -1,35 +1,50 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
 public class DateUtilTest {
 
     @Test
-    public void testGetSkeyFromLocalDate() {
-        // Test case 1: A valid date
-        LocalDate localDate1 = LocalDate.of(2023, 11, 10);
-        long expectedSkey1 = 20231110L;
-        long actualSkey1 = DateUtil.getSkeyFromLocalDate(localDate1);
+    public void testGetSkeyFromLocalDateTime() {
+        // Test case 1: A valid LocalDateTime with format "yyyyMMddHHmmss"
+        LocalDateTime localDateTime1 = LocalDateTime.of(2023, 11, 10, 12, 34, 56);
+        String format1 = "yyyyMMddHHmmss";
+        long expectedSkey1 = 20231110123456L;
+        long actualSkey1 = DateUtil.getSkeyFromLocalDateTime(localDateTime1, format1);
         assertEquals(expectedSkey1, actualSkey1);
 
-        // Test case 2: A date with leading zeros
-        LocalDate localDate2 = LocalDate.of(2001, 02, 03);
-        long expectedSkey2 = 20010203L;
-        long actualSkey2 = DateUtil.getSkeyFromLocalDate(localDate2);
+        // Test case 2: A valid LocalDateTime with format "yyyyMMddHHmm"
+        LocalDateTime localDateTime2 = LocalDateTime.of(2001, 02, 03, 04, 05);
+        String format2 = "yyyyMMddHHmm";
+        long expectedSkey2 = 200102030405L;
+        long actualSkey2 = DateUtil.getSkeyFromLocalDateTime(localDateTime2, format2);
         assertEquals(expectedSkey2, actualSkey2);
 
-        // Test case 3: A date with a year greater than 9999
-        LocalDate localDate3 = LocalDate.of(9999, 12, 31);
+        // Test case 3: A valid LocalDateTime with format "yyyyMMdd"
+        LocalDateTime localDateTime3 = LocalDateTime.of(9999, 12, 31, 23, 59, 59);
+        String format3 = "yyyyMMdd";
         long expectedSkey3 = 99991231L;
-        long actualSkey3 = DateUtil.getSkeyFromLocalDate(localDate3);
+        long actualSkey3 = DateUtil.getSkeyFromLocalDateTime(localDateTime3, format3);
         assertEquals(expectedSkey3, actualSkey3);
 
-        // Test case 4: A null date
-        LocalDate localDate4 = null;
+        // Test case 4: A null LocalDateTime
+        LocalDateTime localDateTime4 = null;
+        String format4 = "yyyyMMddHHmmss";
         long expectedSkey4 = 0L;
-        long actualSkey4 = DateUtil.getSkeyFromLocalDate(localDate4);
+        long actualSkey4 = DateUtil.getSkeyFromLocalDateTime(localDateTime4, format4);
         assertEquals(expectedSkey4, actualSkey4);
+
+        // Test case 5: An invalid format
+        LocalDateTime localDateTime5 = LocalDateTime.now();
+        String format5 = "invalid_format";
+        try {
+            DateUtil.getSkeyFromLocalDateTime(localDateTime5, format5);
+            // If the code reaches here, the test case has failed
+            fail("Expected an exception to be thrown");
+        } catch (Exception e) {
+            // The exception is expected
+        }
     }
 }
