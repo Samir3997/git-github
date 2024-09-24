@@ -8,17 +8,17 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testFindDtBeforeCurrenctDt() {
+    public void testFindDtEqualsCurrenctDt() {
         // Test case 1: Date before current date
         LocalDate pastDate = LocalDate.of(2023, 11, 10);
-        assertTrue(DateUtil.findDtBeforeCurrenctDt(pastDate));
+        assertFalse(DateUtil.findDtEqualsCurrenctDt(pastDate));
 
         // Test case 2: Date after current date
         LocalDate futureDate = LocalDate.of(2024, 12, 31);
-        assertFalse(DateUtil.findDtBeforeCurrenctDt(futureDate));
+        assertFalse(DateUtil.findDtEqualsCurrenctDt(futureDate));
 
         // Test case 3: Current date
         LocalDate currentDate = LocalDate.now();
-        assertFalse(DateUtil.findDtBeforeCurrenctDt(currentDate));
+        assertTrue(DateUtil.findDtEqualsCurrenctDt(currentDate));
     }
 }
