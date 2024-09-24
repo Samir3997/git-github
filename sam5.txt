@@ -1,4 +1,5 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
@@ -7,41 +8,17 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testGetStringFromLDate() {
-        // Test case 1: A valid LocalDate with format "yyyy-MM-dd"
-        LocalDate localDate1 = LocalDate.of(2023, 11, 10);
-        String format1 = "yyyy-MM-dd";
-        String expectedString1 = "2023-11-10";
-        String actualString1 = DateUtil.getStringFromLDate(localDate1, format1);
-        assertEquals(expectedString1, actualString1);
+    public void testFindDtBeforeCurrenctDt() {
+        // Test case 1: Date before current date
+        LocalDate pastDate = LocalDate.of(2023, 11, 10);
+        assertTrue(DateUtil.findDtBeforeCurrenctDt(pastDate));
 
-        // Test case 2: A valid LocalDate with format "dd/MM/yyyy"
-        LocalDate localDate2 = LocalDate.of(2001, 02, 03);
-        String format2 = "dd/MM/yyyy";
-        String expectedString2 = "03/02/2001";
-        String actualString2 = DateUtil.getStringFromLDate(localDate2, format2);
-        assertEquals(expectedString2, actualString2);
+        // Test case 2: Date after current date
+        LocalDate futureDate = LocalDate.of(2024, 12, 31);
+        assertFalse(DateUtil.findDtBeforeCurrenctDt(futureDate));
 
-        // Test case 3: A null LocalDate
-        LocalDate localDate3 = null;
-        String format3 = "yyyy-MM-dd";
-        try {
-            DateUtil.getStringFromLDate(localDate3, format3);
-            // If the code reaches here, the test case has failed
-            fail("Expected an exception to be thrown");
-        } catch (Exception e) {
-            // The exception is expected
-        }
-
-        // Test case 4: An invalid format
-        LocalDate localDate4 = LocalDate.of(2023, 11, 10);
-        String format4 = "invalid_format";
-        try {
-            DateUtil.getStringFromLDate(localDate4, format4);
-            // If the code reaches here, the test case has failed
-            fail("Expected an exception to be thrown");
-        } catch (Exception e) {
-            // The exception is expected
-        }
+        // Test case 3: Current date
+        LocalDate currentDate = LocalDate.now();
+        assertFalse(DateUtil.findDtBeforeCurrenctDt(currentDate));
     }
 }
