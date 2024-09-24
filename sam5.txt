@@ -7,23 +7,39 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testGetDateFormatYYYYMMDD() {
-        // Test case 1: A valid LocalDate
-        LocalDate localDate1 = LocalDate.of(2023, 11, 10);
-        String expectedFormat1 = "2023-11-10";
-        String actualFormat1 = DateUtil.getDateFormatYYYYMMDD(localDate1);
-        assertEquals(expectedFormat1, actualFormat1);
+    public void testConvertJulianSkeyToLocalDate() {
+        // Test case 1: A valid Julian skey
+        String skey1 = "2023035"; // March 5, 2023
+        LocalDate expectedLocalDate1 = LocalDate.of(2023, 3, 5);
+        LocalDate actualLocalDate1 = DateUtil.convertJulianSkeyToLocalDate(skey1);
+        assertEquals(expectedLocalDate1, actualLocalDate1);
 
-        // Test case 2: A LocalDate with leading zeros
-        LocalDate localDate2 = LocalDate.of(2001, 02, 03);
-        String expectedFormat2 = "2001-02-03";
-        String actualFormat2 = DateUtil.getDateFormatYYYYMMDD(localDate2);
-        assertEquals(expectedFormat2, actualFormat2);
+        // Test case 2: A Julian skey with leading zeros
+        String skey2 = "2001001"; // January 1, 2001
+        LocalDate expectedLocalDate2 = LocalDate.of(2001, 1, 1);
+        LocalDate actualLocalDate2 = DateUtil.convertJulianSkeyToLocalDate(skey2);
+        assertEquals(expectedLocalDate2, actualLocalDate2);
 
-        // Test case 3: A null LocalDate
-        LocalDate localDate3 = null;
+        // Test case 3: A Julian skey with a year greater than 9999
+        String skey3 = "9999365"; // December 31, 9999
+        LocalDate expectedLocalDate3 = LocalDate.of(9999, 12, 31);
+        LocalDate actualLocalDate3 = DateUtil.convertJulianSkeyToLocalDate(skey3);
+        assertEquals(expectedLocalDate3, actualLocalDate3);
+
+        // Test case 4: An invalid Julian skey (non-numeric)
+        String skey4 = "invalid_skey";
         try {
-            DateUtil.getDateFormatYYYYMMDD(localDate3);
+            DateUtil.convertJulianSkeyToLocalDate(skey4);
+            // If the code reaches here, the test case has failed
+            fail("Expected an exception to be thrown");
+        } catch (Exception e) {
+            // The exception is expected
+        }
+
+        // Test case 5: An invalid Julian skey (out of range)
+        String skey5 = "2000000"; // Invalid Julian skey (less than 1)
+        try {
+            DateUtil.convertJulianSkeyToLocalDate(skey5);
             // If the code reaches here, the test case has failed
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
