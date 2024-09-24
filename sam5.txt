@@ -1,29 +1,29 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 
 public class DateUtilTest {
 
     @Test
-    public void testGetLocalDateTimeFromLongFiles() {
-        // Test case 1: A valid date modified value
-        long dateModified1 = 1695527200000L; // 2023-11-21 18:00:00 UTC
-        LocalDateTime expectedDateTime1 = LocalDateTime.of(2023, 11, 21, 18, 0);
-        LocalDateTime actualDateTime1 = DateUtil.getLocalDateTimeFromLongFiles(dateModified1);
-        assertEquals(expectedDateTime1, actualDateTime1);
+    public void testGetDateFormatYYYYMMDD() {
+        // Test case 1: A valid LocalDate
+        LocalDate localDate1 = LocalDate.of(2023, 11, 10);
+        String expectedFormat1 = "2023-11-10";
+        String actualFormat1 = DateUtil.getDateFormatYYYYMMDD(localDate1);
+        assertEquals(expectedFormat1, actualFormat1);
 
-        // Test case 2: A date modified value with milliseconds
-        long dateModified2 = 1695527200123L; // 2023-11-21 18:00:00 UTC with milliseconds
-        LocalDateTime expectedDateTime2 = LocalDateTime.of(2023, 11, 21, 18, 0); // Milliseconds are ignored
-        LocalDateTime actualDateTime2 = DateUtil.getLocalDateTimeFromLongFiles(dateModified2);
-        assertEquals(expectedDateTime2, actualDateTime2);
+        // Test case 2: A LocalDate with leading zeros
+        LocalDate localDate2 = LocalDate.of(2001, 02, 03);
+        String expectedFormat2 = "2001-02-03";
+        String actualFormat2 = DateUtil.getDateFormatYYYYMMDD(localDate2);
+        assertEquals(expectedFormat2, actualFormat2);
 
-        // Test case 3: An invalid date modified value
-        long dateModified3 = -1L;
+        // Test case 3: A null LocalDate
+        LocalDate localDate3 = null;
         try {
-            DateUtil.getLocalDateTimeFromLongFiles(dateModified3);
+            DateUtil.getDateFormatYYYYMMDD(localDate3);
             // If the code reaches here, the test case has failed
             fail("Expected an exception to be thrown");
         } catch (Exception e) {
