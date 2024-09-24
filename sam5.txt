@@ -1,24 +1,39 @@
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-class YourClassNameTest {
+public class DateUtilTest {
 
     @Test
-    void testGetLocalDateTimeFromString() {
-        // Test valid input
-        String validDate = "Jan 25 2024 12:30 PM";
-        LocalDateTime expectedDateTime = LocalDateTime.of(2024, 1, 25, 12, 30);
-        LocalDateTime actualDateTime = YourClassName.getLocalDateTimeFromString(validDate);
-        assertEquals(expectedDateTime, actualDateTime);
+    public void testDaysBetween() {
+        // Test case 1: Two dates with a difference of 5 days
+        LocalDate startDate1 = LocalDate.of(2023, 11, 10);
+        LocalDate endDate1 = LocalDate.of(2023, 11, 15);
+        int expectedDays1 = 5;
+        int actualDays1 = DateUtil.daysBetween(startDate1, endDate1);
+        assertEquals(expectedDays1, actualDays1);
 
-        // Test invalid input (incorrect format)
-        String invalidDate1 = "2024-01-25 12:30";
-        assertThrows(DateTimeParseException.class, () -> YourClassName.getLocalDateTimeFromString(invalidDate1));
+        // Test case 2: Two dates with a difference of 1 day
+        LocalDate startDate2 = LocalDate.of(2024, 01, 01);
+        LocalDate endDate2 = LocalDate.of(2024, 01, 02);
+        int expectedDays2 = 1;
+        int actualDays2 = DateUtil.daysBetween(startDate2, endDate2);
+        assertEquals(expectedDays2, actualDays2);
 
-        // Test invalid input (invalid date)
-        String invalidDate2 = "February 30 2024 12:30 PM";
-        assertThrows(DateTimeParseException.class, () -> YourClassName.getLocalDateTimeFromString(invalidDate2));
+        // Test case 3: Start date is equal to end date
+        LocalDate startDate3 = LocalDate.of(2023, 12, 25);
+        LocalDate endDate3 = LocalDate.of(2023, 12, 25);
+        int expectedDays3 = 0;
+        int actualDays3 = DateUtil.daysBetween(startDate3, endDate3);
+        assertEquals(expectedDays3, actualDays3);
+
+        // Test case 4: Start date is after end date
+        LocalDate startDate4 = LocalDate.of(2024, 02, 10);
+        LocalDate endDate4 = LocalDate.of(2024, 02, 05);
+        int expectedDays4 = -5;
+        int actualDays4 = DateUtil.daysBetween(startDate4, endDate4);
+        assertEquals(expectedDays4, actualDays4);
     }
 }
