@@ -1,39 +1,39 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.time.LocalDate;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class DateUtilTest {
+import com.maybank.ilm.core.util.MTFieldDataTypeMap;
+
+public class MTFieldDataTypeMapTest {
+
+    private final MTFieldDataTypeMap map = new MTFieldDataTypeMap();
 
     @Test
-    public void testNoOfBusinessDays() {
-        // Test case 1: Two dates with a difference of 5 days, including 2 weekends
-        LocalDate startDate1 = LocalDate.of(2023, 11, 10); // Friday
-        LocalDate endDate1 = LocalDate.of(2023, 11, 15); // Wednesday
-        long expectedBusinessDays1 = 3; // Excluding weekends (Saturday and Sunday)
-        long actualBusinessDays1 = DateUtil.noOfBusinessDays(startDate1, endDate1);
-        assertEquals(expectedBusinessDays1, actualBusinessDays1);
-
-        // Test case 2: Two dates with a difference of 1 day, both weekdays
-        LocalDate startDate2 = LocalDate.of(2024, 01, 01); // Monday
-        LocalDate endDate2 = LocalDate.of(2024, 01, 02); // Tuesday
-        long expectedBusinessDays2 = 2; // Both days are weekdays
-        long actualBusinessDays2 = DateUtil.noOfBusinessDays(startDate2, endDate2);
-        assertEquals(expectedBusinessDays2, actualBusinessDays2);
-
-        // Test case 3: Start date is equal to end date, both weekdays
-        LocalDate startDate3 = LocalDate.of(2023, 12, 25); // Monday
-        LocalDate endDate3 = LocalDate.of(2023, 12, 25); // Monday
-        long expectedBusinessDays3 = 1; // Same day, so 1 business day
-        long actualBusinessDays3 = DateUtil.noOfBusinessDays(startDate3, endDate3);
-        assertEquals(expectedBusinessDays3, actualBusinessDays3);
-
-        // Test case 4: Start date is after end date
-        LocalDate startDate4 = LocalDate.of(2024, 02, 10); // Saturday
-        LocalDate endDate4 = LocalDate.of(2024, 02, 05); // Monday
-        long expectedBusinessDays4 = 0; // Start date is after end date, so no business days
-        long actualBusinessDays4 = DateUtil.noOfBusinessDays(startDate4, endDate4);
-        assertEquals(expectedBusinessDays4, actualBusinessDays4);
+    public void testFieldDTMap() {
+        // Test a few sample mappings
+        assertEquals("ILMCoreConstants.STRING", map.getFieldDTMap().get("16R_BLOCKNAME"));
+        assertEquals("ILMCoreConstants.BIGDECIMAL", map.getFieldDTMap().get("98E_DECIMALS"));
+        assertEquals("ILMCoreConstants.STRING", map.getFieldDTMap().get("70E_NARRATIVE_10"));
     }
+
+    @Test
+    public void testParentChildSeqMap() {
+        // Test parent-child relationships
+        assertTrue(map.getParentChildSeqMap().get("A").contains("A1_LINK_R"));
+        assertTrue(map.getParentChildSeqMap().get("E").contains("E1_SETPRTY_R"));
+    }
+
+    @Test
+    public void testSeqTagMap() {
+        // Test sequence tags
+        assertTrue(map.getSeqTagMap().get("A").contains("16R"));
+        assertTrue(map.getSeqTagMap().get("B1").contains("12B"));
+    }
+
+    // Add similar tests for seqTagMap102, seqTagMap204, seqTagMap203,
+    // parentChildSeqMap566, seqTagMap566, parentChildSeqMap535, and seqTagMap535
+
+    // ... other test cases as needed ...
 }
