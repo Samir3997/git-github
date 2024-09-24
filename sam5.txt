@@ -7,33 +7,29 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testGetDiffOfDatesInDays() {
-        // Test case 1: Two dates with a difference of 5 days
-        LocalDate startDate1 = LocalDate.of(2023, 11, 10);
-        LocalDate endDate1 = LocalDate.of(2023, 11, 15);
-        int expectedDays1 = 5;
-        int actualDays1 = DateUtil.getDiffOfDatesInDays(startDate1, endDate1);
-        assertEquals(expectedDays1, actualDays1);
+    public void testGetSkeyFromLocalDate() {
+        // Test case 1: A valid date
+        LocalDate localDate1 = LocalDate.of(2023, 11, 10);
+        long expectedSkey1 = 20231110L;
+        long actualSkey1 = DateUtil.getSkeyFromLocalDate(localDate1);
+        assertEquals(expectedSkey1, actualSkey1);
 
-        // Test case 2: Two dates with a difference of 1 day
-        LocalDate startDate2 = LocalDate.of(2024, 01, 01);
-        LocalDate endDate2 = LocalDate.of(2024, 01, 02);
-        int expectedDays2 = 1;
-        int actualDays2 = DateUtil.getDiffOfDatesInDays(startDate2, endDate2);
-        assertEquals(expectedDays2, actualDays2);
+        // Test case 2: A date with leading zeros
+        LocalDate localDate2 = LocalDate.of(2001, 02, 03);
+        long expectedSkey2 = 20010203L;
+        long actualSkey2 = DateUtil.getSkeyFromLocalDate(localDate2);
+        assertEquals(expectedSkey2, actualSkey2);
 
-        // Test case 3: Start date is equal to end date
-        LocalDate startDate3 = LocalDate.of(2023, 12, 25);
-        LocalDate endDate3 = LocalDate.of(2023, 12, 25);
-        int expectedDays3 = 0;
-        int actualDays3 = DateUtil.getDiffOfDatesInDays(startDate3, endDate3);
-        assertEquals(expectedDays3, actualDays3);
+        // Test case 3: A date with a year greater than 9999
+        LocalDate localDate3 = LocalDate.of(9999, 12, 31);
+        long expectedSkey3 = 99991231L;
+        long actualSkey3 = DateUtil.getSkeyFromLocalDate(localDate3);
+        assertEquals(expectedSkey3, actualSkey3);
 
-        // Test case 4: Start date is after end date
-        LocalDate startDate4 = LocalDate.of(2024, 02, 10);
-        LocalDate endDate4 = LocalDate.of(2024, 02, 05);
-        int expectedDays4 = -5;
-        int actualDays4 = DateUtil.getDiffOfDatesInDays(startDate4, endDate4);
-        assertEquals(expectedDays4, actualDays4);
+        // Test case 4: A null date
+        LocalDate localDate4 = null;
+        long expectedSkey4 = 0L;
+        long actualSkey4 = DateUtil.getSkeyFromLocalDate(localDate4);
+        assertEquals(expectedSkey4, actualSkey4);
     }
 }
