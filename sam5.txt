@@ -1,77 +1,65 @@
 import static org.mockito.Mockito.*;
 import static org.junit.Assert.*;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import java.util.*;
 
-public class MTFieldDataTypeMapTest {
+public class PaymentPosAnalyticsDaoImplTest {
+
+    @Mock
+    private EntityManager entityManager;
+
+    @Mock
+    private Query query;
 
     @InjectMocks
-    private MTFieldDataTypeMap mtFieldDataTypeMap; // Class to be tested
+    private PaymentPosAnalyticsDaoImpl paymentPosAnalyticsDaoImpl;
 
     @Before
     public void setUp() {
-        MockitoAnnotations.initMocks(this); // Initialize mocks
-        mtFieldDataTypeMap = new MTFieldDataTypeMap();
-        mtFieldDataTypeMap.init(); // Call init method to populate maps
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testFieldDTMapInitialization() {
-        // Test to ensure fieldDTMap is populated correctly
-        Map<String, String> fieldDTMap = mtFieldDataTypeMap.getFieldDTMap();
-        
-        // Verify that certain values are set correctly
-        assertEquals("ILMCoreConstants.STRING", fieldDTMap.get("16R_BLOCKNAME"));
-        assertEquals("ILMCoreConstants.STRING", fieldDTMap.get("20C_QUALIFIER"));
-        assertEquals("ILMCoreConstants.BIGDECIMAL", fieldDTMap.get("98E_DECIMALS"));
-    }
+    public void testSingleDayPayments() {
+        // Arrange
+        Integer nHighest = 5;
+        LocalDateTime toDate = LocalDateTime.now();
+        LocalDateTime fromDate = toDate.minusDays(1);
+        List<Long> entityMapSkey = Arrays.asList(1L, 2L);
+        String amtSign = "positive";
+        List<LocalDate> holidaysList = Collections.singletonList(LocalDateTime.now().toLocalDate());
 
-    @Test
-    public void testParentChildSeqMapInitialization() {
-        // Test parentChildSeqMap initialization
-        Map<String, List<String>> parentChildSeqMap = mtFieldDataTypeMap.getParentChildSeqMap();
-        
-        // Assert that key "A" has the correct value list
-        assertEquals(Arrays.asList("A1_LINK_R"), parentChildSeqMap.get("A"));
-        
-        // Assert key "E" contains multiple values
-        assertEquals(Arrays.asList("E1_SETPRTY_R", "E2_CSHPRTY_R", "E3_AMT_R"), parentChildSeqMap.get("E"));
-    }
+        List<AccountBalanceManagement> expectedResults = new ArrayList<>();
+        // Mock the EntityManager and Query behavior
+        when(entityManager.createNativeQuery(anyString(), eq(AccountBalanceManagement.class)))
+            .thenReturn(query);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(expectedResults);
 
-    @Test
-    public void testSeqTagMapInitialization() {
-        // Test seqTagMap initialization
-        Map<String, List<String>> seqTagMap = mtFieldDataTypeMap.getSeqTagMap();
+        // Act
+        List<AccountBalanceManagement> result = paymentPosAnalyticsDaoImpl.singleDayPayments(
+            nHighest, toDate, fromDate, entityMapSkey, amtSign, holidaysList);
 
-        // Assert the "A" key contains specific tags
-        assertEquals(Arrays.asList("16R", "20C", "23G", "98A", "98C", "98E", "22F", "22H", "16S"), seqTagMap.get("A"));
-    }
-    
-    @Test
-    public void testSeqTagMap102Initialization() {
-        // Test seqTagMap102 initialization
-        Map<String, List<String>> seqTagMap102 = mtFieldDataTypeMap.getSeqTagMap102();
-
-        // Assert the "A" key contains specific tags
-        assertEquals(Arrays.asList("20", "23", "51A", "50A", "50F", "50K", "52A", "52B", "52C", "26T", "77B", "71A", "36"), seqTagMap102.get("A"));
-    }
-
-    @Test
-    public void testInitMethodCalls() {
-        // Test that init() method is correctly initializing the maps
-        MTFieldDataTypeMap spyMap = spy(new MTFieldDataTypeMap());
-
-        // Call init and verify private methods are invoked
-        spyMap.init();
-
-        verify(spyMap).setFieldDTMap();
-        verify(spyMap).setParentChildSeqMap();
-        verify(spyMap).setSeqTagMap();
-        verify(spyMap).setSeqTagMap102();
-        verify(spyMap).setSeqTagMap204();
+        // Assert
+        assertEquals(expectedResults, result);
+        verify(entityManager).createNativeQuery(anyString(), eq(AccountBalanceManagement.class));
+        verify(query).setParameter("toDate", toDate);
+        verify(query).setParameter("fromDate", fromDate);
+        verify(query).setParameter("entityAcctMapSkey", entityMapSkey);
+        verify(query).setParameter("amtSign", amtSign);
+        verify(query).setParameter("holidays", holidaysList);
+        verify(query, times(1)).getResultList();
     }
 }
