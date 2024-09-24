@@ -1,7 +1,5 @@
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
@@ -9,17 +7,33 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testIsWeekend() {
-        // Test case 1: Saturday
-        LocalDate saturday = LocalDate.of(2023, 11, 11); // Assuming Saturday
-        assertTrue(DateUtil.isWeekend(saturday));
+    public void testNoOfBusinessDays() {
+        // Test case 1: Two dates with a difference of 5 days, including 2 weekends
+        LocalDate startDate1 = LocalDate.of(2023, 11, 10); // Friday
+        LocalDate endDate1 = LocalDate.of(2023, 11, 15); // Wednesday
+        long expectedBusinessDays1 = 3; // Excluding weekends (Saturday and Sunday)
+        long actualBusinessDays1 = DateUtil.noOfBusinessDays(startDate1, endDate1);
+        assertEquals(expectedBusinessDays1, actualBusinessDays1);
 
-        // Test case 2: Sunday
-        LocalDate sunday = LocalDate.of(2023, 11, 12); // Assuming Sunday
-        assertTrue(DateUtil.isWeekend(sunday));
+        // Test case 2: Two dates with a difference of 1 day, both weekdays
+        LocalDate startDate2 = LocalDate.of(2024, 01, 01); // Monday
+        LocalDate endDate2 = LocalDate.of(2024, 01, 02); // Tuesday
+        long expectedBusinessDays2 = 2; // Both days are weekdays
+        long actualBusinessDays2 = DateUtil.noOfBusinessDays(startDate2, endDate2);
+        assertEquals(expectedBusinessDays2, actualBusinessDays2);
 
-        // Test case 3: Weekday
-        LocalDate weekday = LocalDate.of(2023, 11, 13); // Assuming Monday
-        assertFalse(DateUtil.isWeekend(weekday));
+        // Test case 3: Start date is equal to end date, both weekdays
+        LocalDate startDate3 = LocalDate.of(2023, 12, 25); // Monday
+        LocalDate endDate3 = LocalDate.of(2023, 12, 25); // Monday
+        long expectedBusinessDays3 = 1; // Same day, so 1 business day
+        long actualBusinessDays3 = DateUtil.noOfBusinessDays(startDate3, endDate3);
+        assertEquals(expectedBusinessDays3, actualBusinessDays3);
+
+        // Test case 4: Start date is after end date
+        LocalDate startDate4 = LocalDate.of(2024, 02, 10); // Saturday
+        LocalDate endDate4 = LocalDate.of(2024, 02, 05); // Monday
+        long expectedBusinessDays4 = 0; // Start date is after end date, so no business days
+        long actualBusinessDays4 = DateUtil.noOfBusinessDays(startDate4, endDate4);
+        assertEquals(expectedBusinessDays4, actualBusinessDays4);
     }
 }
