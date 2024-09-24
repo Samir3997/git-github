@@ -1,6 +1,7 @@
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
@@ -8,17 +9,17 @@ import org.junit.jupiter.api.Test;
 public class DateUtilTest {
 
     @Test
-    public void testFindDtEqualsCurrenctDt() {
-        // Test case 1: Date before current date
-        LocalDate pastDate = LocalDate.of(2023, 11, 10);
-        assertFalse(DateUtil.findDtEqualsCurrenctDt(pastDate));
+    public void testIsWeekend() {
+        // Test case 1: Saturday
+        LocalDate saturday = LocalDate.of(2023, 11, 11); // Assuming Saturday
+        assertTrue(DateUtil.isWeekend(saturday));
 
-        // Test case 2: Date after current date
-        LocalDate futureDate = LocalDate.of(2024, 12, 31);
-        assertFalse(DateUtil.findDtEqualsCurrenctDt(futureDate));
+        // Test case 2: Sunday
+        LocalDate sunday = LocalDate.of(2023, 11, 12); // Assuming Sunday
+        assertTrue(DateUtil.isWeekend(sunday));
 
-        // Test case 3: Current date
-        LocalDate currentDate = LocalDate.now();
-        assertTrue(DateUtil.findDtEqualsCurrenctDt(currentDate));
+        // Test case 3: Weekday
+        LocalDate weekday = LocalDate.of(2023, 11, 13); // Assuming Monday
+        assertFalse(DateUtil.isWeekend(weekday));
     }
 }
