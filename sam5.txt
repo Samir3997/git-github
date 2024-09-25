@@ -1,65 +1,47 @@
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.ArrayList;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
+@RunWith(MockitoJUnitRunner.class)
 public class PaymentPosAnalyticsDaoImplTest {
 
     @Mock
-    private EntityManager entityManager;
-
-    @Mock
-    private Query query;
+    private EntityManager em;
 
     @InjectMocks
     private PaymentPosAnalyticsDaoImpl paymentPosAnalyticsDaoImpl;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
     @Test
     public void testSingleDayPayments() {
-        // Arrange
-        Integer nHighest = 5;
+        // Mock query creation
         LocalDateTime toDate = LocalDateTime.now();
-        LocalDateTime fromDate = toDate.minusDays(1);
+        LocalDateTime fromDate = LocalDateTime.now().minusDays(1);
         List<Long> entityMapSkey = Arrays.asList(1L, 2L);
-        String amtSign = "positive";
-        List<LocalDate> holidaysList = Collections.singletonList(LocalDateTime.now().toLocalDate());
+        String amtSign = "D";
+        List<LocalDate> holidaysList = Collections.emptyList();
+        List<String> messageTypes = new ArrayList<>(Arrays.asList("535", "940", "950"));
+        Integer nHighest = 5;
 
-        List<AccountBalanceManagement> expectedResults = new ArrayList<>();
-        // Mock the EntityManager and Query behavior
-        when(entityManager.createNativeQuery(anyString(), eq(AccountBalanceManagement.class)))
-            .thenReturn(query);
-        when(query.setParameter(anyString(), any())).thenReturn(query);
-        when(query.getResultList()).thenReturn(expectedResults);
+        Query mockQuery = Mockito.mock(Query.class);
+        Mockito.when(em.createNativeQuery(anyString(), any(Class.class))).thenReturn(mockQuery);
 
-        // Act
-        List<AccountBalanceManagement> result = paymentPosAnalyticsDaoImpl.singleDayPayments(
-            nHighest, toDate, fromDate, entityMapSkey, amtSign, holidaysList);
+        // Mock query execution
+        List<AccountBalanceManagement> resultList = new ArrayList<>();
+        Mockito.when(mockQuery.setParameter(anyString(), any())).thenReturn(mockQuery);
+        Mockito.when(mockQuery.setFirstResult(anyInt())).thenReturn(mockQuery);
+        Mockito.when(mockQuery.setMaxResults(anyInt())).thenReturn(mockQuery);
+        Mockito.when(mockQuery.getResultList()).thenReturn(resultList);
 
-        // Assert
-        assertEquals(expectedResults, result);
-        verify(entityManager).createNativeQuery(anyString(), eq(AccountBalanceManagement.class));
-        verify(query).setParameter("toDate", toDate);
-        verify(query).setParameter("fromDate", fromDate);
-        verify(query).setParameter("entityAcctMapSkey", entityMapSkey);
-        verify(query).setParameter("amtSign", amtSign);
-        verify(query).setParameter("holidays", holidaysList);
-        verify(query, times(1)).getResultList();
+        // Call the method under test
+        List<AccountBalanceManagement> actualResult = paymentPosAnalyticsDaoImpl.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey, amtSign, holidaysList);
+
+        // Assert the results
+        assertEquals(resultList, actualResult);
+
+        // Verify the query parameters
+        Mockito.verify(mockQuery).setParameter("toDate", toDate);
+        Mockito.verify(mockQuery).setParameter("fromDate", fromDate);
+        Mockito.verify(mockQuery).setParameter("entityAcctMapSkey", entityMapSkey);
+        Mockito.verify(mockQuery).setParameter("amtSign", amtSign);
+        Mockito.verify(mockQuery).setParameter("holidays", holidaysList);
+        Mockito.verify(mockQuery).setParameter("msgTypes", messageTypes);
+        Mockito.verify(mockQuery).setFirstResult(0);
+        Mockito.verify(mockQuery).setMaxResults(nHighest);
     }
 }
