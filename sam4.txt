@@ -1,3 +1,36 @@
-System.out.println("em: " + em);
-System.out.println("native query string: " + query.toString());
-System.out.println("AccountBalanceManagement.class: " + AccountBalanceManagement.class);
+@RunWith(SpringRunner.class)
+@SpringBootTest
+public class PaymentPosAnalyticsDaoImplTest {
+
+    @Autowired
+    private PaymentPosAnalyticsDao paymentPosAnalyticsDao;
+
+    @MockBean
+    private EntityManager em;
+
+    @Test
+    public void testGetAverageTRNPayment_shouldReturnAveragePaymentWithHolidays() {
+        // Mock data
+        LocalDateTime toDate = LocalDateTime.now();
+        LocalDateTime fromDate = toDate.minusDays(7);
+        List<Long> entityMapSkey = Arrays.asList(1L, 2L);
+        List<String> trnCodeList = Arrays.asList("TRN1", "TRN2");
+        String amtSign = "D";
+        List<LocalDate> holidaysList = Arrays.asList(
+            LocalDate.of(2024, 9, 1),
+            LocalDate.of(2024, 9, 2)
+        );
+        BigDecimal expectedAverage = new BigDecimal(100);
+
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(mockQuery.getSingleResult()).thenReturn(expectedAverage);
+        when(em.createNativeQuery(anyString(), anyClass())).thenReturn(mockQuery);
+
+        // Call the function
+        BigDecimal actualAverage = paymentPosAnalyticsDao.getAverageTRNPayment(toDate, fromDate, entityMapSkey, trnCodeList, amtSign, holidaysList);
+
+        // Assertions
+        assertEquals(expectedAverage, actualAverage);
+    }
+}
