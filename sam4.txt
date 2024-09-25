@@ -1,13 +1,1 @@
-// Hardcoded date (replace with your desired date if needed)
-LocalDateTime toDate = LocalDateTime.of(2024, 9, 25, 12, 24, 48); // Year, Month, Day, Hour, Minute, Second
-
-// Derive fromDate by subtracting 7 days from toDate
-LocalDateTime fromDate = toDate.minusDays(7);
-
-List<Long> entityMapSkey = Arrays.asList(1L, 2L);
-List<String> trnCodeList = Arrays.asList("TRN1", "TRN2");
-String amtSign = "D";
-List<LocalDate> holidaysList = Arrays.asList(
-    LocalDate.of(2024, 9, 1),
-    LocalDate.of(2024, 9, 2)
-);
+https://www.google.com/search?q=junit+with+mockito+for+joa+createNativeQuery&rlz=1C1GCEU_enMY1078MY1079&oq=junit+with+mockito+for+joa+createNativeQuery&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIJCAEQIRgKGKAB0gEINjU5OWowajmoAgCwAgE&sourceid=chrome&ie=UTF-8
