@@ -1,4 +1,13 @@
-                    
-SELECT (SUM(abm.N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE 
-				abm.D_BUSINESS_DT BETWEEN ('20-SEP-24 12.24.48.577000000 PM' AND '20-SEP-24 12.24.48.674000000 PM') AND abm.D_VALUE_DT NOT IN ('22-SEP-24') 
-                and abm.V_AMOUNT_SIGN= '+' AND abm.V_TRN_CODE IN ('IFT03') AND abm.N_ENTITY_ACCT_MAP_SKEY IN ('1');
+// Hardcoded date (replace with your desired date if needed)
+LocalDateTime toDate = LocalDateTime.of(2024, 9, 25, 12, 24, 48); // Year, Month, Day, Hour, Minute, Second
+
+// Derive fromDate by subtracting 7 days from toDate
+LocalDateTime fromDate = toDate.minusDays(7);
+
+List<Long> entityMapSkey = Arrays.asList(1L, 2L);
+List<String> trnCodeList = Arrays.asList("TRN1", "TRN2");
+String amtSign = "D";
+List<LocalDate> holidaysList = Arrays.asList(
+    LocalDate.of(2024, 9, 1),
+    LocalDate.of(2024, 9, 2)
+);
