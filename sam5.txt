@@ -1,47 +1,53 @@
-@RunWith(MockitoJUnitRunner.class)
-public class PaymentPosAnalyticsDaoImplTest {
+java.lang.NullPointerException
+	at com.maybank.ilm.core.dao.PaymentPosAnalyticsDaoImpl.getAverageTRNPayment(PaymentPosAnalyticsDaoImpl.java:345)
+	at com.maybank.ilm.junit.dao.PaymentPosAnalyticsDaoTest.testGetAverageTRNPayment_shouldReturnAveragePaymentWithHolidays(PaymentPosAnalyticsDaoTest.java:59)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
+	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
+	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
+	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
+	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
+	at org.mockito.internal.runners.DefaultInternalRunner$1$1.evaluate(DefaultInternalRunner.java:44)
+	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
+	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
+	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
+	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
+	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
+	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
+	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
+	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
+	at org.mockito.internal.runners.DefaultInternalRunner$1.run(DefaultInternalRunner.java:74)
+	at org.mockito.internal.runners.DefaultInternalRunner.run(DefaultInternalRunner.java:80)
+	at org.mockito.internal.runners.StrictRunner.run(StrictRunner.java:39)
+	at org.mockito.junit.MockitoJUnitRunner.run(MockitoJUnitRunner.java:163)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
+	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
+	at org.junit.vintage.engine.execution.RunnerExecutor.execute(RunnerExecutor.java:40)
+	at java.util.stream.ForEachOps$ForEachOp$OfRef.accept(Unknown Source)
+	at java.util.stream.ReferencePipeline$3$1.accept(Unknown Source)
+	at java.util.Iterator.forEachRemaining(Unknown Source)
+	at java.util.Spliterators$IteratorSpliterator.forEachRemaining(Unknown Source)
+	at java.util.stream.AbstractPipeline.copyInto(Unknown Source)
+	at java.util.stream.AbstractPipeline.wrapAndCopyInto(Unknown Source)
+	at java.util.stream.ForEachOps$ForEachOp.evaluateSequential(Unknown Source)
+	at java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(Unknown Source)
+	at java.util.stream.AbstractPipeline.evaluate(Unknown Source)
+	at java.util.stream.ReferencePipeline.forEach(Unknown Source)
+	at org.junit.vintage.engine.VintageTestEngine.executeAllChildren(VintageTestEngine.java:80)
+	at org.junit.vintage.engine.VintageTestEngine.execute(VintageTestEngine.java:71)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:229)
+	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:197)
+	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:211)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:191)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:137)
+	at org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference.run(JUnit5TestReference.java:89)
+	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:41)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:542)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:770)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:464)
+	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:210)
 
-    @Mock
-    private EntityManager em;
-
-    @InjectMocks
-    private PaymentPosAnalyticsDaoImpl paymentPosAnalyticsDaoImpl;
-
-    @Test
-    public void testSingleDayPayments() {
-        // Mock query creation
-        LocalDateTime toDate = LocalDateTime.now();
-        LocalDateTime fromDate = LocalDateTime.now().minusDays(1);
-        List<Long> entityMapSkey = Arrays.asList(1L, 2L);
-        String amtSign = "D";
-        List<LocalDate> holidaysList = Collections.emptyList();
-        List<String> messageTypes = new ArrayList<>(Arrays.asList("535", "940", "950"));
-        Integer nHighest = 5;
-
-        Query mockQuery = Mockito.mock(Query.class);
-        Mockito.when(em.createNativeQuery(anyString(), any(Class.class))).thenReturn(mockQuery);
-
-        // Mock query execution
-        List<AccountBalanceManagement> resultList = new ArrayList<>();
-        Mockito.when(mockQuery.setParameter(anyString(), any())).thenReturn(mockQuery);
-        Mockito.when(mockQuery.setFirstResult(anyInt())).thenReturn(mockQuery);
-        Mockito.when(mockQuery.setMaxResults(anyInt())).thenReturn(mockQuery);
-        Mockito.when(mockQuery.getResultList()).thenReturn(resultList);
-
-        // Call the method under test
-        List<AccountBalanceManagement> actualResult = paymentPosAnalyticsDaoImpl.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey, amtSign, holidaysList);
-
-        // Assert the results
-        assertEquals(resultList, actualResult);
-
-        // Verify the query parameters
-        Mockito.verify(mockQuery).setParameter("toDate", toDate);
-        Mockito.verify(mockQuery).setParameter("fromDate", fromDate);
-        Mockito.verify(mockQuery).setParameter("entityAcctMapSkey", entityMapSkey);
-        Mockito.verify(mockQuery).setParameter("amtSign", amtSign);
-        Mockito.verify(mockQuery).setParameter("holidays", holidaysList);
-        Mockito.verify(mockQuery).setParameter("msgTypes", messageTypes);
-        Mockito.verify(mockQuery).setFirstResult(0);
-        Mockito.verify(mockQuery).setMaxResults(nHighest);
-    }
-}
