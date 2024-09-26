@@ -1,1 +1,63 @@
-https://www.google.com/search?q=junit+with+mockito+for+joa+createNativeQuery&rlz=1C1GCEU_enMY1078MY1079&oq=junit+with+mockito+for+joa+createNativeQuery&gs_lcrp=EgZjaHJvbWUyBggAEEUYOTIJCAEQIRgKGKAB0gEINjU5OWowajmoAgCwAgE&sourceid=chrome&ie=UTF-8
+package com.maybank.ilm.junit.dao;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.mockito.junit.MockitoJUnitRunner;
+
+import com.maybank.ilm.core.dao.PaymentPosAnalyticsDaoImpl;
+import com.maybank.ilm.junit.config.AbstractServiceTest;
+
+@RunWith(MockitoJUnitRunner.class)
+public class PaymentPosAnalyticsDaoTest extends AbstractServiceTest{
+
+	@InjectMocks
+	PaymentPosAnalyticsDaoImpl paymentPosAnalyticsDaoImpl;
+	
+	@Mock
+	EntityManager em;
+	
+	@Before
+	public void dosetup() {
+		MockitoAnnotations.initMocks(this);
+		doSetup(paymentPosAnalyticsDaoImpl);
+	}
+	
+	 @Test
+	    public void testGetAverageTRNPayment_shouldReturnAveragePaymentWithHolidays() {
+	        LocalDateTime toDate = LocalDateTime.of(2024, 9, 25, 12, 25, 48);
+	        LocalDateTime fromDate = LocalDateTime.of(2024, 9, 24, 12, 24, 48);
+	        List<Long> entityMapSkey = Arrays.asList(1L);
+	        List<String> trnCodeList = Arrays.asList("IFT03");
+	        String amtSign = "+";
+	        List<LocalDate> holidaysList = Arrays.asList(
+	            LocalDate.of(2024, 9, 22)
+	        );
+	        BigDecimal expectedAverage = new BigDecimal(100);
+
+	        Query mockQuery = mock(Query.class);
+	        when(mockQuery.getSingleResult()).thenReturn(expectedAverage);
+	        Mockito.when(em.createNativeQuery(Matchers.anyString(), Matchers.any(Class.class))).thenReturn(mockQuery);
+
+	        BigDecimal actualAverage = paymentPosAnalyticsDaoImpl.getAverageTRNPayment(toDate, fromDate, entityMapSkey, trnCodeList, amtSign, holidaysList);
+
+	        assertEquals(expectedAverage, actualAverage);
+}
+}
