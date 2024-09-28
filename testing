@@ -2,359 +2,145 @@ package com.maybank.ilm.core.dao;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
-import com.maybank.ilm.dto.PastPosDTO;
-import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.core.dao.transformer.MatichingTxnTransformer;
+import com.maybank.ilm.core.util.QueryConstants;
+import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
+import com.maybank.ilm.dto.FundPositionDto;
+import com.maybank.ilm.dto.paymentmessagedetails.MatchingTxnDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.paymentmessagedetails.MetaFileInfo;
 
 @Repository
-public class PaymentPosAnalyticsDaoImpl implements PaymentPosAnalyticsDao {
+public class PaymentMessageDaoImpl implements PaymentMessageDao {
 
 	@Autowired
 	private EntityManager em;
-	
-	
-	
 
-	private List<PastPosDTO> collectQueryToDTO(Query query,Integer nHighest){//NOSONAR
-		List<Object[]> rows=query.getResultList();
-		System.out.println(rows+"Rows");
-		List<PastPosDTO> pastPeriod=new ArrayList<PastPosDTO>();
-		if(rows.size()>0) {
-			for (Object[] row : rows) {
-				PastPosDTO pastResult = new PastPosDTO();
-				pastResult.setAmount((BigDecimal) row[1]);
-				pastResult.setDate((String) row[0]);
-				pastPeriod.add(pastResult);
-				
-			}
-			}
-		System.out.println(pastPeriod+"past dto");
-		return pastPeriod;
-	}
-	
-	
-
-	
-
-	
-
+	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public List<AccountBalanceManagement> singleDayPayments(Integer nHighest, LocalDateTime toDate,
-			LocalDateTime fromDate, List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
-	
-			Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT DESC) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
-					+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign  AND N_ENTITY_ACCT_MAP_SKEY"
-					+ " IN (:entityAcctMapSkey) order by N_AMOUNT desc) where rnk=1 ",AccountBalanceManagement.class).unwrap(org.hibernate.query.NativeQuery.class);;
-			query.setParameter("toDate", toDate);
-			query.setParameter("fromDate", fromDate);
-			query.setParameter("entityAcctMapSkey", entityMapSkey);
-			query.setParameter("amtSign", amtSign);
-			if(!CollectionUtils.isEmpty(holidaysList)) {
-				query.setParameter("holidays", holidaysList);
-			}else {
-				query.setParameter("holidays", LocalDate.now().plusDays(1));
-			}
-			query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-			query.setFirstResult(0);
-			query.setMaxResults(nHighest);
-			
-			return query.getResultList();
-	}
-	
-	
-	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public List<AccountBalanceManagement> singleDayLowestPayments(Integer nHighest, LocalDateTime toDate,
-			LocalDateTime fromDate, List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
-	
-			Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT asc) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
-					+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign  AND N_ENTITY_ACCT_MAP_SKEY"
-					+ " IN (:entityAcctMapSkey) order by N_AMOUNT asc ) where rnk=1",AccountBalanceManagement.class).unwrap(org.hibernate.query.NativeQuery.class);;
-			query.setParameter("toDate", toDate);
-			query.setParameter("fromDate", fromDate);
-			query.setParameter("entityAcctMapSkey", entityMapSkey);
-			query.setParameter("amtSign", amtSign);
-			if(!CollectionUtils.isEmpty(holidaysList)) {
-				query.setParameter("holidays", holidaysList);
-			}else {
-				query.setParameter("holidays", LocalDate.now().plusDays(1));
-			}
-			query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-			query.setFirstResult(0);
-			query.setMaxResults(nHighest);
-			
-			return query.getResultList();
-	}
-	
-
-	@Override
-	public List<PastPosDTO> pastPeriodPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
-			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-		
-				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) DESC) where ROWNUM<=:nHighest");
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("nHighest", nHighest);
+	public List<AccountBalanceAggregationDTO> findFundPosition(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
+				.unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("entityMapSkey", positionDto.getEntityAcctMapSkeyMain());
+		query.setParameter("fromDate", positionDto.getStartDate());
+		query.setParameter("toDate", positionDto.getEndDate());
+		query.setParameter("rank", positionDto.getRank());
 		if(!CollectionUtils.isEmpty(holidaysList)) {
 			query.setParameter("holidays", holidaysList);
 		}else {
 			query.setParameter("holidays", LocalDate.now().plusDays(1));
 		}
-		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-		return collectQueryToDTO(query,nHighest);
-		
+		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
+		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
+			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
+			BeanUtils.copyProperties(it, balanceAggregationDTO);
+			return balanceAggregationDTO;
+		}).collect(Collectors.toList());
+		return accountBalanceAggregaDtos;
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<PastPosDTO> pastPeriodIndividualPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
-			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM (SELECT CAST(D_BUSINESS_DT AS VARCHAR(100)), N_AMOUNT FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-		
-				" ORDER BY N_AMOUNT DESC) where ROWNUM<=:nHighest");
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("nHighest", nHighest);
+	public List<AccountBalanceAggregationDTO> findAllFundPosition(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
+				.unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("entityMapSkey", positionDto.getEntityAcctMapSkeyMain());
+		query.setParameter("fromDate", positionDto.getStartDate());
+		query.setParameter("toDate", positionDto.getEndDate());
 		if(!CollectionUtils.isEmpty(holidaysList)) {
 			query.setParameter("holidays", holidaysList);
 		}else {
 			query.setParameter("holidays", LocalDate.now().plusDays(1));
 		}
-		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-		return collectQueryToDTO(query,nHighest);
-		
+		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
+		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
+			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
+			BeanUtils.copyProperties(it, balanceAggregationDTO);
+			return balanceAggregationDTO;
+		}).collect(Collectors.toList());
+		return accountBalanceAggregaDtos;
 	}
 	
-	
+	@SuppressWarnings("unchecked")
 	@Override
-	public List<PastPosDTO> pastPeriodLowestPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
-			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-		
-				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) ASC) where ROWNUM<=:nHighest");
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("nHighest", nHighest);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-		return collectQueryToDTO(query,nHighest);
-		
-	}
-	
-	
-	@Override
-	public List<PastPosDTO> pastPeriodIndividualLowestPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
-			List<Long> entityMapSkey, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM (SELECT CAST(D_BUSINESS_DT AS VARCHAR(100)), N_AMOUNT FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes) and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-		
-				" ORDER BY N_AMOUNT ASC) where ROWNUM<=:nHighest");
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("nHighest", nHighest);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-		return collectQueryToDTO(query,nHighest);
-		
-	}
-	
-
-	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public List<PastPosDTO> pastPeriodTRNPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
-			List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode) AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-		
-				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) DESC) where ROWNUM<=:nHighest");
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("trnCode", TRNCode);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("nHighest", nHighest);
+	public List<AccountBalanceAggregationDTO> findFundPositionForNegativeCumulative(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
+				.unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain());
+		query.setParameter("fromDate", positionDto.getStartDate());
+		query.setParameter("toDate", positionDto.getEndDate());
+		query.setParameter("rank", positionDto.getRank());
 		if(!CollectionUtils.isEmpty(holidaysList)) {
 			query.setParameter("holidays", holidaysList);
 		}else {
 			query.setParameter("holidays", LocalDate.now().plusDays(1));
 		}
 
-		return collectQueryToDTO(query,nHighest);
-		
+		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
+		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
+			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
+			BeanUtils.copyProperties(it, balanceAggregationDTO);
+			return balanceAggregationDTO;
+		}).collect(Collectors.toList());
+		return accountBalanceAggregaDtos;
 	}
 	
-	
+	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public List<PastPosDTO> pastPeriodLowestTRNPayments(Integer nHighest, LocalDateTime toDate, LocalDateTime fromDate,
-			List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM (SELECT SUBSTR(D_BUSINESS_DT,0,10),SUM(N_AMOUNT) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode) AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-		
-				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10) ORDER BY SUM(N_AMOUNT) ASC) where ROWNUM<=:nHighest");
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("trnCode", TRNCode);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("nHighest", nHighest);
+	public List<AccountBalanceAggregationDTO> findAllFundPositionForNegativeCumulative(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
+		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
+				.unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain());
+		query.setParameter("fromDate", positionDto.getStartDate());
+		query.setParameter("toDate", positionDto.getEndDate());
 		if(!CollectionUtils.isEmpty(holidaysList)) {
 			query.setParameter("holidays", holidaysList);
 		}else {
 			query.setParameter("holidays", LocalDate.now().plusDays(1));
 		}
-		return collectQueryToDTO(query,nHighest);
-		
+		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
+		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
+			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
+			BeanUtils.copyProperties(it, balanceAggregationDTO);
+			return balanceAggregationDTO;
+		}).collect(Collectors.toList());
+		return accountBalanceAggregaDtos;
 	}
-	
 
+	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public List<AccountBalanceManagement> getSingleDayTRNPayments(Integer nHighest, LocalDateTime toDate,
-			LocalDateTime fromDate, List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT DESC) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
-				+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode)  "
-				+ " AND N_ENTITY_ACCT_MAP_SKEY IN "
-				+ "(:entityAcctMapSkey) order by N_AMOUNT desc) where rnk=1",AccountBalanceManagement.class ).unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("toDate", toDate);
+	public List<String> getMatchingTrxnsMembers(BigDecimal ratio, String entityBIC,LocalDate fromDate){
+		Query query = em.createNativeQuery(QueryConstants.GETMATCHINGTRXNS).unwrap(org.hibernate.query.NativeQuery.class);
+		query.setParameter("ratio", ratio);
+		query.setParameter("entityBIC", entityBIC);
 		query.setParameter("fromDate", fromDate);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("trnCode", TRNCode);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		query.setFirstResult(0);
-		query.setMaxResults(nHighest);
-		System.out.println(nHighest+"sd "+TRNCode+" "+toDate+" "+fromDate+" "+entityMapSkey+""+query.getResultList());
 		return query.getResultList();
 	}
 	
-	
+	@SuppressWarnings("unchecked")
 	@Override
-	@Transactional(propagation = Propagation.NOT_SUPPORTED)
-	public List<AccountBalanceManagement> getSingleDayLowestTRNPayments(Integer nHighest, LocalDateTime toDate,
-			LocalDateTime fromDate, List<Long> entityMapSkey, List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT * FROM ( SELECT abm.* , ROW_NUMBER() over (partition by N_AMOUNT order by N_AMOUNT DESC) as rnk from PRC_ACCOUNT_BALANCE_MGMT abm where D_BUSINESS_DT Between :fromDate "
-				+ "AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode)  "
-				+ " AND N_ENTITY_ACCT_MAP_SKEY IN "
-				+ "(:entityAcctMapSkey) order by N_AMOUNT asc) where rnk=1",AccountBalanceManagement.class ).unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("trnCode", TRNCode);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		query.setFirstResult(0);
-		query.setMaxResults(nHighest);
-		System.out.println(nHighest+"sd "+TRNCode+" "+toDate+" "+fromDate+" "+entityMapSkey+""+query.getResultList());
+	public List<MetaFileInfo> getMetaFileInfo(){
+		Query query = em.createNamedQuery("GETMETAFILEINFO", MetaFileInfo.class);
 		return query.getResultList();
 	}
-
-	
-
 	@Override
-	public BigDecimal getAveragePayment(LocalDateTime toDate, LocalDateTime fromDate, List<Long> entityMapSkey,
-			String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT AVG(SUM(N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate  and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " + 
-				" AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes)" +
-				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10)").unwrap(org.hibernate.query.NativeQuery.class);;
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-		BigDecimal res=(BigDecimal)query.getSingleResult();
-		return res;
-	}
-
-	
-	@Override
-	public BigDecimal getTotalPayment(LocalDateTime toDate, LocalDateTime fromDate, List<Long> entityMapSkey,
-			String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT SUM(SUM(N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate  and V_AMOUNT_SIGN=:amtSign AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) " +  				
-				" AND D_VALUE_DT NOT IN (:holidays) AND V_MESSAGE_TYPE NOT IN (:msgTypes)" +
-				" GROUP BY SUBSTR(D_BUSINESS_DT,0,10)").unwrap(org.hibernate.query.NativeQuery.class);;
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("amtSign", amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		query.setParameter("msgTypes", new ArrayList<>(Arrays.asList("535","940","950")));
-		BigDecimal res=(BigDecimal)query.getSingleResult();
-		return res;
-	}
-	
-
-	@Override
-	public BigDecimal getAverageTRNPayment(LocalDateTime toDate, LocalDateTime fromDate, List<Long> entityMapSkey,
-			List<String> TRNCode, String amtSign, List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery("SELECT (SUM(N_AMOUNT)) FROM PRC_ACCOUNT_BALANCE_MGMT abm WHERE" + 
-				" D_BUSINESS_DT BETWEEN :fromDate AND :toDate AND D_VALUE_DT NOT IN (:holidays) and V_AMOUNT_SIGN=:amtSign AND V_TRN_CODE IN (:trnCode) AND N_ENTITY_ACCT_MAP_SKEY IN (:entityAcctMapSkey) ").unwrap(org.hibernate.query.NativeQuery.class);;
-		query.setParameter("toDate", toDate);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("trnCode",TRNCode);
-		query.setParameter("amtSign",amtSign);
-		query.setParameter("entityAcctMapSkey", entityMapSkey);
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		BigDecimal res=(BigDecimal)query.getSingleResult();
-		System.out.println(res);
-		return res;
+	public List<MatchingTxnDTO> getMatchingTransaction(String entityBIC, LocalDate fromDate) {
+		String query =QueryConstants.FINDMATCHINGTXN;
+		Query qry = em.createNativeQuery(query).unwrap(org.hibernate.query.Query.class)
+				.setResultTransformer(new MatichingTxnTransformer());
+		qry.setParameter("fromDate", fromDate);
+		qry.setParameter("entityBIC", entityBIC);
+		return qry.getResultList();	
 	}
 }
