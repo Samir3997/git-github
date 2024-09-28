@@ -3,6 +3,8 @@ package com.maybank.ilm.core.dao;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,8 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import com.maybank.ilm.entity.paymentmessagedetails.MetaFileInfo;
 
 public class PaymentMessageDaoImplTest {
 
@@ -34,27 +34,35 @@ public class PaymentMessageDaoImplTest {
     }
 
     @Test
-    public void testGetMetaFileInfo() {
+    public void testGetMatchingTrxnsMembers() {
         // Arrange
-        MetaFileInfo metaFileInfo1 = new MetaFileInfo(); // Create sample MetaFileInfo objects
-        MetaFileInfo metaFileInfo2 = new MetaFileInfo();
-        List<MetaFileInfo> expectedList = Arrays.asList(metaFileInfo1, metaFileInfo2);
+        BigDecimal ratio = BigDecimal.valueOf(0.5);
+        String entityBIC = "TESTBIC";
+        LocalDate fromDate = LocalDate.now();
+
+        List<String> expectedList = Arrays.asList("Member1", "Member2");
 
         // Mock the behavior of EntityManager and Query
-        when(em.createNamedQuery("GETMETAFILEINFO", MetaFileInfo.class)).thenReturn(query);
+        when(em.createNativeQuery(QueryConstants.GETMATCHINGTRXNS)).thenReturn(query);
+        when(query.setParameter("ratio", ratio)).thenReturn(query);
+        when(query.setParameter("entityBIC", entityBIC)).thenReturn(query);
+        when(query.setParameter("fromDate", fromDate)).thenReturn(query);
         when(query.getResultList()).thenReturn(expectedList);
 
         // Act
-        List<MetaFileInfo> result = paymentMessageDao.getMetaFileInfo();
+        List<String> result = paymentMessageDao.getMatchingTrxnsMembers(ratio, entityBIC, fromDate);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(2, result.size());
-        assertSame(metaFileInfo1, result.get(0));
-        assertSame(metaFileInfo2, result.get(1));
+        assertNotNull(result, "The result should not be null");
+        assertEquals(2, result.size(), "The size of the result should match the expected size");
+        assertEquals("Member1", result.get(0), "The first member should match 'Member1'");
+        assertEquals("Member2", result.get(1), "The second member should match 'Member2'");
 
         // Verify interactions
-        verify(em).createNamedQuery("GETMETAFILEINFO", MetaFileInfo.class);
+        verify(em).createNativeQuery(QueryConstants.GETMATCHINGTRXNS);
+        verify(query).setParameter("ratio", ratio);
+        verify(query).setParameter("entityBIC", entityBIC);
+        verify(query).setParameter("fromDate", fromDate);
         verify(query).getResultList();
     }
 }
