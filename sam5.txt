@@ -3,9 +3,9 @@ package com.maybank.ilm.core.dao;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -16,6 +16,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.maybank.ilm.dto.FundPositionDto;
+import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
 
 public class PaymentMessageDaoImplTest {
 
@@ -34,35 +38,48 @@ public class PaymentMessageDaoImplTest {
     }
 
     @Test
-    public void testGetMatchingTrxnsMembers() {
+    public void testFindAllFundPositionForNegativeCumulative() {
         // Arrange
-        BigDecimal ratio = BigDecimal.valueOf(0.5);
-        String entityBIC = "TESTBIC";
-        LocalDate fromDate = LocalDate.now();
+        FundPositionDto positionDto = new FundPositionDto();
+        positionDto.setEntityAcctMapSkeyMain("TEST_SKEY");
+        positionDto.setStartDate(LocalDate.now().minusDays(10));
+        positionDto.setEndDate(LocalDate.now());
+        positionDto.setRank(1);
 
-        List<String> expectedList = Arrays.asList("Member1", "Member2");
+        String queryStr = "SELECT * FROM AccountBalanceAggregation WHERE ..."; // Your actual query
+        List<AccountBalanceAggregation> accountBalanceAggregations = Arrays.asList(
+            new AccountBalanceAggregation(), // Create sample entities
+            new AccountBalanceAggregation()
+        );
+        List<AccountBalanceAggregationDTO> expectedList = Arrays.asList(
+            new AccountBalanceAggregationDTO(), 
+            new AccountBalanceAggregationDTO()
+        );
 
         // Mock the behavior of EntityManager and Query
-        when(em.createNativeQuery(QueryConstants.GETMATCHINGTRXNS)).thenReturn(query);
-        when(query.setParameter("ratio", ratio)).thenReturn(query);
-        when(query.setParameter("entityBIC", entityBIC)).thenReturn(query);
-        when(query.setParameter("fromDate", fromDate)).thenReturn(query);
-        when(query.getResultList()).thenReturn(expectedList);
+        when(em.createNativeQuery(queryStr, AccountBalanceAggregation.class)).thenReturn(query);
+        when(query.setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain())).thenReturn(query);
+        when(query.setParameter("fromDate", positionDto.getStartDate())).thenReturn(query);
+        when(query.setParameter("toDate", positionDto.getEndDate())).thenReturn(query);
+        when(query.setParameter("holidays", LocalDate.now().plusDays(1))).thenReturn(query);
+        when(query.getResultList()).thenReturn(accountBalanceAggregations);
 
         // Act
-        List<String> result = paymentMessageDao.getMatchingTrxnsMembers(ratio, entityBIC, fromDate);
+        List<AccountBalanceAggregationDTO> result = paymentMessageDao.findAllFundPositionForNegativeCumulative(positionDto, queryStr, Collections.emptyList());
 
         // Assert
         assertNotNull(result, "The result should not be null");
         assertEquals(2, result.size(), "The size of the result should match the expected size");
-        assertEquals("Member1", result.get(0), "The first member should match 'Member1'");
-        assertEquals("Member2", result.get(1), "The second member should match 'Member2'");
+
+        // Optionally check that the result was transformed correctly
+        // (You may want to verify that the transformation from AccountBalanceAggregation to AccountBalanceAggregationDTO was done correctly)
 
         // Verify interactions
-        verify(em).createNativeQuery(QueryConstants.GETMATCHINGTRXNS);
-        verify(query).setParameter("ratio", ratio);
-        verify(query).setParameter("entityBIC", entityBIC);
-        verify(query).setParameter("fromDate", fromDate);
+        verify(em).createNativeQuery(queryStr, AccountBalanceAggregation.class);
+        verify(query).setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain());
+        verify(query).setParameter("fromDate", positionDto.getStartDate());
+        verify(query).setParameter("toDate", positionDto.getEndDate());
+        verify(query).setParameter("holidays", LocalDate.now().plusDays(1));
         verify(query).getResultList();
     }
 }
