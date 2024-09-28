@@ -3,7 +3,6 @@ package com.maybank.ilm.core.dao;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -18,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.maybank.ilm.dto.paymentmessagedetails.MatchingTxnDTO;
-import com.maybank.ilm.entity.paymentmessagedetails.MetaFileInfo;
 import com.maybank.ilm.core.dao.transformer.MatichingTxnTransformer;
 
 public class PaymentMessageDaoImplTest {
@@ -31,9 +29,6 @@ public class PaymentMessageDaoImplTest {
 
     @Mock
     private Query query;
-
-    @Mock
-    private MatichingTxnTransformer matchingTxnTransformer;
 
     @BeforeEach
     public void setUp() {
@@ -51,11 +46,13 @@ public class PaymentMessageDaoImplTest {
         List<MatchingTxnDTO> expectedList = Collections.singletonList(matchingTxnDTO);
 
         when(em.createNativeQuery(queryString)).thenReturn(query);
-        when(query.unwrap(org.hibernate.query.Query.class)).thenReturn(query);
-        when(query.setResultTransformer(any())).thenReturn(query);
-        when(query.setParameter("fromDate", fromDate)).thenReturn(query);
-        when(query.setParameter("entityBIC", entityBIC)).thenReturn(query);
-        when(query.getResultList()).thenReturn(expectedList);
+        // Cast to org.hibernate.query.NativeQuery
+        org.hibernate.query.NativeQuery<MatchingTxnDTO> hibernateQuery = mock(org.hibernate.query.NativeQuery.class);
+        when(query.unwrap(org.hibernate.query.NativeQuery.class)).thenReturn(hibernateQuery);
+        when(hibernateQuery.setResultTransformer(any())).thenReturn(hibernateQuery);
+        when(hibernateQuery.setParameter("fromDate", fromDate)).thenReturn(hibernateQuery);
+        when(hibernateQuery.setParameter("entityBIC", entityBIC)).thenReturn(hibernateQuery);
+        when(hibernateQuery.getResultList()).thenReturn(expectedList);
 
         // Act
         List<MatchingTxnDTO> result = paymentMessageDao.getMatchingTransaction(entityBIC, fromDate);
@@ -67,10 +64,10 @@ public class PaymentMessageDaoImplTest {
 
         // Verify interactions
         verify(em).createNativeQuery(queryString);
-        verify(query).unwrap(org.hibernate.query.Query.class);
-        verify(query).setResultTransformer(any());
-        verify(query).setParameter("fromDate", fromDate);
-        verify(query).setParameter("entityBIC", entityBIC);
-        verify(query).getResultList();
+        verify(query).unwrap(org.hibernate.query.NativeQuery.class);
+        verify(hibernateQuery).setResultTransformer(any());
+        verify(hibernateQuery).setParameter("fromDate", fromDate);
+        verify(hibernateQuery).setParameter("entityBIC", entityBIC);
+        verify(hibernateQuery).getResultList();
     }
 }
