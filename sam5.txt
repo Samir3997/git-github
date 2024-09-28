@@ -1,53 +1,76 @@
-java.lang.NullPointerException
-	at com.maybank.ilm.core.dao.PaymentPosAnalyticsDaoImpl.getAverageTRNPayment(PaymentPosAnalyticsDaoImpl.java:345)
-	at com.maybank.ilm.junit.dao.PaymentPosAnalyticsDaoTest.testGetAverageTRNPayment_shouldReturnAveragePaymentWithHolidays(PaymentPosAnalyticsDaoTest.java:59)
-	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
-	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
-	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
-	at java.lang.reflect.Method.invoke(Unknown Source)
-	at org.junit.runners.model.FrameworkMethod$1.runReflectiveCall(FrameworkMethod.java:50)
-	at org.junit.internal.runners.model.ReflectiveCallable.run(ReflectiveCallable.java:12)
-	at org.junit.runners.model.FrameworkMethod.invokeExplosively(FrameworkMethod.java:47)
-	at org.junit.internal.runners.statements.InvokeMethod.evaluate(InvokeMethod.java:17)
-	at org.junit.internal.runners.statements.RunBefores.evaluate(RunBefores.java:26)
-	at org.mockito.internal.runners.DefaultInternalRunner$1$1.evaluate(DefaultInternalRunner.java:44)
-	at org.junit.runners.ParentRunner.runLeaf(ParentRunner.java:325)
-	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:78)
-	at org.junit.runners.BlockJUnit4ClassRunner.runChild(BlockJUnit4ClassRunner.java:57)
-	at org.junit.runners.ParentRunner$3.run(ParentRunner.java:290)
-	at org.junit.runners.ParentRunner$1.schedule(ParentRunner.java:71)
-	at org.junit.runners.ParentRunner.runChildren(ParentRunner.java:288)
-	at org.junit.runners.ParentRunner.access$000(ParentRunner.java:58)
-	at org.junit.runners.ParentRunner$2.evaluate(ParentRunner.java:268)
-	at org.junit.runners.ParentRunner.run(ParentRunner.java:363)
-	at org.mockito.internal.runners.DefaultInternalRunner$1.run(DefaultInternalRunner.java:74)
-	at org.mockito.internal.runners.DefaultInternalRunner.run(DefaultInternalRunner.java:80)
-	at org.mockito.internal.runners.StrictRunner.run(StrictRunner.java:39)
-	at org.mockito.junit.MockitoJUnitRunner.run(MockitoJUnitRunner.java:163)
-	at org.junit.runner.JUnitCore.run(JUnitCore.java:137)
-	at org.junit.runner.JUnitCore.run(JUnitCore.java:115)
-	at org.junit.vintage.engine.execution.RunnerExecutor.execute(RunnerExecutor.java:40)
-	at java.util.stream.ForEachOps$ForEachOp$OfRef.accept(Unknown Source)
-	at java.util.stream.ReferencePipeline$3$1.accept(Unknown Source)
-	at java.util.Iterator.forEachRemaining(Unknown Source)
-	at java.util.Spliterators$IteratorSpliterator.forEachRemaining(Unknown Source)
-	at java.util.stream.AbstractPipeline.copyInto(Unknown Source)
-	at java.util.stream.AbstractPipeline.wrapAndCopyInto(Unknown Source)
-	at java.util.stream.ForEachOps$ForEachOp.evaluateSequential(Unknown Source)
-	at java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(Unknown Source)
-	at java.util.stream.AbstractPipeline.evaluate(Unknown Source)
-	at java.util.stream.ReferencePipeline.forEach(Unknown Source)
-	at org.junit.vintage.engine.VintageTestEngine.executeAllChildren(VintageTestEngine.java:80)
-	at org.junit.vintage.engine.VintageTestEngine.execute(VintageTestEngine.java:71)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:229)
-	at org.junit.platform.launcher.core.DefaultLauncher.lambda$execute$6(DefaultLauncher.java:197)
-	at org.junit.platform.launcher.core.DefaultLauncher.withInterceptedStreams(DefaultLauncher.java:211)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:191)
-	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:137)
-	at org.eclipse.jdt.internal.junit5.runner.JUnit5TestReference.run(JUnit5TestReference.java:89)
-	at org.eclipse.jdt.internal.junit.runner.TestExecution.run(TestExecution.java:41)
-	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:542)
-	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.runTests(RemoteTestRunner.java:770)
-	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.run(RemoteTestRunner.java:464)
-	at org.eclipse.jdt.internal.junit.runner.RemoteTestRunner.main(RemoteTestRunner.java:210)
+package com.maybank.ilm.core.dao;
 
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import com.maybank.ilm.dto.paymentmessagedetails.MatchingTxnDTO;
+import com.maybank.ilm.entity.paymentmessagedetails.MetaFileInfo;
+import com.maybank.ilm.core.dao.transformer.MatichingTxnTransformer;
+
+public class PaymentMessageDaoImplTest {
+
+    @InjectMocks
+    private PaymentMessageDaoImpl paymentMessageDao;
+
+    @Mock
+    private EntityManager em;
+
+    @Mock
+    private Query query;
+
+    @Mock
+    private MatichingTxnTransformer matchingTxnTransformer;
+
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+    }
+
+    @Test
+    public void testGetMatchingTransaction() {
+        // Arrange
+        String entityBIC = "TESTBIC";
+        LocalDate fromDate = LocalDate.now();
+        String queryString = QueryConstants.FINDMATCHINGTXN;
+
+        MatchingTxnDTO matchingTxnDTO = new MatchingTxnDTO(); // Create a sample DTO
+        List<MatchingTxnDTO> expectedList = Collections.singletonList(matchingTxnDTO);
+
+        when(em.createNativeQuery(queryString)).thenReturn(query);
+        when(query.unwrap(org.hibernate.query.Query.class)).thenReturn(query);
+        when(query.setResultTransformer(any())).thenReturn(query);
+        when(query.setParameter("fromDate", fromDate)).thenReturn(query);
+        when(query.setParameter("entityBIC", entityBIC)).thenReturn(query);
+        when(query.getResultList()).thenReturn(expectedList);
+
+        // Act
+        List<MatchingTxnDTO> result = paymentMessageDao.getMatchingTransaction(entityBIC, fromDate);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertSame(matchingTxnDTO, result.get(0));
+
+        // Verify interactions
+        verify(em).createNativeQuery(queryString);
+        verify(query).unwrap(org.hibernate.query.Query.class);
+        verify(query).setResultTransformer(any());
+        verify(query).setParameter("fromDate", fromDate);
+        verify(query).setParameter("entityBIC", entityBIC);
+        verify(query).getResultList();
+    }
+}
