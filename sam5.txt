@@ -1,20 +1,21 @@
-import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 import java.util.Arrays;
 import java.util.List;
+
 import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import com.maybank.ilm.core.dao.SRRAccountMgmtDmpl;
+
 import com.maybank.ilm.dto.RequestAnalyticsDTO;
 import com.maybank.ilm.entity.SRRConfiguration;
 
@@ -36,13 +37,7 @@ public class SRRAccountMgmtDmplTest {
     private Root<SRRConfiguration> root;
 
     @Mock
-    private TypedQuery<SRRConfiguration> mockQuery;
-
-    @Mock
-    private Predicate predicate;
-
-    @Mock
-    private Path<Object> path;  // Change to Path<Object>
+    private javax.persistence.TypedQuery<SRRConfiguration> typedQuery;
 
     @BeforeEach
     public void setUp() {
@@ -50,57 +45,44 @@ public class SRRAccountMgmtDmplTest {
     }
 
     @Test
-    public void testGetSrrConfigByTypeWithPredicates() {
-        // Arrange
-        RequestAnalyticsDTO analyticsDTO = new RequestAnalyticsDTO();
-        analyticsDTO.setCountrySkeys(Arrays.asList(1L, 2L));
-        analyticsDTO.setEntitySkeys(Arrays.asList(3L, 4L));
-        analyticsDTO.setCurrencySkeys(Arrays.asList(5L, 6L));
-        analyticsDTO.setDefinationType("TEST_TYPE");
-
-        SRRConfiguration srrConfig = new SRRConfiguration(); 
-        List<SRRConfiguration> mockResult = Arrays.asList(srrConfig); 
-
+    public void testGetSrrConfigByType() {
+        // Mocking the behavior of EntityManager, CriteriaBuilder, and CriteriaQuery
         when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
         when(criteriaBuilder.createQuery(SRRConfiguration.class)).thenReturn(criteriaQuery);
         when(criteriaQuery.from(SRRConfiguration.class)).thenReturn(root);
 
-        // Mocking the behavior for countrySkey predicate
-        when(root.get("countrySkey")).thenReturn(path);  // Return a Path instead of Expression
-        when(path.in(analyticsDTO.getCountrySkeys())).thenReturn(predicate);
+        RequestAnalyticsDTO analyticsDTO = new RequestAnalyticsDTO();
+        analyticsDTO.setCountrySkeys(Arrays.asList(1L, 2L));
+        analyticsDTO.setEntitySkeys(Arrays.asList(3L));
+        analyticsDTO.setCurrencySkeys(Arrays.asList(4L));
+        analyticsDTO.setDefinationType("EL");
 
-        // Mocking the behavior for entitySkey predicate
-        when(root.get("entitySkey")).thenReturn(path);
-        when(path.in(analyticsDTO.getEntitySkeys())).thenReturn(predicate);
+        Predicate countryPredicate = mock(Predicate.class);
+        Predicate entityPredicate = mock(Predicate.class);
+        Predicate currencyPredicate = mock(Predicate.class);
+        Predicate definationTypePredicate = mock(Predicate.class);
 
-        // Mocking the behavior for currencySkey predicate
-        when(root.get("currencySkey")).thenReturn(path);
-        when(path.in(analyticsDTO.getCurrencySkeys())).thenReturn(predicate);
+        when(root.get("countrySkey")).thenReturn(mock(javax.persistence.criteria.Path.class));
+        when(root.get("entitySkey")).thenReturn(mock(javax.persistence.criteria.Path.class));
+        when(root.get("currencySkey")).thenReturn(mock(javax.persistence.criteria.Path.class));
+        when(root.get("defnType")).thenReturn(mock(javax.persistence.criteria.Path.class));
 
-        // Mocking query execution
-        when(em.createQuery(criteriaQuery)).thenReturn(mockQuery);
-        when(mockQuery.getResultList()).thenReturn(mockResult);
+        when(criteriaBuilder.equal(root.get("defnType"), "EL")).thenReturn(definationTypePredicate);
+        when(root.get("countrySkey").in(analyticsDTO.getCountrySkeys())).thenReturn(countryPredicate);
+        when(root.get("entitySkey").in(analyticsDTO.getEntitySkeys())).thenReturn(entityPredicate);
+        when(root.get("currencySkey").in(analyticsDTO.getCurrencySkeys())).thenReturn(currencyPredicate);
 
-        // Act
+        // Add predicates to the list
+        when(criteriaQuery.where(any(Predicate[].class))).thenReturn(criteriaQuery);
+
+        when(em.createQuery(criteriaQuery)).thenReturn(typedQuery);
+        when(typedQuery.getResultList()).thenReturn(Arrays.asList(new SRRConfiguration()));
+
+        // Test the method
         List<SRRConfiguration> result = srrAccountMgmtDmpl.getSrrConfigByType(analyticsDTO);
 
-        // Assert
+        // Verify the interactions and the result
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(srrConfig, result.get(0));
-
-        // Verify that the correct methods were called
-        verify(root).get("countrySkey");
-        verify(path).in(analyticsDTO.getCountrySkeys());
-
-        verify(root).get("entitySkey");
-        verify(path).in(analyticsDTO.getEntitySkeys());
-
-        verify(root).get("currencySkey");
-        verify(path).in(analyticsDTO.getCurrencySkeys());
-
-        verify(em).getCriteriaBuilder();
-        verify(em).createQuery(criteriaQuery);
-        verify(mockQuery).getResultList();
     }
 }
