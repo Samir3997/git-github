@@ -1,1 +1,1 @@
-The method setResultTransformer(Matchers.any()) is undefined for the type Query
+The method thenReturn(Path<Object>) in the type OngoingStubbing<Path<Object>> is not applicable for the arguments (Expression<Object>)
