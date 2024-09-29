@@ -3,6 +3,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.Arrays;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
@@ -36,6 +37,9 @@ public class SRRAccountMgmtDmplTest {
     @Mock
     private Predicate predicate;
 
+    @Mock
+    private TypedQuery<SRRConfiguration> mockQuery;  // Define the mockQuery here
+
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -63,7 +67,7 @@ public class SRRAccountMgmtDmplTest {
         when(root.get("entitySkey").in(analyticsDTO.getEntitySkeys())).thenReturn(predicate);
         when(root.get("currencySkey").in(analyticsDTO.getCurrencySkeys())).thenReturn(predicate);
         
-        when(em.createQuery(criteriaQuery)).thenReturn(mockQuery);
+        when(em.createQuery(criteriaQuery)).thenReturn(mockQuery);  // Return mockQuery when createQuery is called
         when(mockQuery.getResultList()).thenReturn(mockResult);
 
         // Act
