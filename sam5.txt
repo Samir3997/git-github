@@ -14,10 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
 import com.maybank.ilm.dto.RequestAnalyticsDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import org.springframework.beans.BeanUtils;
+import com.maybank.ilm.entity.SRRConfiguration;
+import org.hibernate.query.NativeQuery;
 
 public class SRRAccountMgmtDmplTest {
 
@@ -36,60 +35,59 @@ public class SRRAccountMgmtDmplTest {
     }
 
     @Test
-    public void testGetAccountDetails() {
+    public void testFindSrrConfigWithDefnTypeAndDate() {
         // Mocking RequestAnalyticsDTO
         RequestAnalyticsDTO analyticsDTO = new RequestAnalyticsDTO();
-        analyticsDTO.setEntityAcctmapSkey(123L);
-        analyticsDTO.setFromDate(LocalDate.of(2023, 1, 1));
-        analyticsDTO.setToDate(LocalDate.of(2023, 1, 31));
-        analyticsDTO.setAggrInd("Y");
+        analyticsDTO.setCountrySkeys(Arrays.asList(1L, 2L));
+        analyticsDTO.setEntitySkeys(Arrays.asList(3L));
+        analyticsDTO.setCurrencySkeys(Arrays.asList(4L));
+        analyticsDTO.setDefinationType("EL");
 
-        // Mocking AccountBalanceAggregation entity
-        AccountBalanceAggregation aggregation1 = new AccountBalanceAggregation();
-        aggregation1.setEntityAcctMapSkey(123L);
-        aggregation1.setAggrInd("Y");
+        LocalDate effectiveDate = LocalDate.of(2023, 9, 29);
 
-        AccountBalanceAggregation aggregation2 = new AccountBalanceAggregation();
-        aggregation2.setEntityAcctMapSkey(123L);
-        aggregation2.setAggrInd("Y");
+        // Mocking SRRConfiguration entity
+        SRRConfiguration config1 = new SRRConfiguration();
+        config1.setCountrySkey(1L);
+        config1.setEntitySkey(3L);
+        config1.setCurrencySkey(4L);
+        config1.setDefnType("EL");
 
-        List<AccountBalanceAggregation> aggregationList = Arrays.asList(aggregation1, aggregation2);
+        SRRConfiguration config2 = new SRRConfiguration();
+        config2.setCountrySkey(2L);
+        config2.setEntitySkey(3L);
+        config2.setCurrencySkey(4L);
+        config2.setDefnType("EL");
+
+        List<SRRConfiguration> configList = Arrays.asList(config1, config2);
 
         // Mock the behavior of createNativeQuery
-        when(em.createNativeQuery(anyString(), eq(AccountBalanceAggregation.class))).thenReturn(query);
-        when(query.unwrap(org.hibernate.query.NativeQuery.class)).thenReturn(query);
+        when(em.createNativeQuery(anyString(), eq(SRRConfiguration.class))).thenReturn(query);
+        when(query.unwrap(NativeQuery.class)).thenReturn(query);
 
         // Set query parameters
-        when(query.setParameter("entityAcctMapSkey", analyticsDTO.getEntityAcctmapSkey())).thenReturn(query);
-        when(query.setParameter("fromDate", analyticsDTO.getFromDate())).thenReturn(query);
-        when(query.setParameter("toDate", analyticsDTO.getToDate())).thenReturn(query);
-        when(query.setParameter("aggrInd", analyticsDTO.getAggrInd())).thenReturn(query);
+        when(query.setParameter("countrySkeys", analyticsDTO.getCountrySkeys())).thenReturn(query);
+        when(query.setParameter("entitySkeys", analyticsDTO.getEntitySkeys())).thenReturn(query);
+        when(query.setParameter("currencySkeys", analyticsDTO.getCurrencySkeys())).thenReturn(query);
+        when(query.setParameter("defnType", analyticsDTO.getDefinationType())).thenReturn(query);
+        when(query.setParameter("effectiveDate", effectiveDate)).thenReturn(query);
 
         // Mock query results
-        when(query.getResultList()).thenReturn(aggregationList);
+        when(query.getResultList()).thenReturn(configList);
 
         // Execute the method
-        List<AccountBalanceAggregationDTO> result = srrAccountMgmtDmpl.getAccountDetails(analyticsDTO);
+        List<SRRConfiguration> result = srrAccountMgmtDmpl.findSrrConfigWithDefnTypeAndDate(analyticsDTO, effectiveDate);
 
         // Assertions
         assertNotNull(result);
         assertEquals(2, result.size());
 
-        // Verify that the properties were copied correctly
-        for (int i = 0; i < result.size(); i++) {
-            AccountBalanceAggregationDTO dto = result.get(i);
-            AccountBalanceAggregation entity = aggregationList.get(i);
-
-            assertEquals(entity.getEntityAcctMapSkey(), dto.getEntityAcctMapSkey());
-            assertEquals(entity.getAggrInd(), dto.getAggrInd());
-        }
-
         // Verify the interactions with the mocked objects
-        verify(em, times(1)).createNativeQuery(anyString(), eq(AccountBalanceAggregation.class));
-        verify(query, times(1)).setParameter("entityAcctMapSkey", analyticsDTO.getEntityAcctmapSkey());
-        verify(query, times(1)).setParameter("fromDate", analyticsDTO.getFromDate());
-        verify(query, times(1)).setParameter("toDate", analyticsDTO.getToDate());
-        verify(query, times(1)).setParameter("aggrInd", analyticsDTO.getAggrInd());
+        verify(em, times(1)).createNativeQuery(anyString(), eq(SRRConfiguration.class));
+        verify(query, times(1)).setParameter("countrySkeys", analyticsDTO.getCountrySkeys());
+        verify(query, times(1)).setParameter("entitySkeys", analyticsDTO.getEntitySkeys());
+        verify(query, times(1)).setParameter("currencySkeys", analyticsDTO.getCurrencySkeys());
+        verify(query, times(1)).setParameter("defnType", analyticsDTO.getDefinationType());
+        verify(query, times(1)).setParameter("effectiveDate", effectiveDate);
         verify(query, times(1)).getResultList();
     }
 }
