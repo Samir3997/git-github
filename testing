@@ -1,146 +1,113 @@
 package com.maybank.ilm.core.dao;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.CollectionUtils;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.maybank.ilm.core.dao.transformer.MatichingTxnTransformer;
-import com.maybank.ilm.core.util.QueryConstants;
+import com.maybank.ilm.core.util.ILMCoreConstants;
 import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
-import com.maybank.ilm.dto.FundPositionDto;
-import com.maybank.ilm.dto.paymentmessagedetails.MatchingTxnDTO;
+import com.maybank.ilm.dto.RequestAnalyticsDTO;
 import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.paymentmessagedetails.MetaFileInfo;
+import com.maybank.ilm.entity.SRRConfiguration;
 
 @Repository
-public class PaymentMessageDaoImpl implements PaymentMessageDao {
-
-	@Autowired
+public class SRRAccountMgmtDmpl implements SRRAccountMgmtDao{
+	
+	@PersistenceContext
 	private EntityManager em;
-
-	@SuppressWarnings("unchecked")
+	
 	@Override
-	public List<AccountBalanceAggregationDTO> findFundPosition(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
-				.unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("entityMapSkey", positionDto.getEntityAcctMapSkeyMain());
-		query.setParameter("fromDate", positionDto.getStartDate());
-		query.setParameter("toDate", positionDto.getEndDate());
-		query.setParameter("rank", positionDto.getRank());
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
-		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
-			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
-			BeanUtils.copyProperties(it, balanceAggregationDTO);
-			return balanceAggregationDTO;
-		}).collect(Collectors.toList());
-		return accountBalanceAggregaDtos;
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public SRRConfiguration findEligibilityBalance(RequestAnalyticsDTO analyticsDTO) {
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<SRRConfiguration> criteria = builder.createQuery(SRRConfiguration.class);
+		Root<SRRConfiguration> root = criteria.from(SRRConfiguration.class);
+		criteria.select(root);
+		List<Predicate> wherepredicates = new ArrayList<>();
+		wherepredicates.add(root.get("countrySkey").in(analyticsDTO.getCountrySkeys()));
+		wherepredicates.add(root.get("entitySkey").in(analyticsDTO.getEntitySkeys()));
+		wherepredicates.add(root.get("currencySkey").in(analyticsDTO.getCurrencySkeys()));
+		wherepredicates.add(builder.equal(root.get("effectiveFrom"), analyticsDTO.getFromDate()));
+		wherepredicates.add(builder.equal(root.get("effectiveTo"), analyticsDTO.getToDate()));
+		wherepredicates.add(builder.equal(root.get("latestRecInd"), ILMCoreConstants.YIND));
+		Predicate definationType= builder.equal(root.get("defnType"), "EL");
+		wherepredicates.add(definationType);
+		Predicate[] predArray = new Predicate[wherepredicates.size()];
+		wherepredicates.toArray(predArray);		
+		criteria.where(predArray);
+		criteria.orderBy(builder.desc(root.get("effectiveFrom")));
+		List<SRRConfiguration> values =  em.createQuery(criteria).getResultList();
+		return  !values.isEmpty() ? values.get(0) : null;
+	}
+	
+	@Override
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<SRRConfiguration> findSrrConfigWithDefnTypeAndDate(RequestAnalyticsDTO analyticsDTO, LocalDate date) {
+		Query query = em.createNativeQuery("SELECT * FROM PRC_SRR_CONFIG WHERE N_COUNTRY_SKEY IN (:countrySkeys) AND N_ENTITY_SKEY IN (:entitySkeys) AND N_CURRENCY_SKEY IN (:currencySkeys) AND v_defn_type=:defnType AND f_latest_record_indicator='Y' and :effectiveDate BETWEEN d_effective_from AND d_effective_to",SRRConfiguration.class)
+                .unwrap(org.hibernate.query.NativeQuery.class);
+        query.setParameter("countrySkeys", analyticsDTO.getCountrySkeys());
+        query.setParameter("entitySkeys", analyticsDTO.getEntitySkeys());
+        query.setParameter("currencySkeys", analyticsDTO.getCurrencySkeys());
+        query.setParameter("defnType", analyticsDTO.getDefinationType());
+        query.setParameter("effectiveDate", date);
+        List<SRRConfiguration> configurations = query.getResultList();
+		return  CollectionUtils.isNotEmpty(configurations) ? configurations : null;
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public List<AccountBalanceAggregationDTO> findAllFundPosition(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
-				.unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("entityMapSkey", positionDto.getEntityAcctMapSkeyMain());
-		query.setParameter("fromDate", positionDto.getStartDate());
-		query.setParameter("toDate", positionDto.getEndDate());
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
-		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
-			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
-			BeanUtils.copyProperties(it, balanceAggregationDTO);
-			return balanceAggregationDTO;
-		}).collect(Collectors.toList());
-		return accountBalanceAggregaDtos;
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AccountBalanceAggregationDTO> findFundPositionForNegativeCumulative(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
-				.unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain());
-		query.setParameter("fromDate", positionDto.getStartDate());
-		query.setParameter("toDate", positionDto.getEndDate());
-		query.setParameter("rank", positionDto.getRank());
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-
-		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
-		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
-			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
-			BeanUtils.copyProperties(it, balanceAggregationDTO);
-			return balanceAggregationDTO;
-		}).collect(Collectors.toList());
-		return accountBalanceAggregaDtos;
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AccountBalanceAggregationDTO> findAllFundPositionForNegativeCumulative(FundPositionDto positionDto, String queryStr ,List<LocalDate> holidaysList) {
-		Query query = em.createNativeQuery(queryStr, AccountBalanceAggregation.class)
-				.unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain());
-		query.setParameter("fromDate", positionDto.getStartDate());
-		query.setParameter("toDate", positionDto.getEndDate());
-		if(!CollectionUtils.isEmpty(holidaysList)) {
-			query.setParameter("holidays", holidaysList);
-		}else {
-			query.setParameter("holidays", LocalDate.now().plusDays(1));
-		}
-		List<AccountBalanceAggregation> accountBalanceAggregations= query.getResultList();
-		List<AccountBalanceAggregationDTO> accountBalanceAggregaDtos=accountBalanceAggregations.stream().map(it->{
-			AccountBalanceAggregationDTO balanceAggregationDTO=new AccountBalanceAggregationDTO();
-			BeanUtils.copyProperties(it, balanceAggregationDTO);
-			return balanceAggregationDTO;
-		}).collect(Collectors.toList());
-		return accountBalanceAggregaDtos;
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<AccountBalanceAggregationDTO> getAccountDetails(RequestAnalyticsDTO analyticsDTO) { 
+        Query query = em.createNativeQuery("select * from (SELECT AGGR.*,ROW_NUMBER() OVER (PARTITION BY to_char(cast(D_VALUE_DT as date),'DD-MM-YYYY') order by D_BUSINESS_DT DESC) rownumm   FROM PRC_ACCOUNT_BALANCE_AGGR AGGR where N_ENTITY_ACCT_MAP_SKEY=:entityAcctMapSkey AND D_VALUE_DT BETWEEN :fromDate AND :toDate AND V_AGGR_IND =:aggrInd ) where rownumm=1",AccountBalanceAggregation.class)
+                .unwrap(org.hibernate.query.NativeQuery.class);
+        query.setParameter("entityAcctMapSkey", analyticsDTO.getEntityAcctmapSkey());
+        query.setParameter("fromDate", analyticsDTO.getFromDate());
+        query.setParameter("toDate", analyticsDTO.getToDate());
+        query.setParameter("aggrInd", analyticsDTO.getAggrInd());
+        List<AccountBalanceAggregation> aggregations=query.getResultList();
+        List<AccountBalanceAggregationDTO> accountBalanceAggregationDTO=aggregations.stream().map(it->{
+        	AccountBalanceAggregationDTO aggregationDTO=new AccountBalanceAggregationDTO();
+       	 BeanUtils.copyProperties(it, aggregationDTO);
+       	 return aggregationDTO;
+        }).collect(Collectors.toList());
+        return accountBalanceAggregationDTO;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<String> getMatchingTrxnsMembers(BigDecimal ratio, String entityBIC,LocalDate fromDate){
-		Query query = em.createNativeQuery(QueryConstants.GETMATCHINGTRXNS).unwrap(org.hibernate.query.NativeQuery.class);
-		query.setParameter("ratio", ratio);
-		query.setParameter("entityBIC", entityBIC);
-		query.setParameter("fromDate", fromDate);
-		return query.getResultList();
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
+	public List<SRRConfiguration> getSrrConfigByType(RequestAnalyticsDTO analyticsDTO) {
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<SRRConfiguration> criteria = builder.createQuery(SRRConfiguration.class);
+		Root<SRRConfiguration> root = criteria.from(SRRConfiguration.class);
+		criteria.select(root);
+		List<Predicate> wherepredicates = new ArrayList<>();
+		wherepredicates.add(root.get("countrySkey").in(analyticsDTO.getCountrySkeys()));
+		wherepredicates.add(root.get("entitySkey").in(analyticsDTO.getEntitySkeys()));
+		wherepredicates.add(root.get("currencySkey").in(analyticsDTO.getCurrencySkeys()));
+		 
+		Predicate definationType= builder.equal(root.get("defnType"), analyticsDTO.getDefinationType());
+		wherepredicates.add(definationType);
+		Predicate[] predArray = new Predicate[wherepredicates.size()];
+		wherepredicates.toArray(predArray);		
+		criteria.where(predArray);
+		criteria.orderBy(builder.asc(root.get("effectiveFrom")));
+		List<SRRConfiguration> values =  em.createQuery(criteria).getResultList();
+		return  values;
 	}
 	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<MetaFileInfo> getMetaFileInfo(){
-		Query query = em.createNamedQuery("GETMETAFILEINFO", MetaFileInfo.class);
-		return query.getResultList();
-	}
-	@Override
-	public List<MatchingTxnDTO> getMatchingTransaction(String entityBIC, LocalDate fromDate) {
-		String query =QueryConstants.FINDMATCHINGTXN;
-		Query qry = em.createNativeQuery(query).unwrap(org.hibernate.query.Query.class)
-				.setResultTransformer(new MatichingTxnTransformer());
-		qry.setParameter("fromDate", fromDate);
-		qry.setParameter("entityBIC", entityBIC);
-		return qry.getResultList();	
-	}
 }
