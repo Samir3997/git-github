@@ -1,85 +1,101 @@
-package com.maybank.ilm.core.dao;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.when;
 
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.maybank.ilm.dto.FundPositionDto;
-import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.core.dao.SRRAccountMgmtDao;
+import com.maybank.ilm.core.dao.SRRAccountMgmtDmpl;
+import com.maybank.ilm.dto.RequestAnalyticsDTO;
+import com.maybank.ilm.entity.SRRConfiguration;
 
-public class PaymentMessageDaoImplTest {
-
-    @InjectMocks
-    private PaymentMessageDaoImpl paymentMessageDao;
+public class SRRAccountMgmtDmplTest {
 
     @Mock
     private EntityManager em;
 
     @Mock
-    private Query query;
+    private CriteriaBuilder criteriaBuilder;
 
-    @BeforeEach
+    @Mock
+    private CriteriaQuery<SRRConfiguration> criteriaQuery;
+
+    @Mock
+    private Root<SRRConfiguration> root;
+
+    private SRRAccountMgmtDao srrAccountMgmtDao;
+    private RequestAnalyticsDTO analyticsDTO;
+
+    @Before
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.initMocks(this);
+        srrAccountMgmtDao = new SRRAccountMgmtDmpl();
+        ((SRRAccountMgmtDmpl) srrAccountMgmtDao).em = em; // Inject mocked EntityManager
+        analyticsDTO = new RequestAnalyticsDTO(); // Create sample RequestAnalyticsDTO
+        analyticsDTO.setCountrySkeys(new ArrayList<>()); // Set sample data (can be customized)
+        analyticsDTO.setEntitySkeys(new ArrayList<>());
+        analyticsDTO.setCurrencySkeys(new ArrayList<>());
+        analyticsDTO.setDefinationType("TEST_DEF"); // Set sample definition type
     }
 
     @Test
-    public void testFindAllFundPositionForNegativeCumulative() {
-        // Arrange
-        FundPositionDto positionDto = new FundPositionDto();
-        positionDto.setEntityAcctMapSkeyMain("TEST_SKEY");
-        positionDto.setStartDate(LocalDate.now().minusDays(10));
-        positionDto.setEndDate(LocalDate.now());
-        positionDto.setRank(1);
+    public void testSrrConfigByType_WithResults() {
+        List<SRRConfiguration> expectedResults = new ArrayList<>();
+        expectedResults.add(new SRRConfiguration()); // Create sample SRRConfiguration
 
-        String queryStr = "SELECT * FROM AccountBalanceAggregation WHERE ..."; // Your actual query
-        List<AccountBalanceAggregation> accountBalanceAggregations = Arrays.asList(
-            new AccountBalanceAggregation(), // Create sample entities
-            new AccountBalanceAggregation()
-        );
-        List<AccountBalanceAggregationDTO> expectedList = Arrays.asList(
-            new AccountBalanceAggregationDTO(), 
-            new AccountBalanceAggregationDTO()
-        );
+        // Mock CriteriaBuilder behavior
+        when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
+        when(criteriaBuilder.createQuery(SRRConfiguration.class)).thenReturn(criteriaQuery);
+        when(criteriaQuery.from(SRRConfiguration.class)).thenReturn(root);
 
-        // Mock the behavior of EntityManager and Query
-        when(em.createNativeQuery(queryStr, AccountBalanceAggregation.class)).thenReturn(query);
-        when(query.setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain())).thenReturn(query);
-        when(query.setParameter("fromDate", positionDto.getStartDate())).thenReturn(query);
-        when(query.setParameter("toDate", positionDto.getEndDate())).thenReturn(query);
-        when(query.setParameter("holidays", LocalDate.now().plusDays(1))).thenReturn(query);
-        when(query.getResultList()).thenReturn(accountBalanceAggregations);
+        // Mock predicate building
+        List<Predicate> predicates = new ArrayList<>();
+        when(criteriaQuery.where(predicates.toArray(new Predicate[0]))).thenReturn(criteriaQuery);
 
-        // Act
-        List<AccountBalanceAggregationDTO> result = paymentMessageDao.findAllFundPositionForNegativeCumulative(positionDto, queryStr, Collections.emptyList());
+        // Mock execution and return expected results
+        when(em.createQuery(criteriaQuery)).thenReturn(criteriaQuery);
+        when(criteriaQuery.getResultList()).thenReturn(expectedResults);
 
-        // Assert
-        assertNotNull(result, "The result should not be null");
-        assertEquals(2, result.size(), "The size of the result should match the expected size");
+        List<SRRConfiguration> actualResults = srrAccountMgmtDao.getSrrConfigByType(analyticsDTO);
 
-        // Optionally check that the result was transformed correctly
-        // (You may want to verify that the transformation from AccountBalanceAggregation to AccountBalanceAggregationDTO was done correctly)
+        assertEquals(expectedResults, actualResults);
+    }
 
-        // Verify interactions
-        verify(em).createNativeQuery(queryStr, AccountBalanceAggregation.class);
-        verify(query).setParameter("entityMapSkeyMain", positionDto.getEntityAcctMapSkeyMain());
-        verify(query).setParameter("fromDate", positionDto.getStartDate());
-        verify(query).setParameter("toDate", positionDto.getEndDate());
-        verify(query).setParameter("holidays", LocalDate.now().plusDays(1));
-        verify(query).getResultList();
+    @Test
+    public void testSrrConfigByType_NoResults() {
+        // Mock CriteriaBuilder behavior (similar to testSrrConfigByType_WithResults)
+        when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
+        when(criteriaBuilder.createQuery(SRRConfiguration.class)).thenReturn(criteriaQuery);
+        when(criteriaQuery.from(SRRConfiguration.class)).thenReturn(root);
+
+        // Mock predicate building (similar to testSrrConfigByType_WithResults)
+
+        // Mock execution and return empty list
+        when(em.createQuery(criteriaQuery)).thenReturn(criteriaQuery);
+        when(criteriaQuery.getResultList()).thenReturn(new ArrayList<>());
+
+        List<SRRConfiguration> actualResults = srrAccountMgmtDao.getSrrConfigByType(analyticsDTO);
+
+        assertEquals(new ArrayList<>(), actualResults);
+    }
+
+    @Test
+    public void testSrrConfigByType_NullDefinitionType() {
+        analyticsDTO.setDefinationType(null); // Set definition type to null
+
+        List<SRRConfiguration> actualResults = srrAccountMgmtDao.getSrrConfigByType(analyticsDTO);
+
+        assertNull(actualResults);
     }
 }
