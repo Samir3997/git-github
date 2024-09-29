@@ -1,18 +1,34 @@
+import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.MockitoAnnotations;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 public class RentasBalancingDaoImplTest {
+
+    @Mock
+    private EntityManager em;
+
+    @Mock
+    private Query query;
 
     @InjectMocks
     private RentasBalancingDaoImpl rentasBalancingDaoImpl;
+
+    private final String sqlString = "SELECT * FROM balance_data WHERE ..."; // Replace with actual SQL
+    private final LocalDate analysisData = LocalDate.of(2023, 8, 1);
+    private final List<Long> eamSkeyList = Arrays.asList(123L, 456L);
 
     @BeforeEach
     public void setUp() {
@@ -20,27 +36,34 @@ public class RentasBalancingDaoImplTest {
     }
 
     @Test
-    public void testConvertToList() throws Exception {
-        // Given: A sample input list of Object arrays
-        List<Object[]> inputList = Arrays.asList(
+    public void testGetRentasBalancingData() {
+        // Given: Mock resultList as the result from the query
+        List<Object[]> resultList = Arrays.asList(
             new Object[]{new BigDecimal("100.50"), new BigDecimal("200.75")},
             new Object[]{new BigDecimal("300.25"), new BigDecimal("400.90")}
         );
 
-        // Accessing the private method via reflection
-        Method method = RentasBalancingDaoImpl.class.getDeclaredMethod("convertToList", List.class);
-        method.setAccessible(true);
+        // Mocking the EntityManager and Query behavior
+        when(em.createNativeQuery(sqlString)).thenReturn(query);
+        when(query.setParameter("mapSkeyList", eamSkeyList)).thenReturn(query);
+        when(query.setParameter("valueDate", analysisData)).thenReturn(query);
+        when(query.getResultList()).thenReturn(resultList);
 
-        // When: Invoking the private convertToList method
-        @SuppressWarnings("unchecked")
-        List<BigDecimal> result = (List<BigDecimal>) method.invoke(rentasBalancingDaoImpl, inputList);
+        // When: Call the method under test
+        List<BigDecimal> actualResults = rentasBalancingDaoImpl.getRentasBalancingData(sqlString, analysisData, eamSkeyList);
 
-        // Then: Validate the output
-        assertNotNull(result);
-        assertEquals(4, result.size());
-        assertEquals(new BigDecimal("100.50"), result.get(0));
-        assertEquals(new BigDecimal("200.75"), result.get(1));
-        assertEquals(new BigDecimal("300.25"), result.get(2));
-        assertEquals(new BigDecimal("400.90"), result.get(3));
+        // Then: Verify the results
+        assertNotNull(actualResults);
+        assertEquals(4, actualResults.size());
+        assertEquals(new BigDecimal("100.50"), actualResults.get(0));
+        assertEquals(new BigDecimal("200.75"), actualResults.get(1));
+        assertEquals(new BigDecimal("300.25"), actualResults.get(2));
+        assertEquals(new BigDecimal("400.90"), actualResults.get(3));
+
+        // Verify that the query was created and parameters were set correctly
+        verify(em).createNativeQuery(sqlString);
+        verify(query).setParameter("mapSkeyList", eamSkeyList);
+        verify(query).setParameter("valueDate", analysisData);
+        verify(query).getResultList();
     }
 }
