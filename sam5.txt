@@ -1,26 +1,25 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.util.Arrays;
 import java.util.List;
-
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import com.maybank.ilm.core.dao.SRRAccountMgmtDao;
 import com.maybank.ilm.core.dao.SRRAccountMgmtDmpl;
 import com.maybank.ilm.dto.RequestAnalyticsDTO;
 import com.maybank.ilm.entity.SRRConfiguration;
 
 public class SRRAccountMgmtDmplTest {
+
+    @InjectMocks
+    private SRRAccountMgmtDmpl srrAccountMgmtDmpl;
 
     @Mock
     private EntityManager em;
@@ -34,68 +33,51 @@ public class SRRAccountMgmtDmplTest {
     @Mock
     private Root<SRRConfiguration> root;
 
-    private SRRAccountMgmtDao srrAccountMgmtDao;
-    private RequestAnalyticsDTO analyticsDTO;
+    @Mock
+    private Predicate predicate;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        srrAccountMgmtDao = new SRRAccountMgmtDmpl();
-        ((SRRAccountMgmtDmpl) srrAccountMgmtDao).em = em; // Inject mocked EntityManager
-        analyticsDTO = new RequestAnalyticsDTO(); // Create sample RequestAnalyticsDTO
-        analyticsDTO.setCountrySkeys(new ArrayList<>()); // Set sample data (can be customized)
-        analyticsDTO.setEntitySkeys(new ArrayList<>());
-        analyticsDTO.setCurrencySkeys(new ArrayList<>());
-        analyticsDTO.setDefinationType("TEST_DEF"); // Set sample definition type
     }
 
     @Test
-    public void testSrrConfigByType_WithResults() {
-        List<SRRConfiguration> expectedResults = new ArrayList<>();
-        expectedResults.add(new SRRConfiguration()); // Create sample SRRConfiguration
+    public void testGetSrrConfigByType() {
+        // Arrange
+        RequestAnalyticsDTO analyticsDTO = new RequestAnalyticsDTO();
+        analyticsDTO.setCountrySkeys(Arrays.asList(1L, 2L));
+        analyticsDTO.setEntitySkeys(Arrays.asList(3L, 4L));
+        analyticsDTO.setCurrencySkeys(Arrays.asList(5L, 6L));
+        analyticsDTO.setDefinationType("TEST_TYPE");
 
-        // Mock CriteriaBuilder behavior
+        SRRConfiguration srrConfig = new SRRConfiguration(); // Create a mock SRRConfiguration object
+        List<SRRConfiguration> mockResult = Arrays.asList(srrConfig); 
+
         when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
         when(criteriaBuilder.createQuery(SRRConfiguration.class)).thenReturn(criteriaQuery);
         when(criteriaQuery.from(SRRConfiguration.class)).thenReturn(root);
 
-        // Mock predicate building
-        List<Predicate> predicates = new ArrayList<>();
-        when(criteriaQuery.where(predicates.toArray(new Predicate[0]))).thenReturn(criteriaQuery);
+        // Mocking the predicates and the query execution
+        when(criteriaBuilder.equal(root.get("defnType"), analyticsDTO.getDefinationType())).thenReturn(predicate);
+        when(root.get("countrySkey").in(analyticsDTO.getCountrySkeys())).thenReturn(predicate);
+        when(root.get("entitySkey").in(analyticsDTO.getEntitySkeys())).thenReturn(predicate);
+        when(root.get("currencySkey").in(analyticsDTO.getCurrencySkeys())).thenReturn(predicate);
+        
+        when(em.createQuery(criteriaQuery)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(mockResult);
 
-        // Mock execution and return expected results
-        when(em.createQuery(criteriaQuery)).thenReturn(criteriaQuery);
-        when(criteriaQuery.getResultList()).thenReturn(expectedResults);
+        // Act
+        List<SRRConfiguration> result = srrAccountMgmtDmpl.getSrrConfigByType(analyticsDTO);
 
-        List<SRRConfiguration> actualResults = srrAccountMgmtDao.getSrrConfigByType(analyticsDTO);
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(srrConfig, result.get(0));
 
-        assertEquals(expectedResults, actualResults);
-    }
-
-    @Test
-    public void testSrrConfigByType_NoResults() {
-        // Mock CriteriaBuilder behavior (similar to testSrrConfigByType_WithResults)
-        when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
-        when(criteriaBuilder.createQuery(SRRConfiguration.class)).thenReturn(criteriaQuery);
-        when(criteriaQuery.from(SRRConfiguration.class)).thenReturn(root);
-
-        // Mock predicate building (similar to testSrrConfigByType_WithResults)
-
-        // Mock execution and return empty list
-        when(em.createQuery(criteriaQuery)).thenReturn(criteriaQuery);
-        when(criteriaQuery.getResultList()).thenReturn(new ArrayList<>());
-
-        List<SRRConfiguration> actualResults = srrAccountMgmtDao.getSrrConfigByType(analyticsDTO);
-
-        assertEquals(new ArrayList<>(), actualResults);
-    }
-
-    @Test
-    public void testSrrConfigByType_NullDefinitionType() {
-        analyticsDTO.setDefinationType(null); // Set definition type to null
-
-        List<SRRConfiguration> actualResults = srrAccountMgmtDao.getSrrConfigByType(analyticsDTO);
-
-        assertNull(actualResults);
+        // Verify that the correct methods were called
+        verify(em).getCriteriaBuilder();
+        verify(criteriaBuilder).createQuery(SRRConfiguration.class);
+        verify(em).createQuery(criteriaQuery);
+        verify(mockQuery).getResultList();
     }
 }
