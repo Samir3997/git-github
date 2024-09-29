@@ -6,7 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ public class SRRAccountMgmtDmplTest {
     private Predicate predicate;
 
     @Mock
-    private Expression<Object> expression;
+    private Path<Object> path;  // Change to Path<Object>
 
     @BeforeEach
     public void setUp() {
@@ -66,16 +66,16 @@ public class SRRAccountMgmtDmplTest {
         when(criteriaQuery.from(SRRConfiguration.class)).thenReturn(root);
 
         // Mocking the behavior for countrySkey predicate
-        when(root.get("countrySkey")).thenReturn(expression);
-        when(expression.in(analyticsDTO.getCountrySkeys())).thenReturn(predicate);
+        when(root.get("countrySkey")).thenReturn(path);  // Return a Path instead of Expression
+        when(path.in(analyticsDTO.getCountrySkeys())).thenReturn(predicate);
 
         // Mocking the behavior for entitySkey predicate
-        when(root.get("entitySkey")).thenReturn(expression);
-        when(expression.in(analyticsDTO.getEntitySkeys())).thenReturn(predicate);
+        when(root.get("entitySkey")).thenReturn(path);
+        when(path.in(analyticsDTO.getEntitySkeys())).thenReturn(predicate);
 
         // Mocking the behavior for currencySkey predicate
-        when(root.get("currencySkey")).thenReturn(expression);
-        when(expression.in(analyticsDTO.getCurrencySkeys())).thenReturn(predicate);
+        when(root.get("currencySkey")).thenReturn(path);
+        when(path.in(analyticsDTO.getCurrencySkeys())).thenReturn(predicate);
 
         // Mocking query execution
         when(em.createQuery(criteriaQuery)).thenReturn(mockQuery);
@@ -91,13 +91,13 @@ public class SRRAccountMgmtDmplTest {
 
         // Verify that the correct methods were called
         verify(root).get("countrySkey");
-        verify(expression).in(analyticsDTO.getCountrySkeys());
+        verify(path).in(analyticsDTO.getCountrySkeys());
 
         verify(root).get("entitySkey");
-        verify(expression).in(analyticsDTO.getEntitySkeys());
+        verify(path).in(analyticsDTO.getEntitySkeys());
 
         verify(root).get("currencySkey");
-        verify(expression).in(analyticsDTO.getCurrencySkeys());
+        verify(path).in(analyticsDTO.getCurrencySkeys());
 
         verify(em).getCriteriaBuilder();
         verify(em).createQuery(criteriaQuery);
