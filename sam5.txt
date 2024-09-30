@@ -1,115 +1,137 @@
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-public class LockConfigDaoImplTest {
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+
+public class FinMessageDaoImplTest {
+
+    @InjectMocks
+    private FinMessageDaoImpl finMessageDao;
 
     @Mock
-    private EntityManager em;
+    private EntityManager entityManager;
 
-    private LockConfigDao lockConfigDao;
+    @Mock
+    private Query mockQuery;
 
-    @Before
+    @Mock
+    private TypedQuery<?> mockTypedQuery;
+
+    @BeforeEach
     public void setUp() {
-        lockConfigDao = new LockConfigDaoImpl();
-        lockConfigDao.em = em;
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testUpdateLockConfigSuccess() {
-        String lockName = "testLock";
-        Long trackerId = 123L;
-
-        // Mock query behavior
-        Query mockQuery = mock(Query.class);
-        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = :trackerId where N_LOCK_NUMBER = 0 and V_LOCK_NAME = :lockName"))
-                .thenReturn(mockQuery);
-        when(mockQuery.executeUpdate()).thenReturn(1);
-
-        int count = lockConfigDao.updateLockConfig(lockName, trackerId);
-
-        assertEquals(1, count);
+    public void testSaveAny() {
+        Object entity = new Object();
+        finMessageDao.saveAny(entity);
+        verify(entityManager).persist(entity);
     }
 
     @Test
-    public void testUpdateLockConfigNoUpdate() {
-        String lockName = "testLock";
-        Long trackerId = 123L;
-
-        // Mock query behavior
-        Query mockQuery = mock(Query.class);
-        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = :trackerId where N_LOCK_NUMBER = 0 and V_LOCK_NAME = :lockName"))
-                .thenReturn(mockQuery);
-        when(mockQuery.executeUpdate()).thenReturn(0);
-
-        int count = lockConfigDao.updateLockConfig(lockName, trackerId);
-
-        assertEquals(0, count);
+    public void testUpdateAny() {
+        Object entity = new Object();
+        finMessageDao.updateAny(entity);
+        verify(entityManager).merge(entity);
     }
 
     @Test
-    public void testReleaseLockConfigSuccess() {
-        String lockName = "testLock";
+    public void testGetTrackerId() {
+        when(entityManager.createNativeQuery(anyString())).thenReturn(mockQuery);
+        when(mockQuery.unwrap(org.hibernate.query.NativeQuery.class)).thenReturn(mockQuery);
+        when(mockQuery.getSingleResult()).thenReturn(BigDecimal.ONE);
 
-        // Mock query behavior
-        Query mockQuery = mock(Query.class);
-        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = 0 where V_LOCK_NAME = :lockName"))
-                .thenReturn(mockQuery);
-        when(mockQuery.executeUpdate()).thenReturn(1);
+        BigDecimal trackerId = finMessageDao.getTrackerId();
+        assertEquals(BigDecimal.ONE, trackerId);
 
-        int count = lockConfigDao.releaseLockConfig(lockName);
-
-        assertEquals(1, count);
+        verify(entityManager).createNativeQuery("select ILM_MT_TRACKER_ID_SEQ.NEXTVAL from dual");
+        verify(mockQuery).unwrap(org.hibernate.query.NativeQuery.class);
+        verify(mockQuery).getSingleResult();
     }
 
     @Test
-    public void testReleaseLockConfigNoUpdate() {
-        String lockName = "testLock";
+    public void testGetLastUpdatedAcctBalAggr() {
+        Long entityAcctMapSkey = 1L;
+        LocalDate valueDt = LocalDate.now();
+        String aggrInd = "A";
 
-        // Mock query behavior
-        Query mockQuery = mock(Query.class);
-        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = 0 where V_LOCK_NAME = :lockName"))
-                .thenReturn(mockQuery);
-        when(mockQuery.executeUpdate()).thenReturn(0);
+        AccountBalanceAggregation expectedAggregation = new AccountBalanceAggregation();
+        when(entityManager.createNamedQuery("GETLATESTAGGR", AccountBalanceAggregation.class)).thenReturn(mockQuery);
+        when(mockQuery.setParameter("entityAcctMapSkey", entityAcctMapSkey)).thenReturn(mockQuery);
+        when(mockQuery.setParameter("valueDt", valueDt)).thenReturn(mockQuery);
+        when(mockQuery.setParameter("aggrInd", aggrInd)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(Collections.singletonList(expectedAggregation));
 
-        int count = lockConfigDao.releaseLockConfig(lockName);
+        AccountBalanceAggregation result = finMessageDao.getLastUpdatedAcctBalAggr(entityAcctMapSkey, valueDt, aggrInd);
 
-        assertEquals(0, count);
+        assertEquals(expectedAggregation, result);
+        verify(entityManager).createNamedQuery("GETLATESTAGGR", AccountBalanceAggregation.class);
+        verify(mockQuery).setParameter("entityAcctMapSkey", entityAcctMapSkey);
+        verify(mockQuery).setParameter("valueDt", valueDt);
+        verify(mockQuery).setParameter("aggrInd", aggrInd);
+        verify(mockQuery).getResultList();
     }
 
     @Test
-    public void testFetchTrackerIdSuccess() {
-        String lockName = "testLock";
-        Long expectedTrackerId = 123L;
+    public void testGetLastUpdatedAcctBalAggrForAggrInd() {
+        Long entityAcctMapSkey = 1L;
+        LocalDate valueDt = LocalDate.now();
+        String namedQuery = "SOME_QUERY";
 
-        // Mock query behavior
-        Query mockQuery = mock(Query.class);
-        when(em.createQuery("select LockConfig.lockNumber from  LockConfig where LockConfig.lockName = :lockName"))
-                .thenReturn(mockQuery);
-        when(mockQuery.getSingleResult()).thenReturn(expectedTrackerId);
+        AccountBalanceAggregation agg1 = new AccountBalanceAggregation();
+        AccountBalanceAggregation agg2 = new AccountBalanceAggregation();
+        List<AccountBalanceAggregation> expectedAggregations = Arrays.asList(agg1, agg2);
 
-        Long trackerId = lockConfigDao.fetchTrackerId(lockName);
+        when(entityManager.createNamedQuery(namedQuery, AccountBalanceAggregation.class)).thenReturn(mockQuery);
+        when(mockQuery.setParameter("entityAcctMapSkey", entityAcctMapSkey)).thenReturn(mockQuery);
+        when(mockQuery.setParameter("valueDt", valueDt)).thenReturn(mockQuery);
+        when(mockQuery.getResultList()).thenReturn(expectedAggregations);
 
-        assertEquals(expectedTrackerId, trackerId);
+        List<AccountBalanceAggregation> result = finMessageDao.getLastUpdatedAcctBalAggrForAggrInd(entityAcctMapSkey, valueDt, namedQuery);
+
+        assertEquals(expectedAggregations, result);
+        verify(entityManager).createNamedQuery(namedQuery, AccountBalanceAggregation.class);
+        verify(mockQuery).setParameter("entityAcctMapSkey", entityAcctMapSkey);
+        verify(mockQuery).setParameter("valueDt", valueDt);
+        verify(mockQuery).getResultList();
     }
 
-    @Test(expected = NoResultException.class)
-    public void testFetchTrackerIdNoResult() {
-        String lockName = "testLock";
+    @Test
+    public void testDeleteAnyByTrackerID() {
+        Long trackerId = 1L;
+        String tableName = "SOME_TABLE";
 
-        // Mock query behavior
-        Query mockQuery = mock(Query.class);
-        when(em.createQuery("select LockConfig.lockNumber from  LockConfig where LockConfig.lockName = :lockName"))
-                .thenReturn(mockQuery);
-        when(mockQuery.getSingleResult()).thenThrow(new NoResultException());
+        when(entityManager.createNativeQuery(anyString())).thenReturn(mockTypedQuery);
+        when(mockTypedQuery.unwrap(org.hibernate.query.NativeQuery.class)).thenReturn(mockTypedQuery);
 
-        lockConfigDao.fetchTrackerId(lockName);
+        finMessageDao.deleteAnyByTrackerID(trackerId, tableName);
+
+        verify(entityManager).createNativeQuery(String.format(QueryConstants.DELETEANYBYTRACKERID, tableName));
+        verify(mockTypedQuery).unwrap(org.hibernate.query.NativeQuery.class);
+        verify(mockTypedQuery).setParameter("trackerId", trackerId);
+        verify(mockTypedQuery).executeUpdate();
+    }
+
+    @Test
+    public void testDetachedAny() {
+        Object entity = new Object();
+        finMessageDao.detachedAny(entity);
+        verify(entityManager).detach(entity);
     }
 }
