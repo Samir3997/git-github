@@ -1,69 +1,115 @@
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
-public class RentasBalancingDaoImplTest {
+public class LockConfigDaoImplTest {
 
     @Mock
     private EntityManager em;
 
-    @Mock
-    private Query query;
+    private LockConfigDao lockConfigDao;
 
-    @InjectMocks
-    private RentasBalancingDaoImpl rentasBalancingDaoImpl;
-
-    private final String sqlString = "SELECT * FROM balance_data WHERE ..."; // Replace with actual SQL
-    private final LocalDate analysisData = LocalDate.of(2023, 8, 1);
-    private final List<Long> eamSkeyList = Arrays.asList(123L, 456L);
-
-    @BeforeEach
+    @Before
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
+        lockConfigDao = new LockConfigDaoImpl();
+        lockConfigDao.em = em;
     }
 
     @Test
-    public void testGetRentasBalancingData() {
-        // Given: Mock resultList as the result from the query
-        List<Object[]> resultList = Arrays.asList(
-            new Object[]{new BigDecimal("100.50"), new BigDecimal("200.75")},
-            new Object[]{new BigDecimal("300.25"), new BigDecimal("400.90")}
-        );
+    public void testUpdateLockConfigSuccess() {
+        String lockName = "testLock";
+        Long trackerId = 123L;
 
-        // Mocking the EntityManager and Query behavior
-        when(em.createNativeQuery(sqlString)).thenReturn(query);
-        when(query.setParameter("mapSkeyList", eamSkeyList)).thenReturn(query);
-        when(query.setParameter("valueDate", analysisData)).thenReturn(query);
-        when(query.getResultList()).thenReturn(resultList);
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = :trackerId where N_LOCK_NUMBER = 0 and V_LOCK_NAME = :lockName"))
+                .thenReturn(mockQuery);
+        when(mockQuery.executeUpdate()).thenReturn(1);
 
-        // When: Call the method under test
-        List<BigDecimal> actualResults = rentasBalancingDaoImpl.getRentasBalancingData(sqlString, analysisData, eamSkeyList);
+        int count = lockConfigDao.updateLockConfig(lockName, trackerId);
 
-        // Then: Verify the results
-        assertNotNull(actualResults);
-        assertEquals(4, actualResults.size());
-        assertEquals(new BigDecimal("100.50"), actualResults.get(0));
-        assertEquals(new BigDecimal("200.75"), actualResults.get(1));
-        assertEquals(new BigDecimal("300.25"), actualResults.get(2));
-        assertEquals(new BigDecimal("400.90"), actualResults.get(3));
+        assertEquals(1, count);
+    }
 
-        // Verify that the query was created and parameters were set correctly
-        verify(em).createNativeQuery(sqlString);
-        verify(query).setParameter("mapSkeyList", eamSkeyList);
-        verify(query).setParameter("valueDate", analysisData);
-        verify(query).getResultList();
+    @Test
+    public void testUpdateLockConfigNoUpdate() {
+        String lockName = "testLock";
+        Long trackerId = 123L;
+
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = :trackerId where N_LOCK_NUMBER = 0 and V_LOCK_NAME = :lockName"))
+                .thenReturn(mockQuery);
+        when(mockQuery.executeUpdate()).thenReturn(0);
+
+        int count = lockConfigDao.updateLockConfig(lockName, trackerId);
+
+        assertEquals(0, count);
+    }
+
+    @Test
+    public void testReleaseLockConfigSuccess() {
+        String lockName = "testLock";
+
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = 0 where V_LOCK_NAME = :lockName"))
+                .thenReturn(mockQuery);
+        when(mockQuery.executeUpdate()).thenReturn(1);
+
+        int count = lockConfigDao.releaseLockConfig(lockName);
+
+        assertEquals(1, count);
+    }
+
+    @Test
+    public void testReleaseLockConfigNoUpdate() {
+        String lockName = "testLock";
+
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = 0 where V_LOCK_NAME = :lockName"))
+                .thenReturn(mockQuery);
+        when(mockQuery.executeUpdate()).thenReturn(0);
+
+        int count = lockConfigDao.releaseLockConfig(lockName);
+
+        assertEquals(0, count);
+    }
+
+    @Test
+    public void testFetchTrackerIdSuccess() {
+        String lockName = "testLock";
+        Long expectedTrackerId = 123L;
+
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(em.createQuery("select LockConfig.lockNumber from  LockConfig where LockConfig.lockName = :lockName"))
+                .thenReturn(mockQuery);
+        when(mockQuery.getSingleResult()).thenReturn(expectedTrackerId);
+
+        Long trackerId = lockConfigDao.fetchTrackerId(lockName);
+
+        assertEquals(expectedTrackerId, trackerId);
+    }
+
+    @Test(expected = NoResultException.class)
+    public void testFetchTrackerIdNoResult() {
+        String lockName = "testLock";
+
+        // Mock query behavior
+        Query mockQuery = mock(Query.class);
+        when(em.createQuery("select LockConfig.lockNumber from  LockConfig where LockConfig.lockName = :lockName"))
+                .thenReturn(mockQuery);
+        when(mockQuery.getSingleResult()).thenThrow(new NoResultException());
+
+        lockConfigDao.fetchTrackerId(lockName);
     }
 }
