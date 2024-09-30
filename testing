@@ -1,49 +1,83 @@
 package com.maybank.ilm.core.dao;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
 import org.springframework.stereotype.Repository;
 
+import com.maybank.ilm.core.util.QueryConstants;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+
+/**
+ * The Class FinMessageDaoImpl.
+ */
 @Repository
-public class LockConfigDaoImpl implements LockConfigDao{
+public class FinMessageDaoImpl implements FinMessageDao{
 
-	@Autowired
-	EntityManager em;
+	/** The em. */
+	@PersistenceContext
+	private EntityManager em;
 	
-	private static final Logger LOGGER = LogManager.getLogger(LockConfigDaoImpl.class);
+	/* (non-Javadoc)
+	 * @see com.maybank.ilm.core.dao.FinMessageDao#saveAny(java.lang.Object)
+	 */
+	@Override
+	public <T> void saveAny(T t) {
+		em.persist(t);
+	}
+	
+	/* (non-Javadoc)
+	 * @see com.maybank.ilm.core.dao.FinMessageDao#updateAny(java.lang.Object)
+	 */
+	@Override
+	public <T> void updateAny(T t) {
+		em.merge(t);
+	}
 	
 	@Override
-	public Integer updateLockConfig(String lockName, Long trackerId) {
-		System.out.println("inside updatelock"+lockName);
-		Query query = em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = :trackerId where N_LOCK_NUMBER = 0 and V_LOCK_NAME = :lockName");
+	public BigDecimal getTrackerId() {
+		Query query = em.createNativeQuery("select ILM_MT_TRACKER_ID_SEQ.NEXTVAL from dual")
+				.unwrap(org.hibernate.query.NativeQuery.class);
+		return (BigDecimal) query.getSingleResult();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public AccountBalanceAggregation getLastUpdatedAcctBalAggr(Long entityAcctMapSkey, LocalDate valueDt, String aggrInd){
+		Query query = em.createNamedQuery("GETLATESTAGGR", AccountBalanceAggregation.class);
+		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
+		query.setParameter("valueDt", valueDt);
+		query.setParameter("aggrInd", aggrInd);
+		List<AccountBalanceAggregation> aggregations = query.getResultList();
+		return aggregations.isEmpty() ? null : aggregations.get(0);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountBalanceAggregation> getLastUpdatedAcctBalAggrForAggrInd(Long entityAcctMapSkey, LocalDate valueDt, String namedquery){
+		Query query = em.createNamedQuery(namedquery, AccountBalanceAggregation.class);
+		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
+		query.setParameter("valueDt", valueDt);
+		return query.getResultList();
+	}
+	
+	@Override
+	public void deleteAnyByTrackerID(Long trackerId, String tableName){
+		TypedQuery<?> query = em.createNativeQuery(String.format(QueryConstants.DELETEANYBYTRACKERID, tableName))
+								.unwrap(org.hibernate.query.NativeQuery.class);
 		query.setParameter("trackerId", trackerId);
-		query.setParameter("lockName", lockName);
-		LOGGER.info("before count");
-		int count = query.executeUpdate();
-		return count;
-	}
-	
-	@Override
-	public Integer releaseLockConfig(String lockName) {
-		System.out.println("inside releaselock"+lockName);
-		Query query = em.createNativeQuery("UPDATE LOCK_CONFIG set N_LOCK_NUMBER = 0 where V_LOCK_NAME = :lockName");
-		query.setParameter("lockName", lockName);
-		LOGGER.info("before count");
-		int count = query.executeUpdate();
-		return count;
+		query.executeUpdate();
 	}
 
 	@Override
-	public Long fetchTrackerId(String lockName) {
-		String rawQuery = "select LockConfig.lockNumber from  LockConfig where LockConfig.lockName = :lockName";
-		Query query = em.createQuery(rawQuery);
-		query.setParameter("lockName", lockName);
-		return (Long) query.getSingleResult();
+	public void detachedAny(Object object) {
+		em.detach(object);
+		
 	}
-	
-	
 }
