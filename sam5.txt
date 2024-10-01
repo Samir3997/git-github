@@ -1,48 +1,68 @@
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+package com.maybank.ilm.core.dao;
 
-import javax.persistence.EntityManager;
-import javax.persistence.TypedQuery;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-public class YourServiceTest {
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class DimDaoImplTest {
+
+    @InjectMocks
+    private DimDaoImpl dimDaoImpl;
 
     @Mock
     private EntityManager em;
 
     @Mock
-    private TypedQuery<?> query;
+    private CriteriaBuilder criteriaBuilder;
 
-    @InjectMocks
-    private YourService yourService; // Replace with your actual service class
+    @Mock
+    private CriteriaQuery<DimDTO> criteriaQuery;
+
+    @Mock
+    private Root<DimDTO> root;
 
     @BeforeEach
     public void setUp() {
-        when(em.createNamedQuery(anyString(), eq(EntityAccountMapDefinition.class))).thenReturn(query);
+        MockitoAnnotations.openMocks(this);
+        when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
+        when(criteriaBuilder.createQuery(DimDTO.class)).thenReturn(criteriaQuery);
+        when(criteriaQuery.from(DimDTO.class)).thenReturn(root);
+        when(em.createQuery(criteriaQuery)).thenReturn(mock(javax.persistence.TypedQuery.class));
     }
 
     @Test
-    public void testDeleteEntityAcctMap() {
-        // Given
-        List<Long> skeys = Arrays.asList(1L, 2L, 3L);
-        when(query.setParameter("defnSkeys", skeys)).thenReturn(query);
-        when(query.executeUpdate()).thenReturn(3); // Assuming 3 records are deleted
+    public void testGetDimension() {
+        // Arrange
+        DimDTO dimDTO = new DimDTO(); // Create a mock DimDTO object
+        List<DimDTO> expectedList = new ArrayList<>();
+        expectedList.add(dimDTO);
 
-        // When
-        yourService.deleteEntityAcctMap(skeys);
+        javax.persistence.TypedQuery<DimDTO> typedQuery = mock(javax.persistence.TypedQuery.class);
+        when(typedQuery.getResultList()).thenReturn(expectedList);
+        when(em.createQuery(criteriaQuery)).thenReturn(typedQuery);
 
-        // Then
-        verify(em).createNamedQuery("DELETEENTITYACCTDEFNSBYSKEYS", EntityAccountMapDefinition.class);
-        verify(query).setParameter("defnSkeys", skeys);
-        verify(query).executeUpdate();
+        // Act
+        List<DimDTO> result = dimDaoImpl.getDimension(DimDTO.class);
+
+        // Assert
+        verify(em).getCriteriaBuilder();
+        verify(criteriaBuilder).createQuery(DimDTO.class);
+        verify(criteriaQuery).from(DimDTO.class);
+        verify(typedQuery).getResultList();
+        assert(result.size() == 1);
+        assert(result.get(0).equals(dimDTO));
     }
 }
