@@ -1,137 +1,48 @@
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.maybank.ilm.entity.AccountBalanceAggregation;
+import javax.persistence.EntityManager;
+import javax.persistence.TypedQuery;
+import java.util.Arrays;
+import java.util.List;
 
-public class FinMessageDaoImplTest {
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+public class YourServiceTest {
+
+    @Mock
+    private EntityManager em;
+
+    @Mock
+    private TypedQuery<?> query;
 
     @InjectMocks
-    private FinMessageDaoImpl finMessageDao;
-
-    @Mock
-    private EntityManager entityManager;
-
-    @Mock
-    private Query mockQuery;
-
-    @Mock
-    private TypedQuery<?> mockTypedQuery;
+    private YourService yourService; // Replace with your actual service class
 
     @BeforeEach
     public void setUp() {
-        MockitoAnnotations.initMocks(this);
+        when(em.createNamedQuery(anyString(), eq(EntityAccountMapDefinition.class))).thenReturn(query);
     }
 
     @Test
-    public void testSaveAny() {
-        Object entity = new Object();
-        finMessageDao.saveAny(entity);
-        verify(entityManager).persist(entity);
-    }
+    public void testDeleteEntityAcctMap() {
+        // Given
+        List<Long> skeys = Arrays.asList(1L, 2L, 3L);
+        when(query.setParameter("defnSkeys", skeys)).thenReturn(query);
+        when(query.executeUpdate()).thenReturn(3); // Assuming 3 records are deleted
 
-    @Test
-    public void testUpdateAny() {
-        Object entity = new Object();
-        finMessageDao.updateAny(entity);
-        verify(entityManager).merge(entity);
-    }
+        // When
+        yourService.deleteEntityAcctMap(skeys);
 
-    @Test
-    public void testGetTrackerId() {
-        when(entityManager.createNativeQuery(anyString())).thenReturn(mockQuery);
-        when(mockQuery.unwrap(org.hibernate.query.NativeQuery.class)).thenReturn(mockQuery);
-        when(mockQuery.getSingleResult()).thenReturn(BigDecimal.ONE);
-
-        BigDecimal trackerId = finMessageDao.getTrackerId();
-        assertEquals(BigDecimal.ONE, trackerId);
-
-        verify(entityManager).createNativeQuery("select ILM_MT_TRACKER_ID_SEQ.NEXTVAL from dual");
-        verify(mockQuery).unwrap(org.hibernate.query.NativeQuery.class);
-        verify(mockQuery).getSingleResult();
-    }
-
-    @Test
-    public void testGetLastUpdatedAcctBalAggr() {
-        Long entityAcctMapSkey = 1L;
-        LocalDate valueDt = LocalDate.now();
-        String aggrInd = "A";
-
-        AccountBalanceAggregation expectedAggregation = new AccountBalanceAggregation();
-        when(entityManager.createNamedQuery("GETLATESTAGGR", AccountBalanceAggregation.class)).thenReturn(mockQuery);
-        when(mockQuery.setParameter("entityAcctMapSkey", entityAcctMapSkey)).thenReturn(mockQuery);
-        when(mockQuery.setParameter("valueDt", valueDt)).thenReturn(mockQuery);
-        when(mockQuery.setParameter("aggrInd", aggrInd)).thenReturn(mockQuery);
-        when(mockQuery.getResultList()).thenReturn(Collections.singletonList(expectedAggregation));
-
-        AccountBalanceAggregation result = finMessageDao.getLastUpdatedAcctBalAggr(entityAcctMapSkey, valueDt, aggrInd);
-
-        assertEquals(expectedAggregation, result);
-        verify(entityManager).createNamedQuery("GETLATESTAGGR", AccountBalanceAggregation.class);
-        verify(mockQuery).setParameter("entityAcctMapSkey", entityAcctMapSkey);
-        verify(mockQuery).setParameter("valueDt", valueDt);
-        verify(mockQuery).setParameter("aggrInd", aggrInd);
-        verify(mockQuery).getResultList();
-    }
-
-    @Test
-    public void testGetLastUpdatedAcctBalAggrForAggrInd() {
-        Long entityAcctMapSkey = 1L;
-        LocalDate valueDt = LocalDate.now();
-        String namedQuery = "SOME_QUERY";
-
-        AccountBalanceAggregation agg1 = new AccountBalanceAggregation();
-        AccountBalanceAggregation agg2 = new AccountBalanceAggregation();
-        List<AccountBalanceAggregation> expectedAggregations = Arrays.asList(agg1, agg2);
-
-        when(entityManager.createNamedQuery(namedQuery, AccountBalanceAggregation.class)).thenReturn(mockQuery);
-        when(mockQuery.setParameter("entityAcctMapSkey", entityAcctMapSkey)).thenReturn(mockQuery);
-        when(mockQuery.setParameter("valueDt", valueDt)).thenReturn(mockQuery);
-        when(mockQuery.getResultList()).thenReturn(expectedAggregations);
-
-        List<AccountBalanceAggregation> result = finMessageDao.getLastUpdatedAcctBalAggrForAggrInd(entityAcctMapSkey, valueDt, namedQuery);
-
-        assertEquals(expectedAggregations, result);
-        verify(entityManager).createNamedQuery(namedQuery, AccountBalanceAggregation.class);
-        verify(mockQuery).setParameter("entityAcctMapSkey", entityAcctMapSkey);
-        verify(mockQuery).setParameter("valueDt", valueDt);
-        verify(mockQuery).getResultList();
-    }
-
-    @Test
-    public void testDeleteAnyByTrackerID() {
-        Long trackerId = 1L;
-        String tableName = "SOME_TABLE";
-
-        when(entityManager.createNativeQuery(anyString())).thenReturn(mockTypedQuery);
-        when(mockTypedQuery.unwrap(org.hibernate.query.NativeQuery.class)).thenReturn(mockTypedQuery);
-
-        finMessageDao.deleteAnyByTrackerID(trackerId, tableName);
-
-        verify(entityManager).createNativeQuery(String.format(QueryConstants.DELETEANYBYTRACKERID, tableName));
-        verify(mockTypedQuery).unwrap(org.hibernate.query.NativeQuery.class);
-        verify(mockTypedQuery).setParameter("trackerId", trackerId);
-        verify(mockTypedQuery).executeUpdate();
-    }
-
-    @Test
-    public void testDetachedAny() {
-        Object entity = new Object();
-        finMessageDao.detachedAny(entity);
-        verify(entityManager).detach(entity);
+        // Then
+        verify(em).createNamedQuery("DELETEENTITYACCTDEFNSBYSKEYS", EntityAccountMapDefinition.class);
+        verify(query).setParameter("defnSkeys", skeys);
+        verify(query).executeUpdate();
     }
 }
