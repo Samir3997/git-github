@@ -38,7 +38,7 @@ class ClosingBalanceDaoImplTest {
         when(mockQuery.getResultList()).thenReturn(mockRows);
 
         // Act
-        ClosingBalanceDto result = closingBalanceDao.collectQueryToDTO1(mockQuery);
+        ClosingBalanceDto result = closingBalanceDao.testCollectQueryToDTO1(mockQuery);
 
         // Assert
         LinkedHashMap<String, ArrayList<BigDecimal>> expectedDatedAmounts = new LinkedHashMap<>();
