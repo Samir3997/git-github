@@ -1,232 +1,105 @@
 package com.maybank.ilm.core.dao;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
-import com.maybank.ilm.core.util.ExceptionUtil;
-import com.maybank.ilm.dto.DimDTO;
-import com.maybank.ilm.entity.DimCountry;
-import com.maybank.ilm.entity.DimCurrency;
-import com.maybank.ilm.entity.DimEntity;
-import com.maybank.ilm.entity.ILMCommonDimension;
-import com.maybank.ilm.utility.exception.ExceptionConstants;
-import com.maybank.ilm.utility.exception.ILMException;
+import com.maybank.ilm.dto.ClosingBalanceDto;
 
 @Repository
-public class DimDaoImpl implements DimDao{
+public class ClosingBalanceDaoImpl implements ClosingBalanceDao{
 
 	@Autowired
 	EntityManager em;
 	
-	private static final Logger LOGGER = LogManager.getLogger(DimDaoImpl.class);
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	@Cacheable(value = "getCountryDetails")
-	public List<DimDTO> getCountryDetails() {
-		Query query = em.createNamedQuery("GETCOUNTRYDETAILS", DimDTO.class);
-		return query.getResultList();
+	public ClosingBalanceDto getClosingBalance(Long eamMainSkey, Long eamSRRSkey, LocalDate fromDate,
+			LocalDate toDate) {
+		Query query = em.createNativeQuery("select a.d_value_dt, a.n_total_amount as Main , b.n_total_amount as SRR from "+
+			"(select * from prc_account_balance_aggr where d_value_dt between :fromDate and :toDate "+
+			"and n_entity_acct_map_skey =:eamMainSkey and v_opening_closing_bal_ind='CLOSING_BALANCE') a "+
+			"inner join (select * from prc_account_balance_aggr where d_value_dt between :fromDate and :toDate "+
+			"and n_entity_acct_map_skey =:eamSRRSkey and v_opening_closing_bal_ind='CLOSING_BALANCE') b on "+
+			"a.d_value_dt=b.d_value_dt order by d_value_dt");
+		query.setParameter("eamMainSkey", eamMainSkey);
+		query.setParameter("eamSRRSkey", eamSRRSkey);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("toDate", toDate);
+		return collectQueryToDTO(query);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	 @Cacheable(
-		      value = "getEntityDetails", 
-		      key = "#countrySkey")
-	public List<DimDTO> getEntityDetails(Long countrySkey) {
-		Query query = em.createNamedQuery("GETENTITYDETAILS", DimDTO.class);
-		query.setParameter("countrySkey", countrySkey);
-		return query.getResultList();
+	public ClosingBalanceDto getClosingBalanceforInvestmentIslamic(Long eamMainSkey, LocalDate fromDate,
+			LocalDate toDate) {
+		Query query = em.createNativeQuery("select a.d_value_dt, a.n_total_amount as Main from "+
+			"(select * from prc_account_balance_aggr where d_value_dt between :fromDate and :toDate "+
+			"and n_entity_acct_map_skey =:eamMainSkey and v_opening_closing_bal_ind='CLOSING_BALANCE') a");
+		query.setParameter("eamMainSkey", eamMainSkey);
+		query.setParameter("fromDate", fromDate);
+		query.setParameter("toDate", toDate);
+		return collectQueryToDTO1(query);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<DimDTO> getBaseCurrencyDetails(Long countrySkey){
-		Query query = em.createNamedQuery("GETBASECURRENCYDETAILS", DimDTO.class);
-		query.setParameter("countrySkey", countrySkey);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<DimDTO> getNostroCurrencyDetails(Long countrySkey){
-		Query query = em.createNamedQuery("GETNOSTROCURRENCYDETAILS", DimDTO.class);
-		query.setParameter("countrySkey", countrySkey);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	@Cacheable(value = "getCurrencyDetails")
-	public List<DimDTO> getCurrencyDetails(){
-		Query query = em.createNamedQuery("GETCURRENCYDETAILS", DimDTO.class);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	@Deprecated
-	public List<DimDTO> getProductDetails(){
-		Query query = em.createNamedQuery("GETPRODUCTDETAILS", DimDTO.class);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	@Deprecated
-	public List<DimDTO> getEventDetails(){
-		Query query = em.createNamedQuery("GETEVENTDETAILS", DimDTO.class);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	@Deprecated
-	public List<ILMCommonDimension> getNonDependentDimensions(String dimType){
-		Query query = em.createNamedQuery("GETNONDEPENDENTDIMS", ILMCommonDimension.class);
-		query.setParameter("dimType", dimType);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	@Deprecated
-	public List<ILMCommonDimension> getDependentDimensions(String dimType, Long parentDimSkey){
-		Query query = em.createNamedQuery("GETDEPENDENTDIMS", ILMCommonDimension.class);
-		query.setParameter("dimType", dimType);
-		query.setParameter("parentDimSkey", parentDimSkey);
-		return query.getResultList();
-	}
+	public ClosingBalanceDto getClosingBalanceForSingapore(Long eamMainSkey, LocalDate fromDate,
+			LocalDate toDate) {
+		 String nativeQuery = "SELECT d_business_dt, n_amount, d_value_dt " +
+                 "FROM (" +
+                 "    SELECT d_business_dt, n_amount, d_value_dt, " +
+                 "           RANK() OVER (PARTITION BY v_message_type, d_value_dt " +
+                 "                         ORDER BY d_business_dt DESC) AS rnk " +
+                 "    FROM prc_account_balance_mgmt " +
+                 "    WHERE n_entity_acct_map_skey = :eamMainSkey " +
+                 "      AND v_message_type = '900' " +
+                 "      AND d_value_dt BETWEEN :fromDate AND :toDate" +
+                 ") " +
+                 "WHERE rnk = 1";
+		    Query query = em.createNativeQuery(nativeQuery);
+		    query.setParameter("eamMainSkey", eamMainSkey);
+		    query.setParameter("fromDate", fromDate);
+		    query.setParameter("toDate", toDate);
+		    return collectQueryToDTO1(query);
+		}
 
-	@SuppressWarnings("unused")
-	@Override
-	public <T> List<T> getDimension(Class<T> t) {
-		CriteriaBuilder builder = em.getCriteriaBuilder();		 
-		CriteriaQuery<T> criteria = builder.createQuery(t);		 
-		Root<T> root = criteria.from(t);		
-		List<T> topics = em
-		.createQuery(criteria)
-		.getResultList();
-		return topics;
+	
+	
+	private ClosingBalanceDto collectQueryToDTO (Query query){
+		List<Object[]> rows=query.getResultList();
+		ClosingBalanceDto closingBalDto = new ClosingBalanceDto();
+		LinkedHashMap<String, ArrayList<BigDecimal>> datedAmounts = new LinkedHashMap<String, ArrayList<BigDecimal>>();
+		if(rows.size()>0) {
+			for (Object[] row : rows) {
+				ArrayList<BigDecimal> values = new ArrayList<>();
+				values.add((BigDecimal) row[1]);
+				values.add((BigDecimal) row[2]);
+				datedAmounts.put(row[0].toString(), values);
+				}
+			}
+		closingBalDto.setDatedAmounts(datedAmounts);
+		return closingBalDto;
 	}
 	
-	@Override
-	public DimCurrency getCurrDetailsByCode(String currencyCode) { //CHnage to criteria
-		Query query = em.createNamedQuery("GETCURRDETAILSBYCODE", DimCurrency.class);
-		query.setParameter("currencyCode", currencyCode);
-		DimCurrency currency=null;
-		try {
-			currency=(DimCurrency) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getCurrDetailsByCode"+exception);
-			ILMException ilmException=ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.DIM_CURRENCY_NOT_FOUND);
-			ExceptionUtil.setExceptionObject(ilmException,"CurrencyCode",currencyCode);
-			LOGGER.info(ilmException.getMessage());
-		}
-		return currency;
+	private ClosingBalanceDto collectQueryToDTO1 (Query query){
+		List<Object[]> rows=query.getResultList();
+		ClosingBalanceDto closingBalDto = new ClosingBalanceDto();
+		LinkedHashMap<String, ArrayList<BigDecimal>> datedAmounts = new LinkedHashMap<String, ArrayList<BigDecimal>>();
+		if(rows.size()>0) {
+			for (Object[] row : rows) {
+				ArrayList<BigDecimal> values = new ArrayList<>();
+				values.add((BigDecimal) row[1]);
+				datedAmounts.put(row[0].toString(), values);
+				}
+			}
+		closingBalDto.setDatedAmounts(datedAmounts);
+		return closingBalDto;
 	}
-	
-	@Override
-	public String getCurrCodeBySkey(Long currencySkey) { //CHnage to criteria
-		Query query = em.createNamedQuery("GETCURRCODEBYSKEY", String.class);
-		query.setParameter("currencySkey", currencySkey);
-		String currencyCode=null;
-		try {
-			currencyCode=(String) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getCurrCodeBySkey"+exception);
-		}
-		return currencyCode;
-	}
-	
-
-	@Override
-	public String getCurrencyShortCode(Long currencySkey) {
-		Query query= em.createNamedQuery("GETCURRSHORTCODE",String.class);
-		query.setParameter("currencySkey", currencySkey);
-		String currencyCode=null;
-		try {
-			currencyCode=(String) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getCurrencyShortCode"+exception);
-		}
-		return currencyCode;
-	}
-	
-	@Override
-	public String getCountryShortCode(Long countryShortCode) {
-		Query query= em.createNamedQuery("GETCOUNTRYSHORTCODE",String.class);
-		query.setParameter("countrySkey", countryShortCode);
-		String shortCode=null;
-		try {
-			shortCode=(String) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getCountryShortCode"+exception);
-		}
-		return shortCode;
-	}
-	
-	@Override
-	public String getEntityShortCode(Long entityShortCode) {
-		Query query= em.createNamedQuery("GETENTITYSHORTCODE",String.class);
-		query.setParameter("entitySkey", entityShortCode);
-		String shortCode=null;
-		try {
-			shortCode=(String) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getEntityShortCode"+exception);
-		}
-		return shortCode;
-	}
-	
-	@Override
-	public String getEntityCode(Long entitySkey) {
-		Query query= em.createNamedQuery("GETENTITYCODE",String.class);
-		query.setParameter("entitySkey", entitySkey);
-		String shortCode=null;
-		try {
-			shortCode=(String) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getEntityShortCode"+exception);
-		}
-		return shortCode;
-	}
-
-	@Override
-	public DimCountry getCountryDetailsByName(String countryName) {
-		Query query= em.createNamedQuery("GETCOUNTRYDETAILSBYNAME",DimCountry.class);
-		query.setParameter("countryName", countryName);
-		DimCountry country = null;
-		try {
-			country= (DimCountry) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getCountryDetailsByName"+exception);
-		}
-		return country;
-	}
-
-	@Override
-	public DimEntity getEntityByName(String entityName) {
-		Query query= em.createNamedQuery("GETENTITYBYCODE",DimEntity.class);
-		query.setParameter("entityName", entityName);
-		DimEntity entity = null;
-		try {
-			entity= (DimEntity) query.getSingleResult();
-		}catch(Exception exception) {
-			LOGGER.info("Exception in DimDaoImpl getEntityByName"+exception);
-		}
-		return entity;
-	}
-	
 }
