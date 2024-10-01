@@ -4,9 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Root;
+import javax.persistence.Query;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,8 +12,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.maybank.ilm.entity.DimEntity;
 
 public class DimDaoImplTest {
 
@@ -26,43 +23,46 @@ public class DimDaoImplTest {
     private EntityManager em;
 
     @Mock
-    private CriteriaBuilder criteriaBuilder;
-
-    @Mock
-    private CriteriaQuery<DimDTO> criteriaQuery;
-
-    @Mock
-    private Root<DimDTO> root;
+    private Query query;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
-        when(criteriaBuilder.createQuery(DimDTO.class)).thenReturn(criteriaQuery);
-        when(criteriaQuery.from(DimDTO.class)).thenReturn(root);
-        when(em.createQuery(criteriaQuery)).thenReturn(mock(javax.persistence.TypedQuery.class));
+        when(em.createNamedQuery("GETENTITYCODE", String.class)).thenReturn(query);
     }
 
     @Test
-    public void testGetDimension() {
+    public void testGetEntityCode_Success() {
         // Arrange
-        DimDTO dimDTO = new DimDTO(); // Create a mock DimDTO object
-        List<DimDTO> expectedList = new ArrayList<>();
-        expectedList.add(dimDTO);
-
-        javax.persistence.TypedQuery<DimDTO> typedQuery = mock(javax.persistence.TypedQuery.class);
-        when(typedQuery.getResultList()).thenReturn(expectedList);
-        when(em.createQuery(criteriaQuery)).thenReturn(typedQuery);
+        Long entitySkey = 1L;
+        String expectedCode = "ENTITY_CODE_123";
+        
+        when(query.setParameter("entitySkey", entitySkey)).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(expectedCode);
 
         // Act
-        List<DimDTO> result = dimDaoImpl.getDimension(DimDTO.class);
+        String result = dimDaoImpl.getEntityCode(entitySkey);
 
         // Assert
-        verify(em).getCriteriaBuilder();
-        verify(criteriaBuilder).createQuery(DimDTO.class);
-        verify(criteriaQuery).from(DimDTO.class);
-        verify(typedQuery).getResultList();
-        assert(result.size() == 1);
-        assert(result.get(0).equals(dimDTO));
+        verify(query).setParameter("entitySkey", entitySkey);
+        verify(query).getSingleResult();
+        assert(result.equals(expectedCode));
+    }
+
+    @Test
+    public void testGetEntityCode_Exception() {
+        // Arrange
+        Long entitySkey = 1L;
+        
+        when(query.setParameter("entitySkey", entitySkey)).thenReturn(query);
+        when(query.getSingleResult()).thenThrow(new RuntimeException("No result found"));
+
+        // Act
+        String result = dimDaoImpl.getEntityCode(entitySkey);
+
+        // Assert
+        verify(query).setParameter("entitySkey", entitySkey);
+        verify(query).getSingleResult();
+        assert(result == null); // Expecting null if an exception occurs
     }
 }
