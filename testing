@@ -1,7 +1,232 @@
-@Override
-	@Transactional
-	public void deleteEntityAcctMap(List<Long> skeys) {
-		TypedQuery<?> query = em.createNamedQuery("DELETEENTITYACCTDEFNSBYSKEYS", EntityAccountMapDefinition.class);
-		query.setParameter("defnSkeys", skeys);
-		query.executeUpdate();
+package com.maybank.ilm.core.dao;
+
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Repository;
+
+import com.maybank.ilm.core.util.ExceptionUtil;
+import com.maybank.ilm.dto.DimDTO;
+import com.maybank.ilm.entity.DimCountry;
+import com.maybank.ilm.entity.DimCurrency;
+import com.maybank.ilm.entity.DimEntity;
+import com.maybank.ilm.entity.ILMCommonDimension;
+import com.maybank.ilm.utility.exception.ExceptionConstants;
+import com.maybank.ilm.utility.exception.ILMException;
+
+@Repository
+public class DimDaoImpl implements DimDao{
+
+	@Autowired
+	EntityManager em;
+	
+	private static final Logger LOGGER = LogManager.getLogger(DimDaoImpl.class);
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Cacheable(value = "getCountryDetails")
+	public List<DimDTO> getCountryDetails() {
+		Query query = em.createNamedQuery("GETCOUNTRYDETAILS", DimDTO.class);
+		return query.getResultList();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	 @Cacheable(
+		      value = "getEntityDetails", 
+		      key = "#countrySkey")
+	public List<DimDTO> getEntityDetails(Long countrySkey) {
+		Query query = em.createNamedQuery("GETENTITYDETAILS", DimDTO.class);
+		query.setParameter("countrySkey", countrySkey);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DimDTO> getBaseCurrencyDetails(Long countrySkey){
+		Query query = em.createNamedQuery("GETBASECURRENCYDETAILS", DimDTO.class);
+		query.setParameter("countrySkey", countrySkey);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DimDTO> getNostroCurrencyDetails(Long countrySkey){
+		Query query = em.createNamedQuery("GETNOSTROCURRENCYDETAILS", DimDTO.class);
+		query.setParameter("countrySkey", countrySkey);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Cacheable(value = "getCurrencyDetails")
+	public List<DimDTO> getCurrencyDetails(){
+		Query query = em.createNamedQuery("GETCURRENCYDETAILS", DimDTO.class);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Deprecated
+	public List<DimDTO> getProductDetails(){
+		Query query = em.createNamedQuery("GETPRODUCTDETAILS", DimDTO.class);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Deprecated
+	public List<DimDTO> getEventDetails(){
+		Query query = em.createNamedQuery("GETEVENTDETAILS", DimDTO.class);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Deprecated
+	public List<ILMCommonDimension> getNonDependentDimensions(String dimType){
+		Query query = em.createNamedQuery("GETNONDEPENDENTDIMS", ILMCommonDimension.class);
+		query.setParameter("dimType", dimType);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	@Deprecated
+	public List<ILMCommonDimension> getDependentDimensions(String dimType, Long parentDimSkey){
+		Query query = em.createNamedQuery("GETDEPENDENTDIMS", ILMCommonDimension.class);
+		query.setParameter("dimType", dimType);
+		query.setParameter("parentDimSkey", parentDimSkey);
+		return query.getResultList();
+	}
+
+	@SuppressWarnings("unused")
+	@Override
+	public <T> List<T> getDimension(Class<T> t) {
+		CriteriaBuilder builder = em.getCriteriaBuilder();		 
+		CriteriaQuery<T> criteria = builder.createQuery(t);		 
+		Root<T> root = criteria.from(t);		
+		List<T> topics = em
+		.createQuery(criteria)
+		.getResultList();
+		return topics;
+	}
+	
+	@Override
+	public DimCurrency getCurrDetailsByCode(String currencyCode) { //CHnage to criteria
+		Query query = em.createNamedQuery("GETCURRDETAILSBYCODE", DimCurrency.class);
+		query.setParameter("currencyCode", currencyCode);
+		DimCurrency currency=null;
+		try {
+			currency=(DimCurrency) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getCurrDetailsByCode"+exception);
+			ILMException ilmException=ExceptionUtil.createIlmException(ExceptionConstants.FAILED, ExceptionConstants.DIM_CURRENCY_NOT_FOUND);
+			ExceptionUtil.setExceptionObject(ilmException,"CurrencyCode",currencyCode);
+			LOGGER.info(ilmException.getMessage());
+		}
+		return currency;
+	}
+	
+	@Override
+	public String getCurrCodeBySkey(Long currencySkey) { //CHnage to criteria
+		Query query = em.createNamedQuery("GETCURRCODEBYSKEY", String.class);
+		query.setParameter("currencySkey", currencySkey);
+		String currencyCode=null;
+		try {
+			currencyCode=(String) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getCurrCodeBySkey"+exception);
+		}
+		return currencyCode;
+	}
+	
+
+	@Override
+	public String getCurrencyShortCode(Long currencySkey) {
+		Query query= em.createNamedQuery("GETCURRSHORTCODE",String.class);
+		query.setParameter("currencySkey", currencySkey);
+		String currencyCode=null;
+		try {
+			currencyCode=(String) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getCurrencyShortCode"+exception);
+		}
+		return currencyCode;
+	}
+	
+	@Override
+	public String getCountryShortCode(Long countryShortCode) {
+		Query query= em.createNamedQuery("GETCOUNTRYSHORTCODE",String.class);
+		query.setParameter("countrySkey", countryShortCode);
+		String shortCode=null;
+		try {
+			shortCode=(String) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getCountryShortCode"+exception);
+		}
+		return shortCode;
+	}
+	
+	@Override
+	public String getEntityShortCode(Long entityShortCode) {
+		Query query= em.createNamedQuery("GETENTITYSHORTCODE",String.class);
+		query.setParameter("entitySkey", entityShortCode);
+		String shortCode=null;
+		try {
+			shortCode=(String) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getEntityShortCode"+exception);
+		}
+		return shortCode;
+	}
+	
+	@Override
+	public String getEntityCode(Long entitySkey) {
+		Query query= em.createNamedQuery("GETENTITYCODE",String.class);
+		query.setParameter("entitySkey", entitySkey);
+		String shortCode=null;
+		try {
+			shortCode=(String) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getEntityShortCode"+exception);
+		}
+		return shortCode;
+	}
+
+	@Override
+	public DimCountry getCountryDetailsByName(String countryName) {
+		Query query= em.createNamedQuery("GETCOUNTRYDETAILSBYNAME",DimCountry.class);
+		query.setParameter("countryName", countryName);
+		DimCountry country = null;
+		try {
+			country= (DimCountry) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getCountryDetailsByName"+exception);
+		}
+		return country;
+	}
+
+	@Override
+	public DimEntity getEntityByName(String entityName) {
+		Query query= em.createNamedQuery("GETENTITYBYCODE",DimEntity.class);
+		query.setParameter("entityName", entityName);
+		DimEntity entity = null;
+		try {
+			entity= (DimEntity) query.getSingleResult();
+		}catch(Exception exception) {
+			LOGGER.info("Exception in DimDaoImpl getEntityByName"+exception);
+		}
+		return entity;
+	}
+	
+}
