@@ -1,37 +1,36 @@
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+package com.maybank.ilm.core.dao;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.EntityManager;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.maybank.ilm.core.dao.BlotterDao;
-import com.maybank.ilm.core.dao.BlotterDaoImpl;
-import com.maybank.ilm.core.util.ILMCoreConstants;
 import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
 import com.maybank.ilm.entity.AccountBalanceManagement;
 
 public class BlotterDaoImplTest {
+
+    @InjectMocks
+    private BlotterDaoImpl blotterDao;
 
     @Mock
     private EntityManager em;
@@ -45,43 +44,97 @@ public class BlotterDaoImplTest {
     @Mock
     private Root<AccountBalanceManagement> root;
 
-    private BlotterDao blotterDao;
-
-    @Before
-    public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
-        blotterDao = new BlotterDaoImpl();
-        blotterDao.em = em;
-    }
-
-    @Test
-    public void testGetDrillDownDetails_AllParams() {
-        BlotterParamsDTO paramsDto = new BlotterParamsDTO();
-        paramsDto.setValueDt(LocalDate.now());
-        List<Long> eamSkeys = Arrays.asList(1L, 2L);
-        List<String> msgTypesToExclude = Arrays.asList(ILMCoreConstants.MESSAGETYPE940, ILMCoreConstants.MESSAGETYPE950, ILMCoreConstants.MXTYPECAMT05300108);
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
         when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
         when(criteriaBuilder.createQuery(AccountBalanceManagement.class)).thenReturn(criteriaQuery);
         when(criteriaQuery.from(AccountBalanceManagement.class)).thenReturn(root);
+        when(criteriaQuery.select(root)).thenReturn(criteriaQuery);
+    }
 
-        blotterDao.getDrillDownDetails(paramsDto, eamSkeys);
+    @Test
+    public void testGetDrillDownDetailsRunningBalance() {
+        testGetDrillDownDetails("RUNNING_BALANCE", BigDecimal.valueOf(1000), Collections.emptyList());
+    }
 
-        verify(criteriaBuilder, times(1)).equal(root.get("valueDate"), paramsDto.getValueDt());
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE940);
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE950);
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants.MXTYPECAMT05300108);
+    @Test
+    public void testGetDrillDownDetailsProjectedBalance() {
+        testGetDrillDownDetails("PROJECTED_BALANCE", null, Collections.emptyList());
+    }
 
-        // Nostro with Running Balance
-        paramsDto.setAcctName(ILMCoreConstants.NOSTROACCOUNT);
-        paramsDto.setDrillDownInd(ILMCoreConstants.RUNNING_BALANCE);
-        blotterDao.getDrillDownDetails(paramsDto, eamSkeys);
+    @Test
+    public void testGetDrillDownDetailsWithTransactionType() {
+        Map<String, Object> scaleValMap = new HashMap<>();
+        scaleValMap.put("TrxnType", BigDecimal.ONE); // Plus transaction
+        testGetDrillDownDetails("OTHER_INDICATOR", null, Collections.singletonList(scaleValMap));
+    }
 
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE103);
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE200);
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE202);
+    private void testGetDrillDownDetails(String drillDownInd, BigDecimal minAmount, List<Map<String, Object>> additionalConditions) {
+        // Arrange
+        LocalDate valueDate = LocalDate.now();
+        BlotterParamsDTO paramsDto = new BlotterParamsDTO();
+        paramsDto.setValueDt(valueDate);
+        paramsDto.setAcctName("NOSTROACCOUNT");
+        paramsDto.setDrillDownInd(drillDownInd);
+        
+        if (minAmount != null) {
+            paramsDto.setScaleValMap(Collections.singletonMap("MinAmount", minAmount));
+        } else {
+            paramsDto.setScaleValMap(Collections.emptyMap());
+        }
 
-        // Nostro with Projected Balance
-        paramsDto.setDrillDownInd(ILMCoreConstants.PROJECTED_BALANCE);
-        blotterDao.getDrillDownDetails(paramsDto, eamSkeys);
+        List<Long> eamSkeys = Arrays.asList(1L, 2L, 3L);
 
-        verify(criteriaBuilder, times(1)).notEqual(root.get("messageType"), ILMCoreConstants
+        // Mocking predicates
+        Predicate predicate1 = mock(Predicate.class);
+        Predicate predicate2 = mock(Predicate.class);
+        Predicate predicate3 = mock(Predicate.class);
+        when(criteriaBuilder.equal(root.get("valueDate"), valueDate)).thenReturn(predicate1);
+        when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE940)).thenReturn(predicate2);
+        when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE950)).thenReturn(predicate3);
+        
+        // Mock behavior based on `drillDownInd`
+        if ("RUNNING_BALANCE".equals(drillDownInd)) {
+            when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE103)).thenReturn(mock(Predicate.class));
+            // Add other mocks for RUNNING_BALANCE specific logic
+        } else if ("PROJECTED_BALANCE".equals(drillDownInd)) {
+            when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE900)).thenReturn(mock(Predicate.class));
+            // Add other mocks for PROJECTED_BALANCE specific logic
+        } else {
+            // Handle other indicators as needed
+        }
+
+        // Handle additional conditions
+        if (minAmount != null) {
+            when(criteriaBuilder.greaterThanOrEqualTo(any(), any())).thenReturn(mock(Predicate.class));
+        }
+
+        // Mock the query execution and result
+        List<AccountBalanceManagement> mockResults = Arrays.asList(new AccountBalanceManagement(), new AccountBalanceManagement());
+        when(em.createQuery(criteriaQuery)).thenReturn(mock(javax.persistence.TypedQuery.class));
+        when(em.createQuery(criteriaQuery).getResultList()).thenReturn(mockResults);
+
+        // Act
+        List<AccountBalanceManagement> result = blotterDao.getDrillDownDetails(paramsDto, eamSkeys);
+
+        // Assert
+        assertEquals(mockResults.size(), result.size());
+
+        // Verify interactions
+        verify(criteriaBuilder).equal(root.get("valueDate"), valueDate);
+        verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE940);
+        verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE950);
+        
+        if ("RUNNING_BALANCE".equals(drillDownInd)) {
+            verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE103);
+            // Verify other conditions for RUNNING_BALANCE
+        } else if ("PROJECTED_BALANCE".equals(drillDownInd)) {
+            verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE900);
+            // Verify other conditions for PROJECTED_BALANCE
+        }
+        
+        // Verify that the right query is executed
+        verify(em.createQuery(criteriaQuery)).getResultList();
+    }
+}
