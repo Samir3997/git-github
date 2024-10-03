@@ -1,66 +1,77 @@
 package com.maybank.ilm.core.dao;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.*;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-
-import com.maybank.ilm.dto.ClosingBalanceDto;
-
+import com.maybank.ilm.dto.BlotterParamsDTO;
+import com.maybank.ilm.entity.AccountBalanceManagement;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.ArgumentCaptor;
 
-public class ClosingBalanceDaoImplTest {
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
-    @InjectMocks
-    private ClosingBalanceDaoImpl closingBalanceDao;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-    @Mock
+class BlotterDaoImplTest {
+
+    private BlotterDaoImpl blotterDaoImpl;
     private EntityManager entityManager;
 
-    @Mock
-    private Query query;
-
     @BeforeEach
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setUp() {
+        entityManager = mock(EntityManager.class);
+        blotterDaoImpl = new BlotterDaoImpl();
+        blotterDaoImpl.em = entityManager;
     }
 
     @Test
-    public void testGetClosingBalance() {
-        // Prepare mock data
-        Long eamMainSkey = 1L;
-        Long eamSRRSkey = 2L;
-        LocalDate fromDate = LocalDate.of(2024, 10, 1);
-        LocalDate toDate = LocalDate.of(2024, 10, 2);
-        
-        List<Object[]> mockRows = new ArrayList<>();
-        mockRows.add(new Object[]{ LocalDate.now(), BigDecimal.valueOf(1000), BigDecimal.valueOf(2000) });
-        mockRows.add(new Object[]{ LocalDate.now().plusDays(1), BigDecimal.valueOf(1500), BigDecimal.valueOf(2500) });
+    void testGetDrillDownDetails() {
+        // Prepare the input data
+        BlotterParamsDTO paramsDto = new BlotterParamsDTO();
+        paramsDto.setValueDt(LocalDate.now());
+        paramsDto.setAcctName("NOSTROACCOUNT");
+        paramsDto.setDrillDownInd("RUNNING_BALANCE");
+        paramsDto.setScaleValMap(new HashMap<>());
 
-        // Mock the behavior of the EntityManager and Query
-        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-        when(query.setParameter(anyString(), any())).thenReturn(query);
-        when(query.getResultList()).thenReturn(mockRows);
+        List<Long> eamSkeys = new ArrayList<>();
+        eamSkeys.add(1L);
+        eamSkeys.add(2L);
+
+        // Mocking the criteria builder and query
+        CriteriaBuilder criteriaBuilder = mock(CriteriaBuilder.class);
+        CriteriaQuery<AccountBalanceManagement> criteriaQuery = mock(CriteriaQuery.class);
+        Root<AccountBalanceManagement> root = mock(Root.class);
+
+        when(entityManager.getCriteriaBuilder()).thenReturn(criteriaBuilder);
+        when(criteriaBuilder.createQuery(AccountBalanceManagement.class)).thenReturn(criteriaQuery);
+        when(criteriaQuery.from(AccountBalanceManagement.class)).thenReturn(root);
+
+        // Mocking the result list
+        List<AccountBalanceManagement> mockResultList = new ArrayList<>();
+        mockResultList.add(new AccountBalanceManagement()); // Add a mock object or a real one
+
+        when(entityManager.createQuery(any(CriteriaQuery.class))).thenReturn(mock(javax.persistence.TypedQuery.class));
+        when(entityManager.createQuery(any(CriteriaQuery.class)).getResultList()).thenReturn(mockResultList);
 
         // Call the method under test
-        ClosingBalanceDto result = closingBalanceDao.getClosingBalance(eamMainSkey, eamSRRSkey, fromDate, toDate);
+        List<AccountBalanceManagement> result = blotterDaoImpl.getDrillDownDetails(paramsDto, eamSkeys);
 
-        // Validate the results
-        LinkedHashMap<String, ArrayList<BigDecimal>> expectedDatedAmounts = new LinkedHashMap<>();
-        expectedDatedAmounts.put(LocalDate.now().toString(), new ArrayList<>(List.of(BigDecimal.valueOf(1000), BigDecimal.valueOf(2000))));
-        expectedDatedAmounts.put(LocalDate.now().plusDays(1).toString(), new ArrayList<>(List.of(BigDecimal.valueOf(1500), BigDecimal.valueOf(2500))));
+        // Validate the result
+        assertNotNull(result);
+        assertEquals(1, result.size()); // Check if the expected number of results is returned
 
-        assertEquals(expectedDatedAmounts, result.getDatedAmounts());
+        // Verify interactions
+        verify(entityManager).getCriteriaBuilder();
+        verify(criteriaBuilder).createQuery(AccountBalanceManagement.class);
+        verify(criteriaQuery).from(AccountBalanceManagement.class);
+        verify(criteriaQuery).select(root);
+        verify(entityManager).createQuery(criteriaQuery);
     }
 }
