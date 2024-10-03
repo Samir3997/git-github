@@ -1,24 +1,24 @@
 package com.maybank.ilm.core.dao;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+
+import com.maybank.ilm.dto.ClosingBalanceDto;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import com.maybank.ilm.dto.ClosingBalanceDto;
 
 public class ClosingBalanceDaoImplTest {
 
@@ -37,46 +37,30 @@ public class ClosingBalanceDaoImplTest {
     }
 
     @Test
-    public void testGetClosingBalanceforInvestmentIslamic_withResults() {
-        // Arrange
+    public void testGetClosingBalance() {
+        // Prepare mock data
         Long eamMainSkey = 1L;
+        Long eamSRRSkey = 2L;
         LocalDate fromDate = LocalDate.of(2024, 10, 1);
-        LocalDate toDate = LocalDate.of(2024, 10, 31);
+        LocalDate toDate = LocalDate.of(2024, 10, 2);
+        
+        List<Object[]> mockRows = new ArrayList<>();
+        mockRows.add(new Object[]{ LocalDate.now(), BigDecimal.valueOf(1000), BigDecimal.valueOf(2000) });
+        mockRows.add(new Object[]{ LocalDate.now().plusDays(1), BigDecimal.valueOf(1500), BigDecimal.valueOf(2500) });
 
-        List<Object[]> mockResults = new ArrayList<>();
-        mockResults.add(new Object[]{ "2024-10-01", new BigDecimal("1000.00") });
-        mockResults.add(new Object[]{ "2024-10-02", new BigDecimal("1500.00") });
-
+        // Mock the behavior of the EntityManager and Query
         when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(mockResults);
+        when(query.setParameter(anyString(), any())).thenReturn(query);
+        when(query.getResultList()).thenReturn(mockRows);
 
-        // Act
-        ClosingBalanceDto result = closingBalanceDao.getClosingBalanceforInvestmentIslamic(eamMainSkey, fromDate, toDate);
+        // Call the method under test
+        ClosingBalanceDto result = closingBalanceDao.getClosingBalance(eamMainSkey, eamSRRSkey, fromDate, toDate);
 
-        // Assert
-        assertNotNull(result);
-        assertNotNull(result.getDatedAmounts());
-        assertEquals(2, result.getDatedAmounts().size());
-        assertEquals(new BigDecimal("1000.00"), result.getDatedAmounts().get("2024-10-01").get(0));
-        assertEquals(new BigDecimal("1500.00"), result.getDatedAmounts().get("2024-10-02").get(0));
-    }
+        // Validate the results
+        LinkedHashMap<String, ArrayList<BigDecimal>> expectedDatedAmounts = new LinkedHashMap<>();
+        expectedDatedAmounts.put(LocalDate.now().toString(), new ArrayList<>(List.of(BigDecimal.valueOf(1000), BigDecimal.valueOf(2000))));
+        expectedDatedAmounts.put(LocalDate.now().plusDays(1).toString(), new ArrayList<>(List.of(BigDecimal.valueOf(1500), BigDecimal.valueOf(2500))));
 
-    @Test
-    public void testGetClosingBalanceforInvestmentIslamic_noResults() {
-        // Arrange
-        Long eamMainSkey = 1L;
-        LocalDate fromDate = LocalDate.of(2024, 10, 1);
-        LocalDate toDate = LocalDate.of(2024, 10, 31);
-
-        when(entityManager.createNativeQuery(anyString())).thenReturn(query);
-        when(query.getResultList()).thenReturn(Collections.emptyList());
-
-        // Act
-        ClosingBalanceDto result = closingBalanceDao.getClosingBalanceforInvestmentIslamic(eamMainSkey, fromDate, toDate);
-
-        // Assert
-        assertNotNull(result);
-        assertNotNull(result.getDatedAmounts());
-        assertTrue(result.getDatedAmounts().isEmpty());
+        assertEquals(expectedDatedAmounts, result.getDatedAmounts());
     }
 }
