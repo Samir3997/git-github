@@ -2,104 +2,174 @@ package com.maybank.ilm.core.dao;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.hibernate.query.criteria.internal.expression.ConcatExpression;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import com.maybank.ilm.dto.ClosingBalanceDto;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.BlotterParamsDTO;
+import com.maybank.ilm.entity.AccountBalanceAggregation;
+import com.maybank.ilm.entity.AccountBalanceManagement;
 
 @Repository
-public class ClosingBalanceDaoImpl implements ClosingBalanceDao{
+public class BlotterDaoImpl implements BlotterDao{
 
 	@Autowired
 	EntityManager em;
 	
-	
+	@SuppressWarnings("unchecked")
 	@Override
-	public ClosingBalanceDto getClosingBalance(Long eamMainSkey, Long eamSRRSkey, LocalDate fromDate,
-			LocalDate toDate) {
-		Query query = em.createNativeQuery("select a.d_value_dt, a.n_total_amount as Main , b.n_total_amount as SRR from "+
-			"(select * from prc_account_balance_aggr where d_value_dt between :fromDate and :toDate "+
-			"and n_entity_acct_map_skey =:eamMainSkey and v_opening_closing_bal_ind='CLOSING_BALANCE') a "+
-			"inner join (select * from prc_account_balance_aggr where d_value_dt between :fromDate and :toDate "+
-			"and n_entity_acct_map_skey =:eamSRRSkey and v_opening_closing_bal_ind='CLOSING_BALANCE') b on "+
-			"a.d_value_dt=b.d_value_dt order by d_value_dt");
-		query.setParameter("eamMainSkey", eamMainSkey);
-		query.setParameter("eamSRRSkey", eamSRRSkey);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("toDate", toDate);
-		return collectQueryToDTO(query);
+	public List<AccountBalanceAggregation> getBalancesByEntity(Long entityAcctMapSkey, LocalDate valueDt) {
+		Query query = em.createNamedQuery("GETSKEYAMNT",AccountBalanceAggregation.class);
+		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
+		query.setParameter("valueDt", valueDt);
+		return query.getResultList();
 	}
 	
 	@Override
-	public ClosingBalanceDto getClosingBalanceforInvestmentIslamic(Long eamMainSkey, LocalDate fromDate,
-			LocalDate toDate) {
-		Query query = em.createNativeQuery("select a.d_value_dt, a.n_total_amount as Main from "+
-			"(select * from prc_account_balance_aggr where d_value_dt between :fromDate and :toDate "+
-			"and n_entity_acct_map_skey =:eamMainSkey and v_opening_closing_bal_ind='CLOSING_BALANCE') a");
-		query.setParameter("eamMainSkey", eamMainSkey);
-		query.setParameter("fromDate", fromDate);
-		query.setParameter("toDate", toDate);
-		return collectQueryToDTO1(query);
-	}
-	
-	@Override
-	public ClosingBalanceDto getClosingBalanceForSingapore(Long eamMainSkey, LocalDate fromDate,
-			LocalDate toDate) {
-		 String nativeQuery = "SELECT d_business_dt, n_amount, d_value_dt " +
-                 "FROM (" +
-                 "    SELECT d_business_dt, n_amount, d_value_dt, " +
-                 "           RANK() OVER (PARTITION BY v_message_type, d_value_dt " +
-                 "                         ORDER BY d_business_dt DESC) AS rnk " +
-                 "    FROM prc_account_balance_mgmt " +
-                 "    WHERE n_entity_acct_map_skey = :eamMainSkey " +
-                 "      AND v_message_type = '900' " +
-                 "      AND d_value_dt BETWEEN :fromDate AND :toDate" +
-                 ") " +
-                 "WHERE rnk = 1";
-		    Query query = em.createNativeQuery(nativeQuery);
-		    query.setParameter("eamMainSkey", eamMainSkey);
-		    query.setParameter("fromDate", fromDate);
-		    query.setParameter("toDate", toDate);
-		    return collectQueryToDTO1(query);
+	public List<AccountBalanceManagement> getDrillDownDetails(BlotterParamsDTO paramsDto,List<Long> eamSkeys){
+		List<AccountBalanceManagement> returnList = new ArrayList<>();//NOSONAR
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<AccountBalanceManagement> criteria = builder.createQuery(AccountBalanceManagement.class);
+		Root<AccountBalanceManagement> root = criteria.from(AccountBalanceManagement.class);
+		criteria.select(root);
+		List<Predicate> wherepredicates = new ArrayList<>();
+		wherepredicates.add(builder.equal(root.get("valueDate"), paramsDto.getValueDt()));
+		wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE940));
+		wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE950));
+		wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MXTYPECAMT05300108));
+		if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.NOSTROACCOUNT)&& 
+				paramsDto.getDrillDownInd().contentEquals(ILMCoreConstants.RUNNING_BALANCE)){
+			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE103));
+			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE200));
+			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE202));
 		}
-
-	
-	
-	private ClosingBalanceDto collectQueryToDTO (Query query){
-		List<Object[]> rows=query.getResultList();
-		ClosingBalanceDto closingBalDto = new ClosingBalanceDto();
-		LinkedHashMap<String, ArrayList<BigDecimal>> datedAmounts = new LinkedHashMap<String, ArrayList<BigDecimal>>();
-		if(rows.size()>0) {
-			for (Object[] row : rows) {
-				ArrayList<BigDecimal> values = new ArrayList<>();
-				values.add((BigDecimal) row[1]);
-				values.add((BigDecimal) row[2]);
-				datedAmounts.put(row[0].toString(), values);
-				}
+		if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.NOSTROACCOUNT)&& 
+				paramsDto.getDrillDownInd().contentEquals(ILMCoreConstants.PROJECTED_BALANCE)){
+			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE900));
+			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE910));
+			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE400));
+		}
+		if(paramsDto.getScaleValMap().containsKey("MinAmount") && paramsDto.getScaleValMap().containsKey("MaxAmount") ) {
+			Expression<BigDecimal> exp = (builder.concat(root.get("amountSign"), root.get("amount"))).as(BigDecimal.class);
+			if( paramsDto.getScaleValMap().get("MinAmount") != null) {
+				wherepredicates.add(builder.greaterThanOrEqualTo(exp, paramsDto.getScaleValMap().get("MinAmount")));
 			}
-		closingBalDto.setDatedAmounts(datedAmounts);
-		return closingBalDto;
+			if( paramsDto.getScaleValMap().get("MaxAmount") != null) {
+				wherepredicates.add(builder.lessThanOrEqualTo(exp, paramsDto.getScaleValMap().get("MaxAmount")));
+			}				
+		}else if(paramsDto.getScaleValMap().containsKey("Time")) {
+			wherepredicates.add(builder.greaterThanOrEqualTo(root.get("businessDtTime"), paramsDto.getMinBusinessDt()));
+			wherepredicates.add(builder.lessThanOrEqualTo(root.get("businessDtTime"), paramsDto.getMaxBusinessDt()));
+		}else if(paramsDto.getScaleValMap().containsKey("TRN")) {
+			wherepredicates.add(builder.equal(root.get("trnCode"), paramsDto.getTrnCode()));
+		}else if(paramsDto.getScaleValMap().containsKey("TrxnType")) {
+			if(paramsDto.getScaleValMap().get("TrxnType") == BigDecimal.ONE) {
+				wherepredicates.add(builder.equal(root.get("amountSign"), ILMCoreConstants.PLUS));
+			}else if(paramsDto.getScaleValMap().get("TrxnType") == BigDecimal.ZERO){
+				wherepredicates.add(builder.equal(root.get("amountSign"), ILMCoreConstants.MINUS));
+			}
+		}
+		if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.SRRACCOUNT)) {
+			wherepredicates.add(builder.or(builder.equal(root.get("entityAcctMapSkey"), paramsDto.getEntityAcctMapSkey()), 
+							builder.equal(root.get("entityAcctMapSkey"), paramsDto.getEamSkeySecurities())));
+		}else if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.NOSTROACCOUNT) && CollectionUtils.isNotEmpty(eamSkeys)){
+			wherepredicates.add(root.get("entityAcctMapSkey").in(eamSkeys));
+		}		
+		else {
+			wherepredicates.add(builder.equal(root.get("entityAcctMapSkey"), paramsDto.getEntityAcctMapSkey()));
+		}
+		Predicate[] predArray = new Predicate[wherepredicates.size()];
+		wherepredicates.toArray(predArray);
+		criteria.where(predArray);
+		criteria.orderBy(builder.desc(root.get("businessDtTime")));
+		if(paramsDto.getScaleValMap().containsKey("Transaction")) {
+			returnList = em.createQuery(criteria).setMaxResults(paramsDto.getScaleValMap().get("Transaction").intValue()).getResultList();
+		}else {
+			returnList = em.createQuery(criteria).getResultList();
+		}
+		return returnList;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountBalanceAggregation> getAggrsBetweenBusinessDts(Long entityAcctMapSkey, LocalDate valueDt, LocalDateTime startTime, 
+			LocalDateTime endTime, String aggrInd) {
+		Query query = em.createNamedQuery("GETBTWBUSINESSDTS",AccountBalanceAggregation.class);
+		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
+		query.setParameter("valueDt", valueDt);
+		query.setParameter("startTime", startTime);
+		query.setParameter("endTime", endTime);
+		query.setParameter("aggrInd", aggrInd);
+		return query.getResultList();
 	}
 	
-	private ClosingBalanceDto collectQueryToDTO1 (Query query){
-		List<Object[]> rows=query.getResultList();
-		ClosingBalanceDto closingBalDto = new ClosingBalanceDto();
-		LinkedHashMap<String, ArrayList<BigDecimal>> datedAmounts = new LinkedHashMap<String, ArrayList<BigDecimal>>();
-		if(rows.size()>0) {
-			for (Object[] row : rows) {
-				ArrayList<BigDecimal> values = new ArrayList<>();
-				values.add((BigDecimal) row[1]);
-				datedAmounts.put(row[0].toString(), values);
-				}
-			}
-		closingBalDto.setDatedAmounts(datedAmounts);
-		return closingBalDto;
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountBalanceManagement> getOpeningBalance(LocalDate valueDate) {
+		Query query = em.createNamedQuery("GETOPENINGBAL", AccountBalanceManagement.class);
+		query.setParameter("valueDt", valueDate);
+		List<AccountBalanceManagement> mgmts = query.getResultList();
+		return mgmts;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<AccountBalanceManagement> getOpeningBalanceSG(List<Long> eamSkeys, LocalDate valueDate) {
+		Query query = em.createNamedQuery("GETOPENINGBALSG", AccountBalanceManagement.class);
+		query.setParameter("eamSkeys", eamSkeys);
+		query.setParameter("valueDt", valueDate);
+		List<AccountBalanceManagement> mgmts = query.getResultList();
+		return mgmts;
+	}
+	
+	@Override
+	public Long getCountOfTransactionsAfterMT940(LocalDateTime businessDt, LocalDate valueDt, Long entityAcctMapSkey, List<String> msgTypes) {
+		TypedQuery<Long> query = em.createNamedQuery("GETCOUNTOFTRANSCSAFTERMT940", Long.class);
+		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
+		query.setParameter("valueDt", valueDt);
+		query.setParameter("businessDt940", businessDt);
+		query.setParameter("msgTypes", msgTypes);
+		return query.getSingleResult();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<BlotterParamsDTO> getFutureDatedTransactions(LocalDate valueDt){
+		Query query = em.createNamedQuery("GETFUTUREDATEDTRANSACS", BlotterParamsDTO.class);
+		query.setParameter("valueDt", valueDt);
+		return query.getResultList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<BlotterParamsDTO> getNostroFutureDatedTransactions(LocalDate valueDt , List<String> msgTypes){
+		Query query = em.createNamedQuery("GETNOSTROFUTUREDATEDTRANSACS", BlotterParamsDTO.class);
+		query.setParameter("valueDt", valueDt);
+		query.setParameter("msgTypes", msgTypes);
+		return query.getResultList();
+	}
+	
+	@Override
+	public BigDecimal getProjectedBalance(LocalDate valueDt, List<Long> eamSkeys, List<String> msgTypes) {
+		Query query = em.createNamedQuery("GETPROJECTEDBALANCE", BigDecimal.class);
+		query.setParameter("valueDt", valueDt);
+		query.setParameter("msgTypes", msgTypes);
+		query.setParameter("eamSkeys", eamSkeys);
+		return (BigDecimal) query.getSingleResult();
 	}
 }
