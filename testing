@@ -1,175 +1,99 @@
-package com.maybank.ilm.core.dao;
+name: CI-AppServerDeployment
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+on: 
+ workflow_dispatch:
+  inputs:
+    WarNames:
+     description: 'War Names from Users'
+     required: true
+     type: string
+     default: 'ILMUI.war,ilm-web.war,ilm-gateway.war'
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+ 
+ workflow_call:
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.hibernate.query.criteria.internal.expression.ConcatExpression;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
+jobs:
+  Job1:
+    uses: MBBLABS/MLPL_DEVOPS/.github/workflows/MLPL_DeployResuable-workflow.yml@master                 
 
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
 
-@Repository
-public class BlotterDaoImpl implements BlotterDao{
+    with:
+      WarNames: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.WarNames || 'ILMUI.war,ilm-web.war,ilm-gateway.war' }}
+      AppName: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.AppName || 'ILM' }}
+      Instance2Deploy: ${{ github.event_name == 'workflow_dispatch' && 'QA' || 'QA' }}
+      WebLogicFlag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.AppName || 'ON' }}
+      JbossFlag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.AppName || 'OFF' }}
 
-	@Autowired
-	EntityManager em;
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AccountBalanceAggregation> getBalancesByEntity(Long entityAcctMapSkey, LocalDate valueDt) {
-		Query query = em.createNamedQuery("GETSKEYAMNT",AccountBalanceAggregation.class);
-		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
-		query.setParameter("valueDt", valueDt);
-		return query.getResultList();
-	}
-	
-	@Override
-	public List<AccountBalanceManagement> getDrillDownDetails(BlotterParamsDTO paramsDto,List<Long> eamSkeys){
-		List<AccountBalanceManagement> returnList = new ArrayList<>();//NOSONAR
-		CriteriaBuilder builder = em.getCriteriaBuilder();
-		CriteriaQuery<AccountBalanceManagement> criteria = builder.createQuery(AccountBalanceManagement.class);
-		Root<AccountBalanceManagement> root = criteria.from(AccountBalanceManagement.class);
-		criteria.select(root);
-		List<Predicate> wherepredicates = new ArrayList<>();
-		wherepredicates.add(builder.equal(root.get("valueDate"), paramsDto.getValueDt()));
-		wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE940));
-		wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE950));
-		wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MXTYPECAMT05300108));
-		if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.NOSTROACCOUNT)&& 
-				paramsDto.getDrillDownInd().contentEquals(ILMCoreConstants.RUNNING_BALANCE)){
-			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE103));
-			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE200));
-			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE202));
-		}
-		if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.NOSTROACCOUNT)&& 
-				paramsDto.getDrillDownInd().contentEquals(ILMCoreConstants.PROJECTED_BALANCE)){
-			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE900));
-			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE910));
-			wherepredicates.add(builder.notEqual(root.get("messageType"),ILMCoreConstants.MESSAGETYPE400));
-		}
-		if(paramsDto.getScaleValMap().containsKey("MinAmount") && paramsDto.getScaleValMap().containsKey("MaxAmount") ) {
-			Expression<BigDecimal> exp = (builder.concat(root.get("amountSign"), root.get("amount"))).as(BigDecimal.class);
-			if( paramsDto.getScaleValMap().get("MinAmount") != null) {
-				wherepredicates.add(builder.greaterThanOrEqualTo(exp, paramsDto.getScaleValMap().get("MinAmount")));
-			}
-			if( paramsDto.getScaleValMap().get("MaxAmount") != null) {
-				wherepredicates.add(builder.lessThanOrEqualTo(exp, paramsDto.getScaleValMap().get("MaxAmount")));
-			}				
-		}else if(paramsDto.getScaleValMap().containsKey("Time")) {
-			wherepredicates.add(builder.greaterThanOrEqualTo(root.get("businessDtTime"), paramsDto.getMinBusinessDt()));
-			wherepredicates.add(builder.lessThanOrEqualTo(root.get("businessDtTime"), paramsDto.getMaxBusinessDt()));
-		}else if(paramsDto.getScaleValMap().containsKey("TRN")) {
-			wherepredicates.add(builder.equal(root.get("trnCode"), paramsDto.getTrnCode()));
-		}else if(paramsDto.getScaleValMap().containsKey("TrxnType")) {
-			if(paramsDto.getScaleValMap().get("TrxnType") == BigDecimal.ONE) {
-				wherepredicates.add(builder.equal(root.get("amountSign"), ILMCoreConstants.PLUS));
-			}else if(paramsDto.getScaleValMap().get("TrxnType") == BigDecimal.ZERO){
-				wherepredicates.add(builder.equal(root.get("amountSign"), ILMCoreConstants.MINUS));
-			}
-		}
-		if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.SRRACCOUNT)) {
-			wherepredicates.add(builder.or(builder.equal(root.get("entityAcctMapSkey"), paramsDto.getEntityAcctMapSkey()), 
-							builder.equal(root.get("entityAcctMapSkey"), paramsDto.getEamSkeySecurities())));
-		}else if(paramsDto.getAcctName().contentEquals(ILMCoreConstants.NOSTROACCOUNT) && CollectionUtils.isNotEmpty(eamSkeys)){
-			wherepredicates.add(root.get("entityAcctMapSkey").in(eamSkeys));
-		}		
-		else {
-			wherepredicates.add(builder.equal(root.get("entityAcctMapSkey"), paramsDto.getEntityAcctMapSkey()));
-		}
-		Predicate[] predArray = new Predicate[wherepredicates.size()];
-		wherepredicates.toArray(predArray);
-		criteria.where(predArray);
-		criteria.orderBy(builder.desc(root.get("businessDtTime")));
-		if(paramsDto.getScaleValMap().containsKey("Transaction")) {
-			returnList = em.createQuery(criteria).setMaxResults(paramsDto.getScaleValMap().get("Transaction").intValue()).getResultList();
-		}else {
-			returnList = em.createQuery(criteria).getResultList();
-		}
-		return returnList;
-	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AccountBalanceAggregation> getAggrsBetweenBusinessDts(Long entityAcctMapSkey, LocalDate valueDt, LocalDateTime startTime, 
-			LocalDateTime endTime, String aggrInd) {
-		Query query = em.createNamedQuery("GETBTWBUSINESSDTS",AccountBalanceAggregation.class);
-		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
-		query.setParameter("valueDt", valueDt);
-		query.setParameter("startTime", startTime);
-		query.setParameter("endTime", endTime);
-		query.setParameter("aggrInd", aggrInd);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AccountBalanceManagement> getOpeningBalance(LocalDate valueDate) {
-		Query query = em.createNamedQuery("GETOPENINGBAL", AccountBalanceManagement.class);
-		query.setParameter("valueDt", valueDate);
-		List<AccountBalanceManagement> mgmts = query.getResultList();
-		return mgmts;
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<AccountBalanceManagement> getOpeningBalanceSG(List<Long> eamSkeys, LocalDate valueDate) {
-		Query query = em.createNamedQuery("GETOPENINGBALSG", AccountBalanceManagement.class);
-		query.setParameter("eamSkeys", eamSkeys);
-		query.setParameter("valueDt", valueDate);
-		List<AccountBalanceManagement> mgmts = query.getResultList();
-		return mgmts;
-	}
-	
-	@Override
-	public Long getCountOfTransactionsAfterMT940(LocalDateTime businessDt, LocalDate valueDt, Long entityAcctMapSkey, List<String> msgTypes) {
-		TypedQuery<Long> query = em.createNamedQuery("GETCOUNTOFTRANSCSAFTERMT940", Long.class);
-		query.setParameter("entityAcctMapSkey", entityAcctMapSkey);
-		query.setParameter("valueDt", valueDt);
-		query.setParameter("businessDt940", businessDt);
-		query.setParameter("msgTypes", msgTypes);
-		return query.getSingleResult();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<BlotterParamsDTO> getFutureDatedTransactions(LocalDate valueDt){
-		Query query = em.createNamedQuery("GETFUTUREDATEDTRANSACS", BlotterParamsDTO.class);
-		query.setParameter("valueDt", valueDt);
-		return query.getResultList();
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<BlotterParamsDTO> getNostroFutureDatedTransactions(LocalDate valueDt , List<String> msgTypes){
-		Query query = em.createNamedQuery("GETNOSTROFUTUREDATEDTRANSACS", BlotterParamsDTO.class);
-		query.setParameter("valueDt", valueDt);
-		query.setParameter("msgTypes", msgTypes);
-		return query.getResultList();
-	}
-	
-	@Override
-	public BigDecimal getProjectedBalance(LocalDate valueDt, List<Long> eamSkeys, List<String> msgTypes) {
-		Query query = em.createNamedQuery("GETPROJECTEDBALANCE", BigDecimal.class);
-		query.setParameter("valueDt", valueDt);
-		query.setParameter("msgTypes", msgTypes);
-		query.setParameter("eamSkeys", eamSkeys);
-		return (BigDecimal) query.getSingleResult();
-	}
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+name: CI-Build-Packaging
+
+on: 
+ workflow_dispatch:
+ 
+ workflow_call:
+
+jobs:
+  Job1:
+    uses: MBBLABS/MLPL_DEVOPS/.github/workflows/MLPL_BuildResuable-workflow.yml@master
+                 
+    with:
+      BuildScriptPath: "/MLPLDEVOPS/jadmin/NEW_GITHUB_WORKSPACE"
+      AppGrpName: "OTHER_APPS_SVN2GITHUB_BuildInstaller_TRUNK.pl ILM2.0"
+      ShellType: "perl"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+name: Core-NightlyBuildPipeline
+
+on: 
+ 
+ schedule:  #Every day at 12 AM (midnight) - MYT except for Saturday and Sunday(Conversion: 2:30 AM MYT = 6:30 PM UTC (Previous Day))
+  - cron:  "30 18 * * 1-5"  
+   
+ workflow_dispatch: 
+
+jobs:
+  NightlyBuild-Step1:
+    uses: ./.github/workflows/CI-Build-Packaging.yml
+  NightlyBuild-Step2:
+    needs: NightlyBuild-Step1
+    if: always()
+    uses: ./.github/workflows/CI-AppServerDeployment.yml
