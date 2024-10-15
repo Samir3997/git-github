@@ -36,6 +36,279 @@ jobs:
 
 
 
+package com.maybank.ilm.core.nostro.nostroapihandlers;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maybank.ilm.core.dao.ConfigRepo;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.dto.Nostro.NostroApiCommon;
+import com.maybank.ilm.dto.Nostro.NostroBalanceDTO;
+import com.maybank.ilm.dto.Nostro.NostroRequestDTO;
+import com.maybank.ilm.dto.Nostro.NostroTransaction;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyApiResponseDTO;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyBalanceList;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyEntryList;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyStatementDTO;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyTransactionData;
+
+@Component
+public class BnyApiRespHandler extends NostroApiAbstractImpl {
+	@Autowired
+	EntityAccountMappingRepo accountMappingRepo;
+
+	@Autowired
+	private RestTemplate restTemplate;
+
+	@Autowired
+	private ConfigRepo configRepo;
+
+	private static final Logger LOGGER = LogManager.getLogger(BnyApiRespHandler.class);
+
+	@Override
+	public List<NostroApiCommon> nostroApiService(NostroRequestDTO apiDTO) {
+		LOGGER.info("==========BNYApiRespHandler============" + apiDTO.getReportType());
+		HttpHeaders headers = getHeaders();
+		String strStartDate = apiDTO.getFromDate().toString();
+		String strendDate = apiDTO.getToDate().toString();
+		ObjectMapper objectMapper = new ObjectMapper();
+
+		NostroApiCommon nostroApiCommon = new NostroApiCommon();
+		List<NostroApiCommon> listNostroApiCommon = new ArrayList<>();
+		List<NostroTransaction> listNostroTransaction = new ArrayList<>();
+		List<NostroBalanceDTO> listNostroBalance = new ArrayList<>();
+		BnyApiResponseDTO bnyApiResponseDTO = null;
+		String currency = "";
+
+		String retrieveHistoricalAccountBalanceApi = configRepo
+				.getConfigByShortCode("BNY_API", ILMCoreConstants.BNY_RETRIEVE_HISTORICAL_ACCOUNT_BALANCE).get(0)
+				.getValue().toString();
+		String authTokenApi = configRepo.getConfigByShortCode("BNY_API", ILMCoreConstants.BNY_AUTH_TOKEN).get(0)
+				.getValue().toString();
+		// String bnyAccountNumber = configRepo.getConfigByShortCode("BNY_ACCOUNTNO",
+		// ILMCoreConstants.BNY_ACCOUNTNO_BALANCE).get(0).getValue().toString();
+		String bnyAccountNumber = "";
+
+		try {
+			HttpEntity<Object> tokenEntity = new HttpEntity<Object>(headers);
+			ResponseEntity<String> authToken = restTemplate.exchange(authTokenApi, HttpMethod.POST, tokenEntity,
+					String.class);
+			try {
+				JSONObject tokenObject = new JSONObject(authToken.getBody());
+				headers.set("Authorization", "Bearer " + tokenObject.getString("access_token"));
+			} catch (HttpClientErrorException exception) {
+				ObjectMapper errorMapper = new ObjectMapper();
+				try {
+					String bnyTokenErrorMsg = errorMapper.readValue(exception.getResponseBodyAsString(), String.class);
+					JSONObject tokenObject = new JSONObject(bnyTokenErrorMsg);
+				} catch (Exception e) {
+					LOGGER.info("BNYError-TokenApiRespHandler-JSONMapping error : " + e);
+				}
+
+			} catch (Exception e) {
+				LOGGER.info("Token_Exception " + e.getMessage());
+			}
+			LOGGER.info("Token_Done");
+
+			if (apiDTO.getReportType().equals("PP")) {
+				System.out.println("-------Past period--------");
+				HttpEntity<Object> historicalAccBalEntity = new HttpEntity<Object>(headers);
+				String urlTemplateHistoricalAccBal = UriComponentsBuilder
+						.fromHttpUrl(retrieveHistoricalAccountBalanceApi)
+						.queryParam("accounts", bnyAccountNumber + "ALL").queryParam("toDate", strendDate)
+						.queryParam("fromDate", strStartDate).queryParam("reportType", "detail").encode().toUriString();
+				ResponseEntity<String> historicalAccBalResponse = restTemplate.exchange(urlTemplateHistoricalAccBal,
+						HttpMethod.GET, historicalAccBalEntity, String.class);
+				bnyApiResponseDTO = objectMapper.readValue(historicalAccBalResponse.getBody(),
+						new TypeReference<BnyApiResponseDTO>() {
+						});
+			} else {
+				System.out.println("-----Intra Day-----");
+				HttpEntity<Object> historicalAccBalEntity = new HttpEntity<Object>(headers);
+				String urlTemplateHistoricalAccBal = UriComponentsBuilder
+						.fromHttpUrl(retrieveHistoricalAccountBalanceApi)
+						.queryParam("accounts", bnyAccountNumber + "ALL").queryParam("dateType", "current")
+						.queryParam("reportType", "detail").encode().toUriString();
+				ResponseEntity<String> historicalAccBalResponse = restTemplate.exchange(urlTemplateHistoricalAccBal,
+						HttpMethod.GET, historicalAccBalEntity, String.class);
+				bnyApiResponseDTO = objectMapper.readValue(historicalAccBalResponse.getBody(),
+						new TypeReference<BnyApiResponseDTO>() {
+						});
+			}
+			
+			
+			if (bnyApiResponseDTO.getMetadata().getSuccess() == true) {
+				System.out.println(bnyApiResponseDTO.getData().toString());
+				BnyTransactionData bnyResponseData = bnyApiResponseDTO.getData();
+				List<BnyStatementDTO> bnyStatementDTOList = bnyResponseData.getStatement();
+				for (BnyStatementDTO bnyStatementDTO : bnyStatementDTOList) {
+					List<BnyBalanceList> bnyBalanceList = bnyStatementDTO.getBalance();
+					List<BnyEntryList> bnyEntryList = bnyStatementDTO.getEntry();
+
+					currency = bnyStatementDTO.getAccount().getCurrency();
+
+					if (!CollectionUtils.isEmpty(bnyEntryList)) {
+						for (BnyEntryList bnyEntries : bnyEntryList) {
+							NostroTransaction nostroTrans = new NostroTransaction();
+							nostroTrans.setTransactionRemarks(bnyEntries.getAdditionalEntryInformation());
+							nostroTrans.setTransactionType(bnyEntries.getCreditDebitIndicator());
+							nostroTrans.setTotalAmount(bnyEntries.getAmount());
+							nostroTrans.setCurrency(currency);
+							listNostroTransaction.add(nostroTrans);
+						}
+					}
+
+					if (!CollectionUtils.isEmpty(bnyBalanceList)) {
+						Map<String, BigDecimal> openingbalMap = new HashMap<>();
+						Map<String, BigDecimal> closingbalMap = new HashMap<>();
+						for (BnyBalanceList bnyBal : bnyBalanceList) {
+							if (bnyBal.getType().getCodeOrProprietary() != null
+									&& bnyBal.getType().getCodeOrProprietary().contentEquals("OPAV")) {
+								openingbalMap.put(bnyBal.getDateTime(), bnyBal.getAmount());
+							} else if (bnyBal.getType().getCodeOrProprietary() != null
+									&& bnyBal.getType().getCodeOrProprietary().contentEquals("CLAV")) {
+								closingbalMap.put(bnyBal.getDateTime(), bnyBal.getAmount());
+							} else if (bnyBal.getType().getCodeOrProprietary() != null
+									&& bnyBal.getType().getCodeOrProprietary().contentEquals("ITAV")
+									&& apiDTO.getReportType().equals("SD")) {
+								closingbalMap.put(bnyBal.getDateTime(), bnyBal.getAmount());
+							}
+						}
+						if (!closingbalMap.isEmpty()) {
+							for (Map.Entry<String, BigDecimal> entry : closingbalMap.entrySet()) {
+								NostroBalanceDTO balanceDTO = new NostroBalanceDTO();
+								balanceDTO.setAsOfDate(entry.getKey());
+								balanceDTO.setOpeningBalance(openingbalMap.get(entry.getKey()));
+								balanceDTO.setRunningBalance(entry.getValue());
+								listNostroBalance.add(balanceDTO);
+							}
+						}
+					}
+				}
+
+			} else {
+				nostroApiCommon.setErrorMsg(bnyApiResponseDTO.getMetadata().getStatusDescription());
+			}
+			nostroApiCommon.setNostroTransactionDTO(listNostroTransaction);
+			nostroApiCommon.setNostroBalanceDTO(listNostroBalance);
+			listNostroApiCommon.add(nostroApiCommon);
+
+		} catch (Exception e) {
+			LOGGER.info("BnyApiRespHandler's Catch");
+			LOGGER.error(e.getMessage());
+		}
+		return listNostroApiCommon;
+	}
+
+	@Override
+	public String getNostroApiType() {
+		return ILMCoreConstants.BANK_OF_NEW_YORK;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.core.dao;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.maybank.ilm.entity.EntityAccountMapDefinition;
+
+public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
+
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndAccountType(Long entitySkey, String accountType);
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndCurrencySkeyAndAccountType(Long entitySkey,Long currencySkey,String accountType);
+	public EntityAccountMapDefinition findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(String entityIdentifier, String accountType, Long currencySkey);
+	public List<EntityAccountMapDefinition> findByAccountType(String accountType);
+	public EntityAccountMapDefinition findFirstByEntitySkey(Long entitySkey);
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndCountrySkeyAndCurrencySkey(Long entitySkey, Long countrySkey, Long currencySkey);
+	public List<EntityAccountMapDefinition> getDefnByNostroInd(Character nostroInd);
+	public List<EntityAccountMapDefinition> findByEntityAcctMapSkey(Long entityAcctMapSkey);
+	public List<EntityAccountMapDefinition> findByEntityIdentifier(String bic);
+	@Query("SELECT dic.currencyCode FROM DimCurrency dic WHERE dic.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
+	public String findCurrencyCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
+
+	@Query("SELECT dc.countryCode FROM DimCountry dc WHERE dc.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
+	public String findCountryCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
+
+	public Optional<EntityAccountMapDefinition> findFirstByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
+	public EntityAccountMapDefinition findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndNostroBankName(Long countrySkey, Long entitySkey, Long currencySkey, String nostroAgent);
+	public List <EntityAccountMapDefinition> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
+	public EntityAccountMapDefinition findByAccountNumber(String accountNumber);
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+package com.maybank.ilm.core.dao;
+
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.maybank.ilm.entity.Config;
+
+
+public interface ConfigRepo extends JpaRepository<Config, Long> {
+
+	@Query("SELECT cf FROM Config cf where cf.configType =:configEntry")
+	public List<Config> getConfigvalues(String configEntry);
+	
+	@Query("DELETE  FROM Config cf where cf.configId =:configId")
+	public void delConfig(Long configId);
+
+	public Config saveAndFlush(Config config);
+
+	@Transactional
+	public void deleteByConfigId(Long configId);
+	
+	@Query("SELECT cf FROM Config cf where cf.configType =:configEntry and cf.shortCode like :shortCode ")
+	public List<Config> getConfigByShortCode(String configEntry,String shortCode);
+
+}
 
 
 
