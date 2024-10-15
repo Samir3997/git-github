@@ -1,140 +1,156 @@
-package com.maybank.ilm.core.dao;
+package com.maybank.ilm.core.nostro.nostroapihandlers;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
-
+import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.maybank.ilm.core.dao.ConfigRepo;
+import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.dto.Nostro.NostroApiCommon;
+import com.maybank.ilm.dto.Nostro.NostroBalanceDTO;
+import com.maybank.ilm.dto.Nostro.NostroRequestDTO;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyApiResponseDTO;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyStatementDTO;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyTransactionData;
 
-public class BlotterDaoImplTest {
+public class BnyApiRespHandlerTest {
+
+    @Mock
+    private RestTemplate restTemplate;
+
+    @Mock
+    private ConfigRepo configRepo;
+
+    @Mock
+    private EntityAccountMappingRepo accountMappingRepo;
 
     @InjectMocks
-    private BlotterDaoImpl blotterDao;
-
-    @Mock
-    private EntityManager em;
-
-    @Mock
-    private CriteriaBuilder criteriaBuilder;
-
-    @Mock
-    private CriteriaQuery<AccountBalanceManagement> criteriaQuery;
-
-    @Mock
-    private Root<AccountBalanceManagement> root;
+    private BnyApiRespHandler bnyApiRespHandler;
 
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        when(em.getCriteriaBuilder()).thenReturn(criteriaBuilder);
-        when(criteriaBuilder.createQuery(AccountBalanceManagement.class)).thenReturn(criteriaQuery);
-        when(criteriaQuery.from(AccountBalanceManagement.class)).thenReturn(root);
-        when(criteriaQuery.select(root)).thenReturn(criteriaQuery);
     }
 
     @Test
-    public void testGetDrillDownDetailsRunningBalance() {
-        testGetDrillDownDetails("RUNNING_BALANCE", BigDecimal.valueOf(1000), Collections.emptyList());
-    }
-
-    @Test
-    public void testGetDrillDownDetailsProjectedBalance() {
-        testGetDrillDownDetails("PROJECTED_BALANCE", null, Collections.emptyList());
-    }
-
-    @Test
-    public void testGetDrillDownDetailsWithTransactionType() {
-        Map<String, Object> scaleValMap = new HashMap<>();
-        scaleValMap.put("TrxnType", BigDecimal.ONE); // Plus transaction
-        testGetDrillDownDetails("OTHER_INDICATOR", null, Collections.singletonList(scaleValMap));
-    }
-
-    private void testGetDrillDownDetails(String drillDownInd, BigDecimal minAmount, List<Map<String, Object>> additionalConditions) {
+    public void testNostroApiServiceSuccess() throws Exception {
         // Arrange
-        LocalDate valueDate = LocalDate.now();
-        BlotterParamsDTO paramsDto = new BlotterParamsDTO();
-        paramsDto.setValueDt(valueDate);
-        paramsDto.setAcctName("NOSTROACCOUNT");
-        paramsDto.setDrillDownInd(drillDownInd);
-        
-        if (minAmount != null) {
-            paramsDto.setScaleValMap(Collections.singletonMap("MinAmount", minAmount));
-        } else {
-            paramsDto.setScaleValMap(Collections.emptyMap());
-        }
+        NostroRequestDTO requestDTO = new NostroRequestDTO();
+        requestDTO.setReportType("PP"); // Past Period Report
+        requestDTO.setFromDate(java.sql.Date.valueOf("2023-01-01"));
+        requestDTO.setToDate(java.sql.Date.valueOf("2023-01-31"));
 
-        List<Long> eamSkeys = Arrays.asList(1L, 2L, 3L);
+        // Mocking ConfigRepo return values
+        when(configRepo.getConfigByShortCode(anyString(), anyString()))
+                .thenReturn(Arrays.asList(mockConfigValue("https://example.com/historical"), mockConfigValue("authToken")));
 
-        // Mocking predicates
-        Predicate predicate1 = mock(Predicate.class);
-        Predicate predicate2 = mock(Predicate.class);
-        Predicate predicate3 = mock(Predicate.class);
-        when(criteriaBuilder.equal(root.get("valueDate"), valueDate)).thenReturn(predicate1);
-        when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE940)).thenReturn(predicate2);
-        when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE950)).thenReturn(predicate3);
-        
-        // Mock behavior based on `drillDownInd`
-        if ("RUNNING_BALANCE".equals(drillDownInd)) {
-            when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE103)).thenReturn(mock(Predicate.class));
-            // Add other mocks for RUNNING_BALANCE specific logic
-        } else if ("PROJECTED_BALANCE".equals(drillDownInd)) {
-            when(criteriaBuilder.notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE900)).thenReturn(mock(Predicate.class));
-            // Add other mocks for PROJECTED_BALANCE specific logic
-        } else {
-            // Handle other indicators as needed
-        }
+        // Mocking RestTemplate Auth Token Response
+        String tokenResponseBody = new JSONObject().put("access_token", "test_token").toString();
+        ResponseEntity<String> authTokenResponse = mock(ResponseEntity.class);
+        when(authTokenResponse.getBody()).thenReturn(tokenResponseBody);
+        when(restTemplate.exchange(eq("authToken"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(authTokenResponse);
 
-        // Handle additional conditions
-        if (minAmount != null) {
-            when(criteriaBuilder.greaterThanOrEqualTo(any(), any())).thenReturn(mock(Predicate.class));
-        }
-
-        // Mock the query execution and result
-        List<AccountBalanceManagement> mockResults = Arrays.asList(new AccountBalanceManagement(), new AccountBalanceManagement());
-        when(em.createQuery(criteriaQuery)).thenReturn(mock(javax.persistence.TypedQuery.class));
-        when(em.createQuery(criteriaQuery).getResultList()).thenReturn(mockResults);
+        // Mocking BNY Historical Data API response
+        BnyApiResponseDTO mockApiResponse = mockBnyApiResponseDTO(true);
+        ResponseEntity<String> historicalResponse = mock(ResponseEntity.class);
+        when(historicalResponse.getBody()).thenReturn(new ObjectMapper().writeValueAsString(mockApiResponse));
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(historicalResponse);
 
         // Act
-        List<AccountBalanceManagement> result = blotterDao.getDrillDownDetails(paramsDto, eamSkeys);
+        List<NostroApiCommon> result = bnyApiRespHandler.nostroApiService(requestDTO);
 
         // Assert
-        assertEquals(mockResults.size(), result.size());
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+        assertEquals(1, result.size());
+        assertEquals(2, result.get(0).getNostroTransactionDTO().size());
+        assertEquals(1, result.get(0).getNostroBalanceDTO().size());
 
         // Verify interactions
-        verify(criteriaBuilder).equal(root.get("valueDate"), valueDate);
-        verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE940);
-        verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE950);
+        verify(configRepo, times(2)).getConfigByShortCode(anyString(), anyString());
+        verify(restTemplate, times(2)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
+    }
+
+    @Test
+    public void testNostroApiServiceFailure() throws Exception {
+        // Arrange
+        NostroRequestDTO requestDTO = new NostroRequestDTO();
+        requestDTO.setReportType("PP"); // Past Period Report
+        requestDTO.setFromDate(java.sql.Date.valueOf("2023-01-01"));
+        requestDTO.setToDate(java.sql.Date.valueOf("2023-01-31"));
+
+        // Mocking ConfigRepo return values
+        when(configRepo.getConfigByShortCode(anyString(), anyString()))
+                .thenReturn(Arrays.asList(mockConfigValue("https://example.com/historical"), mockConfigValue("authToken")));
+
+        // Mocking RestTemplate Auth Token Response
+        String tokenResponseBody = new JSONObject().put("access_token", "test_token").toString();
+        ResponseEntity<String> authTokenResponse = mock(ResponseEntity.class);
+        when(authTokenResponse.getBody()).thenReturn(tokenResponseBody);
+        when(restTemplate.exchange(eq("authToken"), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(authTokenResponse);
+
+        // Mocking BNY API failure response
+        BnyApiResponseDTO mockApiResponse = mockBnyApiResponseDTO(false);
+        ResponseEntity<String> historicalResponse = mock(ResponseEntity.class);
+        when(historicalResponse.getBody()).thenReturn(new ObjectMapper().writeValueAsString(mockApiResponse));
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(historicalResponse);
+
+        // Act
+        List<NostroApiCommon> result = bnyApiRespHandler.nostroApiService(requestDTO);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty()); // As no successful data
+
+        // Verify interactions
+        verify(configRepo, times(2)).getConfigByShortCode(anyString(), anyString());
+        verify(restTemplate, times(2)).exchange(anyString(), any(HttpMethod.class), any(HttpEntity.class), eq(String.class));
+    }
+
+    // Helper methods for mocking
+
+    private Config mockConfigValue(String value) {
+        Config config = mock(Config.class);
+        when(config.getValue()).thenReturn(value);
+        return config;
+    }
+
+    private BnyApiResponseDTO mockBnyApiResponseDTO(boolean success) {
+        BnyApiResponseDTO response = new BnyApiResponseDTO();
+        response.getMetadata().setSuccess(success);
         
-        if ("RUNNING_BALANCE".equals(drillDownInd)) {
-            verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE103);
-            // Verify other conditions for RUNNING_BALANCE
-        } else if ("PROJECTED_BALANCE".equals(drillDownInd)) {
-            verify(criteriaBuilder).notEqual(root.get("messageType"), ILMCoreConstants.MESSAGETYPE900);
-            // Verify other conditions for PROJECTED_BALANCE
+        if (success) {
+            BnyTransactionData data = new BnyTransactionData();
+            BnyStatementDTO statementDTO = new BnyStatementDTO();
+            statementDTO.setBalance(Arrays.asList());
+            statementDTO.setEntry(Arrays.asList());
+            statementDTO.setAccount(new BnyAccount());
+            data.setStatement(Arrays.asList(statementDTO));
+            response.setData(data);
         }
-        
-        // Verify that the right query is executed
-        verify(em.createQuery(criteriaQuery)).getResultList();
+
+        return response;
     }
 }
