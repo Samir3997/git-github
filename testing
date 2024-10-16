@@ -394,6 +394,106 @@ public class Config {
 
 
 
+package com.maybank.ilm.dto.Nostro.bnydto;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(value = Include.NON_EMPTY)
+public class BnyBalanceList {
+
+	@Override
+	public String toString() {
+		return "BnyBalanceList [type=" + type + ", amount=" + amount + ", dateTime=" + dateTime + "]";
+	}
+
+	private BnyBalanceInner type;
+	private BigDecimal amount;
+	private String dateTime;
+	
+	public String getDateTime() {
+	return dateTime;
+}
+	
+	/*
+	 * public String getDate() { LocalDateTime dateFormat =
+	 * LocalDateTime.parse(dateTime); dateTime =
+	 * dateFormat.format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a"));
+	 * return dateTime; }
+	 */
+	
+//	public void setDateTime(String dateTime) {
+//		this.dateTime = dateTime;
+//	}
+	public void setDate( Map<String,String> innerDate) {
+		this.dateTime = innerDate.get("dateTime").substring(0, 10);
+	}
+
+	public BigDecimal getAmount() {
+		return amount;
+	}
+
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
+
+	public BnyBalanceInner getType() {
+		return type;
+	}
+
+	public void setType(BnyBalanceInner type) {
+		this.type = type;
+	}
+
+}
+
+
+
+
+
+package com.maybank.ilm.dto.Nostro.bnydto;
+
+import java.util.Map;
+
+public class BnyBalanceInner {
+	@Override
+	public String toString() {
+		return "BnyBalanceInner [codeOrProprietary=" + codeOrProprietary + "]";
+	}
+
+	private String codeOrProprietary;
+	
+
+	public String getCodeOrProprietary() {
+		return codeOrProprietary;
+	}
+
+	public void setCodeOrProprietary(Map<String,String> innerType) {
+		this.codeOrProprietary = innerType.get("code");
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 name: CI-Build-Packaging
