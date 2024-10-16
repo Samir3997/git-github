@@ -1,9 +1,2 @@
-ArgumentCaptor<String> configTypeCaptor = ArgumentCaptor.forClass(String.class);
-ArgumentCaptor<String> shortCodeCaptor = ArgumentCaptor.forClass(String.class);
-
-when(configRepo.getConfigByShortCode(configTypeCaptor.capture(), shortCodeCaptor.capture()))
-        .thenReturn(Collections.singletonList(new Config(configTypeCaptor.getValue(), "Mocked_URL")));
-
-// Verify captured arguments (optional)
-assertEquals("BNY_API", configTypeCaptor.getValue());
-assertEquals(ILMCoreConstants.BNY_RETRIEVE_HISTORICAL_ACCOUNT_BALANCE, shortCodeCaptor.getValue());
+Config mockConfig = new Config("BNY_API", "https://api.bny.com/balance");
+when(configRepo.getConfigByShortCode(any(), any())).thenReturn(Collections.singletonList(mockConfig));
