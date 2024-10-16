@@ -1,2 +1,54 @@
-Config mockConfig = new Config("BNY_API", "https://api.bny.com/balance");
-when(configRepo.getConfigByShortCode(any(), any())).thenReturn(Collections.singletonList(mockConfig));
+private BnyApiResponseDTO createMockBnyApiResponseDTO() {
+    BnyApiResponseDTO bnyApiResponseDTO = new BnyApiResponseDTO();
+
+    // Mock metadata
+    BnyApiResponseDTO.Metadata metadata = new BnyApiResponseDTO.Metadata();
+    metadata.setSuccess(true);
+    bnyApiResponseDTO.setMetadata(metadata);
+
+    // Mock data
+    BnyTransactionData transactionData = new BnyTransactionData();
+
+    // Create BnyStatementDTO list
+    List<BnyStatementDTO> statementDTOList = new ArrayList<>();
+    BnyStatementDTO statementDTO = new BnyStatementDTO();
+
+    // Create balance list and add mock balances
+    List<BnyBalanceList> balanceList = new ArrayList<>();
+    
+    // Adding OPAV balance
+    BnyBalanceInner openingBalanceType = new BnyBalanceInner();
+    Map<String, String> opavTypeMap = new HashMap<>();
+    opavTypeMap.put("code", "OPAV");
+    openingBalanceType.setCodeOrProprietary(opavTypeMap);
+    BnyBalanceList openingBalance = new BnyBalanceList();
+    openingBalance.setDateTime(Map.of("dateTime", "2023-01-01"));
+    openingBalance.setAmount(new BigDecimal("1000.00"));
+    openingBalance.setType(openingBalanceType);
+    balanceList.add(openingBalance);
+
+    // Adding CLAV balance
+    BnyBalanceInner closingBalanceType = new BnyBalanceInner();
+    Map<String, String> clavTypeMap = new HashMap<>();
+    clavTypeMap.put("code", "CLAV");
+    closingBalanceType.setCodeOrProprietary(clavTypeMap);
+    BnyBalanceList closingBalance = new BnyBalanceList();
+    closingBalance.setDateTime(Map.of("dateTime", "2023-01-01"));
+    closingBalance.setAmount(new BigDecimal("1500.00"));
+    closingBalance.setType(closingBalanceType);
+    balanceList.add(closingBalance);
+
+    // Set balance list to the statement DTO
+    statementDTO.setBalance(balanceList);
+
+    // Add the statement DTO to the list
+    statementDTOList.add(statementDTO);
+
+    // Set the statement list to transaction data
+    transactionData.setStatement(statementDTOList);
+
+    // Set the transaction data in the response DTO
+    bnyApiResponseDTO.setData(transactionData);
+
+    return bnyApiResponseDTO;
+}
