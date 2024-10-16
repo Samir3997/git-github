@@ -1,13 +1,12 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,11 +17,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maybank.ilm.core.dao.ConfigRepo;
 import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
 import com.maybank.ilm.core.nostro.nostroapihandlers.BnyApiRespHandler;
-import com.maybank.ilm.core.util.ILMCoreConstants;
 import com.maybank.ilm.dto.Nostro.NostroApiCommon;
 import com.maybank.ilm.dto.Nostro.NostroBalanceDTO;
 import com.maybank.ilm.dto.Nostro.NostroRequestDTO;
@@ -31,11 +33,10 @@ import com.maybank.ilm.dto.Nostro.bnydto.BnyApiResponseDTO;
 import com.maybank.ilm.dto.Nostro.bnydto.BnyBalanceList;
 import com.maybank.ilm.dto.Nostro.bnydto.BnyEntryList;
 import com.maybank.ilm.dto.Nostro.bnydto.BnyStatementDTO;
+import com.maybank.ilm.dto.Nostro.bnydto.BnyTransactionData;
+import org.json.JSONObject;
 
 class BnyApiRespHandlerTest {
-
-    @InjectMocks
-    private BnyApiRespHandler bnyApiRespHandler;
 
     @Mock
     private EntityAccountMappingRepo accountMappingRepo;
@@ -46,59 +47,137 @@ class BnyApiRespHandlerTest {
     @Mock
     private ConfigRepo configRepo;
 
+    @InjectMocks
+    private BnyApiRespHandler bnyApiRespHandler;
+
+    @Mock
+    private ObjectMapper objectMapper;
+
+    private NostroRequestDTO apiDTO;
+
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        MockitoAnnotations.initMocks(this);
+
+        // Mocking NostroRequestDTO
+        apiDTO = new NostroRequestDTO();
+        apiDTO.setFromDate(LocalDate.now().minusDays(1));
+        apiDTO.setToDate(LocalDate.now());
+        apiDTO.setReportType("PP");
     }
 
     @Test
-    void testNostroApiService_PastPeriod_Successful() {
-        // Set up mock objects and expected values
-        NostroRequestDTO apiDTO = new NostroRequestDTO();
-        apiDTO.setReportType("PP");
-        apiDTO.setFromDate(LocalDate.of(2023, 1, 1));
-        apiDTO.setToDate(LocalDate.of(2023, 12, 31));
+    void testNostroApiService_PastPeriod() throws Exception {
+        // Mocking configuration data from ConfigRepo
+        when(configRepo.getConfigByShortCode(anyString(), anyString())).thenReturn(mockConfigResponse());
 
+        // Mock token generation
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer token");
+        headers.set("Authorization", "Bearer testToken");
 
-        BnyApiResponseDTO bnyApiResponseDTO = new BnyApiResponseDTO();
-        bnyApiResponseDTO.getMetadata().setSuccess(true);
+        ResponseEntity<String> mockTokenResponse = mock(ResponseEntity.class);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(mockTokenResponse);
+        when(mockTokenResponse.getBody()).thenReturn("{\"access_token\": \"testToken\"}");
 
-        BnyStatementDTO bnyStatementDTO = new BnyStatementDTO();
-        bnyStatementDTO.getAccount().setCurrency("USD");
+        // Mocking the BNY API response
+        ResponseEntity<String> mockApiResponse = mock(ResponseEntity.class);
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(mockApiResponse);
 
-        BnyEntryList bnyEntryList = new BnyEntryList();
-        bnyEntryList.setCreditDebitIndicator("CR");
-        bnyEntryList.setAmount(new BigDecimal("100.00"));
-        bnyStatementDTO.getEntry().add(bnyEntryList);
+        BnyApiResponseDTO bnyApiResponseDTO = createMockBnyApiResponseDTO();
+        when(objectMapper.readValue(anyString(), any(TypeReference.class))).thenReturn(bnyApiResponseDTO);
 
-        BnyBalanceList bnyBalanceList = new BnyBalanceList();
-        bnyBalanceList.setType(new BnyBalanceList.Type());
-        bnyBalanceList.getType().setCodeOrProprietary("CLAV");
-        bnyBalanceList.setAmount(new BigDecimal("1000.00"));
-        bnyStatementDTO.getBalance().add(bnyBalanceList);
-
-        bnyApiResponseDTO.getData().getStatement().add(bnyStatementDTO);
-
-        when(configRepo.getConfigByShortCode(any(), any())).thenReturn(Collections.singletonList(new Config("BNY_API", "https://api.bny.com/balance")));
-        when(restTemplate.exchange(any(), any(), any(), any())).thenReturn(ResponseEntity.ok("{\"access_token\":\"token\"}"));
-        when(restTemplate.exchange(any(), any(), any(), any())).thenReturn(ResponseEntity.ok(bnyApiResponseDTO));
-
-        // Call the method and assert the results
+        // Call the method under test
         List<NostroApiCommon> result = bnyApiRespHandler.nostroApiService(apiDTO);
 
+        // Assertions
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
         assertEquals(1, result.size());
-        NostroApiCommon apiCommon = result.get(0);
-        assertEquals(1, apiCommon.getNostroTransactionDTO().size());
-        NostroTransaction transaction = apiCommon.getNostroTransactionDTO().get(0);
-        assertEquals("CR", transaction.getTransactionType());
+
+        NostroApiCommon nostroApiCommon = result.get(0);
+        assertEquals(1, nostroApiCommon.getNostroTransactionDTO().size());
+        assertEquals(1, nostroApiCommon.getNostroBalanceDTO().size());
+
+        // Transaction assertions
+        NostroTransaction transaction = nostroApiCommon.getNostroTransactionDTO().get(0);
+        assertEquals("Test Remark", transaction.getTransactionRemarks());
+        assertEquals("Credit", transaction.getTransactionType());
         assertEquals(new BigDecimal("100.00"), transaction.getTotalAmount());
         assertEquals("USD", transaction.getCurrency());
-        assertEquals(1, apiCommon.getNostroBalanceDTO().size());
-        NostroBalanceDTO balance = apiCommon.getNostroBalanceDTO().get(0);
-        assertEquals(new BigDecimal("1000.00"), balance.getRunningBalance());
+
+        // Balance assertions
+        NostroBalanceDTO balanceDTO = nostroApiCommon.getNostroBalanceDTO().get(0);
+        assertEquals("2023-01-01", balanceDTO.getAsOfDate());
+        assertEquals(new BigDecimal("1000.00"), balanceDTO.getOpeningBalance());
+        assertEquals(new BigDecimal("1500.00"), balanceDTO.getRunningBalance());
     }
 
-    // Add more test cases for different scenarios like intra-day report, errors, etc.
+    @Test
+    void testNostroApiService_ErrorHandling() throws Exception {
+        // Mock configuration data from ConfigRepo
+        when(configRepo.getConfigByShortCode(anyString(), anyString())).thenReturn(mockConfigResponse());
+
+        // Simulate an error during token retrieval
+        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
+                .thenThrow(HttpClientErrorException.class);
+
+        // Call the method under test
+        List<NostroApiCommon> result = bnyApiRespHandler.nostroApiService(apiDTO);
+
+        // Assertions
+        assertNotNull(result);
+        assertTrue(result.isEmpty());  // As the error will return an empty list
+    }
+
+    // Mocking ConfigRepo response
+    private List<Config> mockConfigResponse() {
+        Config config1 = new Config();
+        config1.setConfigId(1L);
+        config1.setConfigType("BNY_API");
+        config1.setShortCode("BNY_RETRIEVE_HISTORICAL_ACCOUNT_BALANCE");
+        config1.setValue("http://mock-api-url/retrieveHistorical");
+
+        Config config2 = new Config();
+        config2.setConfigId(2L);
+        config2.setConfigType("BNY_API");
+        config2.setShortCode("BNY_AUTH_TOKEN");
+        config2.setValue("http://mock-api-url/authToken");
+
+        List<Config> configList = new ArrayList<>();
+        configList.add(config1);
+        configList.add(config2);
+
+        return configList;
+    }
+
+    // Mocking BNY API response DTO
+    private BnyApiResponseDTO createMockBnyApiResponseDTO() {
+        BnyApiResponseDTO bnyApiResponseDTO = new BnyApiResponseDTO();
+        BnyTransactionData transactionData = new BnyTransactionData();
+        
+        BnyStatementDTO statementDTO = new BnyStatementDTO();
+        statementDTO.setAccount(new BnyStatementDTO.Account("USD"));
+
+        List<BnyBalanceList> balanceList = new ArrayList<>();
+        balanceList.add(new BnyBalanceList("2023-01-01", new BigDecimal("1000.00"), new BnyBalanceList.Type("OPAV")));
+        balanceList.add(new BnyBalanceList("2023-01-01", new BigDecimal("1500.00"), new BnyBalanceList.Type("CLAV")));
+        statementDTO.setBalance(balanceList);
+
+        List<BnyEntryList> entryList = new ArrayList<>();
+        entryList.add(new BnyEntryList(new BigDecimal("100.00"), "Credit", "Test Remark"));
+        statementDTO.setEntry(entryList);
+
+        List<BnyStatementDTO> statementList = new ArrayList<>();
+        statementList.add(statementDTO);
+        
+        transactionData.setStatement(statementList);
+        bnyApiResponseDTO.setData(transactionData);
+
+        BnyApiResponseDTO.Metadata metadata = new BnyApiResponseDTO.Metadata(true, "Success");
+        bnyApiResponseDTO.setMetadata(metadata);
+
+        return bnyApiResponseDTO;
+    }
 }
