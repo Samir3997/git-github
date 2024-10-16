@@ -313,6 +313,79 @@ public interface ConfigRepo extends JpaRepository<Config, Long> {
 
 
 
+package com.maybank.ilm.entity;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.SequenceGenerator;
+import javax.persistence.Table;
+
+@Entity
+@Table(name = "CONFIG")
+public class Config {
+
+	@Id
+	@SequenceGenerator(name = "configId", sequenceName = "SEQ_CONFIG_ID", allocationSize = 1)
+	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "configId")
+	@Column(name = "CONFIG_ID")
+	private Long configId;
+	
+	@Column(name = "CONFIG_ENTRY")
+	private String configType;
+	
+	@Column(name = "CONFIG_SHORT_CODE")
+	private String shortCode;
+	
+	@Column(name = "CONFIG_VALUE")
+	private String value;
+
+	public Long getConfigId() {
+		return configId;
+	}
+
+	public void setConfigId(Long configId) {
+		this.configId = configId;
+	}
+
+	public String getConfigType() {
+		return configType;
+	}
+
+	public void setConfigType(String configType) {
+		this.configType = configType;
+	}
+
+	public String getShortCode() {
+		return shortCode;
+	}
+
+	public void setShortCode(String shortCode) {
+		this.shortCode = shortCode;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
+
+	@Override
+	public String toString() {
+		return "Config [configId=" + configId + ", configType=" + configType + ", shortCode=" + shortCode + ", value="
+				+ value + "]";
+	}
+		
+}
+
+
+
+
+
 
 
 
