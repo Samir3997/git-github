@@ -1,54 +1,77 @@
-private BnyApiResponseDTO createMockBnyApiResponseDTO() {
-    BnyApiResponseDTO bnyApiResponseDTO = new BnyApiResponseDTO();
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-    // Mock metadata
-    BnyApiResponseDTO.Metadata metadata = new BnyApiResponseDTO.Metadata();
-    metadata.setSuccess(true);
-    bnyApiResponseDTO.setMetadata(metadata);
+import java.math.BigDecimal;
 
-    // Mock data
-    BnyTransactionData transactionData = new BnyTransactionData();
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-    // Create BnyStatementDTO list
-    List<BnyStatementDTO> statementDTOList = new ArrayList<>();
-    BnyStatementDTO statementDTO = new BnyStatementDTO();
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-    // Create balance list and add mock balances
-    List<BnyBalanceList> balanceList = new ArrayList<>();
-    
-    // Adding OPAV balance
-    BnyBalanceInner openingBalanceType = new BnyBalanceInner();
-    Map<String, String> opavTypeMap = new HashMap<>();
-    opavTypeMap.put("code", "OPAV");
-    openingBalanceType.setCodeOrProprietary(opavTypeMap);
-    BnyBalanceList openingBalance = new BnyBalanceList();
-    openingBalance.setDateTime(Map.of("dateTime", "2023-01-01"));
-    openingBalance.setAmount(new BigDecimal("1000.00"));
-    openingBalance.setType(openingBalanceType);
-    balanceList.add(openingBalance);
+public class NostroApiServiceTest {
 
-    // Adding CLAV balance
-    BnyBalanceInner closingBalanceType = new BnyBalanceInner();
-    Map<String, String> clavTypeMap = new HashMap<>();
-    clavTypeMap.put("code", "CLAV");
-    closingBalanceType.setCodeOrProprietary(clavTypeMap);
-    BnyBalanceList closingBalance = new BnyBalanceList();
-    closingBalance.setDateTime(Map.of("dateTime", "2023-01-01"));
-    closingBalance.setAmount(new BigDecimal("1500.00"));
-    closingBalance.setType(closingBalanceType);
-    balanceList.add(closingBalance);
+    @Mock
+    private RestTemplate restTemplate;
 
-    // Set balance list to the statement DTO
-    statementDTO.setBalance(balanceList);
+    @Mock
+    private ObjectMapper objectMapper;
 
-    // Add the statement DTO to the list
-    statementDTOList.add(statementDTO);
+    @InjectMocks
+    private NostroApiService nostroApiService;  // Assuming this is the service containing your logic
 
-    // Set the statement list to transaction data
-    transactionData.setStatement(statementDTOList);
+    private HttpHeaders headers;
+    private String bnyAccountNumber = "123456";
+    private String retrieveHistoricalAccountBalanceApi = "http://mock-api.com/api/balance";
 
-    // Set the transaction data in the response DTO
-    bnyApiResponseDTO.setData(transactionData);
+    @BeforeEach
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
+        
+        // Setup your headers (if necessary)
+        headers = new HttpHeaders();
+        headers.add("Authorization", "Bearer token");
+    }
 
-    return bnyApiResponseDTO;
+    @Test
+    public void testNostroApiService_IntraDay_Success() throws Exception {
+        // Mock the historical account balance response
+        String mockResponseBody = "{ \"metadata\": { \"success\": true }, \"data\": { } }";  // Replace with a valid response
+
+        // Mocking RestTemplate's exchange method
+        ResponseEntity<String> mockResponseEntity = ResponseEntity.ok(mockResponseBody);
+        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
+                .thenReturn(mockResponseEntity);
+
+        // Mocking ObjectMapper's readValue method to return a mock BnyApiResponseDTO
+        BnyApiResponseDTO mockBnyApiResponseDTO = new BnyApiResponseDTO();
+        BnyApiResponseDTO.Metadata metadata = new BnyApiResponseDTO.Metadata();
+        metadata.setSuccess(true);  // Ensure the success is true
+        mockBnyApiResponseDTO.setMetadata(metadata);
+
+        when(objectMapper.readValue(eq(mockResponseBody), any(TypeReference.class)))
+                .thenReturn(mockBnyApiResponseDTO);
+
+        // Call the method under test
+        nostroApiService.callNostroApi();  // Assuming the method name is callNostroApi()
+
+        // Verify that restTemplate.exchange was called once with expected parameters
+        verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class));
+
+        // Verify that objectMapper.readValue was called once to deserialize the response
+        verify(objectMapper, times(1)).readValue(eq(mockResponseBody), any(TypeReference.class));
+
+        // Add additional assertions based on your logic
+        assertNotNull(mockBnyApiResponseDTO);
+        assertTrue(mockBnyApiResponseDTO.getMetadata().getSuccess());
+    }
 }
