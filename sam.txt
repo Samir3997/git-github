@@ -1,3 +1,9 @@
+import java.util.Random;
+
+String[] codes = {"CLBD", "CLBS", "RCBS"};
+Random random = new Random();
+String randomCode = codes[random.nextInt(codes.length)];
+
 String mockResponseBody = "{"
     + "\"metadata\": {"
     + "\"success\": true"
@@ -19,7 +25,7 @@ String mockResponseBody = "{"
     + "},"
     + "\"type\": {"
     + "\"codeOrProprietary\": {"
-    + "\"code\": \"CLBD\""
+    + "\"code\": \"" + randomCode + "\""
     + "}"
     + "}"
     + "}]"
