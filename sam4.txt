@@ -1,12 +1,11 @@
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-import java.math.BigDecimal;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Before;
+import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -14,9 +13,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.util.UriComponentsBuilder;
 
 public class NostroApiServiceTest {
 
@@ -27,51 +24,73 @@ public class NostroApiServiceTest {
     private ObjectMapper objectMapper;
 
     @InjectMocks
-    private NostroApiService nostroApiService;  // Assuming this is the service containing your logic
+    private NostroApiService nostroApiService;  // Assuming NostroApiService is the service class you're testing
 
-    private HttpHeaders headers;
-    private String bnyAccountNumber = "123456";
-    private String retrieveHistoricalAccountBalanceApi = "http://mock-api.com/api/balance";
+    private String retrieveHistoricalAccountBalanceApi = "http://example.com/api/historical";  // Mock API URL
 
-    @BeforeEach
+    @Before
     public void setUp() {
-        MockitoAnnotations.openMocks(this);
-        
-        // Setup your headers (if necessary)
-        headers = new HttpHeaders();
-        headers.add("Authorization", "Bearer token");
+        MockitoAnnotations.initMocks(this);
     }
 
     @Test
-    public void testNostroApiService_IntraDay_Success() throws Exception {
-        // Mock the historical account balance response
-        String mockResponseBody = "{ \"metadata\": { \"success\": true }, \"data\": { } }";  // Replace with a valid response
+    public void testHistoricalAccountBalanceApi() throws Exception {
+        // Mock headers
+        HttpEntity<Object> mockHistoricalAccBalEntity = new HttpEntity<>(null);  // Replace null with actual headers if necessary
 
-        // Mocking RestTemplate's exchange method
-        ResponseEntity<String> mockResponseEntity = ResponseEntity.ok(mockResponseBody);
-        when(restTemplate.exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class)))
-                .thenReturn(mockResponseEntity);
+        // Mock URL
+        String mockUrlTemplateHistoricalAccBal = UriComponentsBuilder
+                .fromHttpUrl(retrieveHistoricalAccountBalanceApi)
+                .queryParam("accounts", "12345ALL")
+                .queryParam("dateType", "current")
+                .queryParam("reportType", "detail")
+                .encode()
+                .toUriString();
 
-        // Mocking ObjectMapper's readValue method to return a mock BnyApiResponseDTO
+        // Mock JSON response
+        String mockJsonResponse = "{ \"metadata\": { \"success\": true }, \"data\": { /* some data */ } }";
+        ResponseEntity<String> mockHistoricalAccBalResponse = ResponseEntity.ok(mockJsonResponse);
+
+        // Mock the BnyApiResponseDTO that ObjectMapper will return
         BnyApiResponseDTO mockBnyApiResponseDTO = new BnyApiResponseDTO();
         BnyApiResponseDTO.Metadata metadata = new BnyApiResponseDTO.Metadata();
-        metadata.setSuccess(true);  // Ensure the success is true
+        metadata.setSuccess(true);
         mockBnyApiResponseDTO.setMetadata(metadata);
 
-        when(objectMapper.readValue(eq(mockResponseBody), any(TypeReference.class)))
-                .thenReturn(mockBnyApiResponseDTO);
+        // Mock RestTemplate.exchange() to return the mocked ResponseEntity
+        when(restTemplate.exchange(
+                eq(mockUrlTemplateHistoricalAccBal), // Expected URL
+                eq(HttpMethod.GET), // Expected HTTP method
+                eq(mockHistoricalAccBalEntity), // Expected entity (headers)
+                eq(String.class) // Expected response type
+        )).thenReturn(mockHistoricalAccBalResponse);
+
+        // Custom ArgumentMatcher to match TypeReference<BnyApiResponseDTO>
+        doReturn(mockBnyApiResponseDTO)
+            .when(objectMapper)
+            .readValue(eq(mockJsonResponse), argThat(new ArgumentMatcher<TypeReference<BnyApiResponseDTO>>() {
+                @Override
+                public boolean matches(TypeReference<BnyApiResponseDTO> argument) {
+                    return argument.getType().equals(BnyApiResponseDTO.class);
+                }
+            }));
 
         // Call the method under test
-        nostroApiService.callNostroApi();  // Assuming the method name is callNostroApi()
+        BnyApiResponseDTO result = nostroApiService.callNostroApi("12345", /* add other required params */);
 
-        // Verify that restTemplate.exchange was called once with expected parameters
-        verify(restTemplate, times(1)).exchange(any(String.class), eq(HttpMethod.GET), any(HttpEntity.class), eq(String.class));
+        // Verify that RestTemplate.exchange was called once
+        verify(restTemplate, times(1)).exchange(
+                eq(mockUrlTemplateHistoricalAccBal),
+                eq(HttpMethod.GET),
+                eq(mockHistoricalAccBalEntity),
+                eq(String.class)
+        );
 
-        // Verify that objectMapper.readValue was called once to deserialize the response
-        verify(objectMapper, times(1)).readValue(eq(mockResponseBody), any(TypeReference.class));
+        // Verify that ObjectMapper.readValue was called once
+        verify(objectMapper, times(1)).readValue(anyString(), any(TypeReference.class));
 
-        // Add additional assertions based on your logic
-        assertNotNull(mockBnyApiResponseDTO);
-        assertTrue(mockBnyApiResponseDTO.getMetadata().getSuccess());
+        // Assert the returned object is not null and the success flag is true
+        assertNotNull(result);
+        assertTrue(result.getMetadata().getSuccess());
     }
 }
