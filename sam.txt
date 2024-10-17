@@ -1,34 +1,8 @@
-import java.util.Random;
-
-String[] codes = {"CLBD", "CLBS", "RCBS"};
-Random random = new Random();
-String randomCode = codes[random.nextInt(codes.length)];
-
-String mockResponseBody = "{"
-    + "\"metadata\": {"
-    + "\"success\": true"
-    + "},"
-    + "\"data\": {"
-    + "\"statement\": [{"
-    + "\"account\": {"
-    + "\"currency\": \"USD\""
-    + "},"
-    + "\"entry\": [{"
-    + "\"amount\": 300,"
-    + "\"creditDebitIndicator\": \"CRDT\","
-    + "\"additionalEntryInformation\": \"XYZ\""
-    + "}],"
-    + "\"balance\": [{"
-    + "\"amount\": 400,"
-    + "\"date\": {"
-    + "\"dateTime\": \"2023-01-01\""
-    + "},"
-    + "\"type\": {"
-    + "\"codeOrProprietary\": {"
-    + "\"code\": \"" + randomCode + "\""
-    + "}"
-    + "}"
-    + "}]"
-    + "}]"
-    + "}"
-    + "}";
+@Test
+    public void testGetNostroApiType() {
+        // Act
+        String result = nostroApiHandler.getNostroApiType();
+        
+        // Assert
+        assertEquals(ILMCoreConstants.BANK_OF_NEW_YORK, result);
+    }
