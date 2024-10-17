@@ -1,96 +1,11 @@
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
+  doAnswer(invocation -> {
+            // Capture the parameters passed to readValue
+            String jsonResponse = invocation.getArgument(0);
+            TypeReference<?> typeReference = invocation.getArgument(1);
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
-public class NostroApiServiceTest {
-
-    @Mock
-    private RestTemplate restTemplate;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-    @InjectMocks
-    private NostroApiService nostroApiService;  // Assuming NostroApiService is the service class you're testing
-
-    private String retrieveHistoricalAccountBalanceApi = "http://example.com/api/historical";  // Mock API URL
-
-    @Before
-    public void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
-    @Test
-    public void testHistoricalAccountBalanceApi() throws Exception {
-        // Mock headers
-        HttpEntity<Object> mockHistoricalAccBalEntity = new HttpEntity<>(null);  // Replace null with actual headers if necessary
-
-        // Mock URL
-        String mockUrlTemplateHistoricalAccBal = UriComponentsBuilder
-                .fromHttpUrl(retrieveHistoricalAccountBalanceApi)
-                .queryParam("accounts", "12345ALL")
-                .queryParam("dateType", "current")
-                .queryParam("reportType", "detail")
-                .encode()
-                .toUriString();
-
-        // Mock JSON response
-        String mockJsonResponse = "{ \"metadata\": { \"success\": true }, \"data\": { /* some data */ } }";
-        ResponseEntity<String> mockHistoricalAccBalResponse = ResponseEntity.ok(mockJsonResponse);
-
-        // Mock the BnyApiResponseDTO that ObjectMapper will return
-        BnyApiResponseDTO mockBnyApiResponseDTO = new BnyApiResponseDTO();
-        BnyApiResponseDTO.Metadata metadata = new BnyApiResponseDTO.Metadata();
-        metadata.setSuccess(true);
-        mockBnyApiResponseDTO.setMetadata(metadata);
-
-        // Mock RestTemplate.exchange() to return the mocked ResponseEntity
-        when(restTemplate.exchange(
-                eq(mockUrlTemplateHistoricalAccBal), // Expected URL
-                eq(HttpMethod.GET), // Expected HTTP method
-                eq(mockHistoricalAccBalEntity), // Expected entity (headers)
-                eq(String.class) // Expected response type
-        )).thenReturn(mockHistoricalAccBalResponse);
-
-        // Custom ArgumentMatcher to match TypeReference<BnyApiResponseDTO>
-        doReturn(mockBnyApiResponseDTO)
-            .when(objectMapper)
-            .readValue(eq(mockJsonResponse), argThat(new ArgumentMatcher<TypeReference<BnyApiResponseDTO>>() {
-                @Override
-                public boolean matches(TypeReference<BnyApiResponseDTO> argument) {
-                    return argument.getType().equals(BnyApiResponseDTO.class);
-                }
-            }));
-
-        // Call the method under test
-        BnyApiResponseDTO result = nostroApiService.callNostroApi("12345", /* add other required params */);
-
-        // Verify that RestTemplate.exchange was called once
-        verify(restTemplate, times(1)).exchange(
-                eq(mockUrlTemplateHistoricalAccBal),
-                eq(HttpMethod.GET),
-                eq(mockHistoricalAccBalEntity),
-                eq(String.class)
-        );
-
-        // Verify that ObjectMapper.readValue was called once
-        verify(objectMapper, times(1)).readValue(anyString(), any(TypeReference.class));
-
-        // Assert the returned object is not null and the success flag is true
-        assertNotNull(result);
-        assertTrue(result.getMetadata().getSuccess());
-    }
-}
+            // Ensure the correct response is mocked
+            if (jsonResponse.equals(mockJsonResponse) && typeReference.getType().equals(BnyApiResponseDTO.class)) {
+                return mockBnyApiResponseDTO;
+            }
+            return null;
+        }).when(objectMapper).readValue(anyString(), any(TypeReference.class));
