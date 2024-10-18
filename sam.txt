@@ -1,8 +1,1 @@
-@Test
-    public void testGetNostroApiType() {
-        // Act
-        String result = nostroApiHandler.getNostroApiType();
-        
-        // Assert
-        assertEquals(ILMCoreConstants.BANK_OF_NEW_YORK, result);
-    }
+Please provide me check-in access for below svn path  as few days back, write acces is removed and only have read access.
