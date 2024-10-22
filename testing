@@ -1,48 +1,16 @@
-name: CI-AppServerDeployment
-
-on: 
- workflow_dispatch:
-  inputs:
-    WarNames:
-     description: 'War Names from Users'
-     required: true
-     type: string
-     default: 'ILMUI.war,ilm-web.war,ilm-gateway.war'
-
- 
- workflow_call:
-
-jobs:
-  Job1:
-    uses: MBBLABS/MLPL_DEVOPS/.github/workflows/MLPL_DeployResuable-workflow.yml@master                 
-
-
-    with:
-      WarNames: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.WarNames || 'ILMUI.war,ilm-web.war,ilm-gateway.war' }}
-      AppName: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.AppName || 'ILM' }}
-      Instance2Deploy: ${{ github.event_name == 'workflow_dispatch' && 'QA' || 'QA' }}
-      WebLogicFlag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.AppName || 'ON' }}
-      JbossFlag: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.AppName || 'OFF' }}
-
-
-
-
-
-
-
-
-
-
-
-
-
 package com.maybank.ilm.core.nostro.nostroapihandlers;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -58,23 +26,27 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maybank.ilm.core.dao.ConfigRepo;
 import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
+import com.maybank.ilm.core.util.DateUtil;
 import com.maybank.ilm.core.util.ILMCoreConstants;
 import com.maybank.ilm.dto.Nostro.NostroApiCommon;
 import com.maybank.ilm.dto.Nostro.NostroBalanceDTO;
 import com.maybank.ilm.dto.Nostro.NostroRequestDTO;
 import com.maybank.ilm.dto.Nostro.NostroTransaction;
-import com.maybank.ilm.dto.Nostro.bnydto.BnyApiResponseDTO;
-import com.maybank.ilm.dto.Nostro.bnydto.BnyBalanceList;
-import com.maybank.ilm.dto.Nostro.bnydto.BnyEntryList;
-import com.maybank.ilm.dto.Nostro.bnydto.BnyStatementDTO;
-import com.maybank.ilm.dto.Nostro.bnydto.BnyTransactionData;
+import com.maybank.ilm.dto.Nostro.bofadto.BOFAAccountTransactions;
+import com.maybank.ilm.dto.Nostro.bofadto.BOFAApiResponseDTO;
+import com.maybank.ilm.dto.Nostro.bofadto.BofaAccountBalancesDTO;
+import com.maybank.ilm.dto.Nostro.bofadto.BofaBalances;
+import com.maybank.ilm.dto.Nostro.bofadto.BofaErrorMsg;
+import com.maybank.ilm.dto.Nostro.bofadto.BofaTransactions;
 
 @Component
-public class BnyApiRespHandler extends NostroApiAbstractImpl {
+public class BofaApiRespHandler extends NostroApiAbstractImpl {
 	@Autowired
 	EntityAccountMappingRepo accountMappingRepo;
 
@@ -84,462 +56,118 @@ public class BnyApiRespHandler extends NostroApiAbstractImpl {
 	@Autowired
 	private ConfigRepo configRepo;
 
-	private static final Logger LOGGER = LogManager.getLogger(BnyApiRespHandler.class);
+	private static final Logger LOGGER = LogManager.getLogger(BofaApiRespHandler.class);
 
 	@Override
 	public List<NostroApiCommon> nostroApiService(NostroRequestDTO apiDTO) {
-		LOGGER.info("==========BNYApiRespHandler============" + apiDTO.getReportType());
+		LOGGER.info("==========BofaApiRespHandler============" + apiDTO.getReportType());
 		HttpHeaders headers = getHeaders();
-		String strStartDate = apiDTO.getFromDate().toString();
-		String strendDate = apiDTO.getToDate().toString();
-		ObjectMapper objectMapper = new ObjectMapper();
-
-		NostroApiCommon nostroApiCommon = new NostroApiCommon();
-		List<NostroApiCommon> listNostroApiCommon = new ArrayList<>();
-		List<NostroTransaction> listNostroTransaction = new ArrayList<>();
-		List<NostroBalanceDTO> listNostroBalance = new ArrayList<>();
-		BnyApiResponseDTO bnyApiResponseDTO = null;
-		String currency = "";
-
-		String retrieveHistoricalAccountBalanceApi = configRepo
-				.getConfigByShortCode("BNY_API", ILMCoreConstants.BNY_RETRIEVE_HISTORICAL_ACCOUNT_BALANCE).get(0)
-				.getValue().toString();
-		String authTokenApi = configRepo.getConfigByShortCode("BNY_API", ILMCoreConstants.BNY_AUTH_TOKEN).get(0)
-				.getValue().toString();
-		// String bnyAccountNumber = configRepo.getConfigByShortCode("BNY_ACCOUNTNO",
-		// ILMCoreConstants.BNY_ACCOUNTNO_BALANCE).get(0).getValue().toString();
-		String bnyAccountNumber = "";
-
+		String fromDate = apiDTO.getFromDate().toString();
+		String toDate = apiDTO.getToDate().toString();
+		String transactionsApi = "";
+		String authTokenUrl = configRepo.getConfigByShortCode(ILMCoreConstants.BOFA_AUTH_TOKEN_URL, ILMCoreConstants.BOFA_AUTH_TOKEN_URL)
+				.get(0).getValue().toString();
+		HttpEntity<Object> tokenEntity = new HttpEntity<Object>(headers);
+		ResponseEntity<String> authToken = restTemplate.exchange(authTokenUrl, HttpMethod.POST, tokenEntity,
+				String.class);
 		try {
-			HttpEntity<Object> tokenEntity = new HttpEntity<Object>(headers);
-			ResponseEntity<String> authToken = restTemplate.exchange(authTokenApi, HttpMethod.POST, tokenEntity,
-					String.class);
-			try {
-				JSONObject tokenObject = new JSONObject(authToken.getBody());
-				headers.set("Authorization", "Bearer " + tokenObject.getString("access_token"));
-			} catch (HttpClientErrorException exception) {
-				ObjectMapper errorMapper = new ObjectMapper();
-				try {
-					String bnyTokenErrorMsg = errorMapper.readValue(exception.getResponseBodyAsString(), String.class);
-					JSONObject tokenObject = new JSONObject(bnyTokenErrorMsg);
-				} catch (Exception e) {
-					LOGGER.info("BNYError-TokenApiRespHandler-JSONMapping error : " + e);
-				}
-
-			} catch (Exception e) {
-				LOGGER.info("Token_Exception " + e.getMessage());
-			}
-			LOGGER.info("Token_Done");
-
-			if (apiDTO.getReportType().equals("PP")) {
-				System.out.println("-------Past period--------");
-				HttpEntity<Object> historicalAccBalEntity = new HttpEntity<Object>(headers);
-				String urlTemplateHistoricalAccBal = UriComponentsBuilder
-						.fromHttpUrl(retrieveHistoricalAccountBalanceApi)
-						.queryParam("accounts", bnyAccountNumber + "ALL").queryParam("toDate", strendDate)
-						.queryParam("fromDate", strStartDate).queryParam("reportType", "detail").encode().toUriString();
-				ResponseEntity<String> historicalAccBalResponse = restTemplate.exchange(urlTemplateHistoricalAccBal,
-						HttpMethod.GET, historicalAccBalEntity, String.class);
-				bnyApiResponseDTO = objectMapper.readValue(historicalAccBalResponse.getBody(),
-						new TypeReference<BnyApiResponseDTO>() {
-						});
-			} else {
-				System.out.println("-----Intra Day-----");
-				HttpEntity<Object> historicalAccBalEntity = new HttpEntity<Object>(headers);
-				String urlTemplateHistoricalAccBal = UriComponentsBuilder
-						.fromHttpUrl(retrieveHistoricalAccountBalanceApi)
-						.queryParam("accounts", bnyAccountNumber + "ALL").queryParam("dateType", "current")
-						.queryParam("reportType", "detail").encode().toUriString();
-				ResponseEntity<String> historicalAccBalResponse = restTemplate.exchange(urlTemplateHistoricalAccBal,
-						HttpMethod.GET, historicalAccBalEntity, String.class);
-				bnyApiResponseDTO = objectMapper.readValue(historicalAccBalResponse.getBody(),
-						new TypeReference<BnyApiResponseDTO>() {
-						});
-			}
-			
-			
-			if (bnyApiResponseDTO.getMetadata().getSuccess() == true) {
-				System.out.println(bnyApiResponseDTO.getData().toString());
-				BnyTransactionData bnyResponseData = bnyApiResponseDTO.getData();
-				List<BnyStatementDTO> bnyStatementDTOList = bnyResponseData.getStatement();
-				for (BnyStatementDTO bnyStatementDTO : bnyStatementDTOList) {
-					List<BnyBalanceList> bnyBalanceList = bnyStatementDTO.getBalance();
-					List<BnyEntryList> bnyEntryList = bnyStatementDTO.getEntry();
-
-					currency = bnyStatementDTO.getAccount().getCurrency();
-
-					if (!CollectionUtils.isEmpty(bnyEntryList)) {
-						for (BnyEntryList bnyEntries : bnyEntryList) {
-							NostroTransaction nostroTrans = new NostroTransaction();
-							nostroTrans.setTransactionRemarks(bnyEntries.getAdditionalEntryInformation());
-							nostroTrans.setTransactionType(bnyEntries.getCreditDebitIndicator());
-							nostroTrans.setTotalAmount(bnyEntries.getAmount());
-							nostroTrans.setCurrency(currency);
-							listNostroTransaction.add(nostroTrans);
-						}
-					}
-
-					if (!CollectionUtils.isEmpty(bnyBalanceList)) {
-						Map<String, BigDecimal> openingbalMap = new HashMap<>();
-						Map<String, BigDecimal> closingbalMap = new HashMap<>();
-						for (BnyBalanceList bnyBal : bnyBalanceList) {
-							if (bnyBal.getType().getCodeOrProprietary() != null
-									&& bnyBal.getType().getCodeOrProprietary().contentEquals("OPAV")) {
-								openingbalMap.put(bnyBal.getDateTime(), bnyBal.getAmount());
-							} else if (bnyBal.getType().getCodeOrProprietary() != null
-									&& bnyBal.getType().getCodeOrProprietary().contentEquals("CLAV")) {
-								closingbalMap.put(bnyBal.getDateTime(), bnyBal.getAmount());
-							} else if (bnyBal.getType().getCodeOrProprietary() != null
-									&& bnyBal.getType().getCodeOrProprietary().contentEquals("ITAV")
-									&& apiDTO.getReportType().equals("SD")) {
-								closingbalMap.put(bnyBal.getDateTime(), bnyBal.getAmount());
-							}
-						}
-						if (!closingbalMap.isEmpty()) {
-							for (Map.Entry<String, BigDecimal> entry : closingbalMap.entrySet()) {
-								NostroBalanceDTO balanceDTO = new NostroBalanceDTO();
-								balanceDTO.setAsOfDate(entry.getKey());
-								balanceDTO.setOpeningBalance(openingbalMap.get(entry.getKey()));
-								balanceDTO.setRunningBalance(entry.getValue());
-								listNostroBalance.add(balanceDTO);
-							}
-						}
-					}
-				}
-
-			} else {
-				nostroApiCommon.setErrorMsg(bnyApiResponseDTO.getMetadata().getStatusDescription());
-			}
-			nostroApiCommon.setNostroTransactionDTO(listNostroTransaction);
-			nostroApiCommon.setNostroBalanceDTO(listNostroBalance);
-			listNostroApiCommon.add(nostroApiCommon);
-
+			JSONObject tokenObject = new JSONObject(authToken.getBody());
+			headers.set("Authorization" , "Bearer " + tokenObject.getString("access_token"));
 		} catch (Exception e) {
-			LOGGER.info("BnyApiRespHandler's Catch");
-			LOGGER.error(e.getMessage());
+			System.out.println("Token_Exception "+e.getMessage());
+		}
+		System.out.println(headers.get("Authorization"));
+		String bofaAcctNo = configRepo.getConfigByShortCode("BOFA_ACCOUNTNO", ILMCoreConstants.BOFA_ACCOUNTNO).get(0)
+				.getValue().toString();
+		String bankID = configRepo.getConfigByShortCode("BOFA_BANKID", ILMCoreConstants.BOFA_BANKID).get(0).getValue()
+				.toString();
+		
+		String transactionBody = "{\r\n" + " \"accounts\": [\r\n" + "  {\r\n" + "   \"accountNumber\":" + "\""
+				+ bofaAcctNo + "\"" + ",\r\n" + "   \"bankId\":" + "\"" + bankID + "\"" + "\r\n" + "  }\r\n" + " ],\r\n"
+				+ " \"fromDate\":" + "\"" + fromDate + "\"" + ",\r\n" + " \"toDate\":" + "\"" + toDate + "\"" + "\r\n"
+				+ "}";
+		
+		if(apiDTO.getReportType().compareTo(ILMCoreConstants.INTRA_DAY) == 0) {
+			transactionsApi = configRepo.getConfigByShortCode("BOFA_API", ILMCoreConstants.BOFA_TRANSACTION_API_SD)
+					.get(0).getValue().toString();
+		}else {
+			transactionsApi = configRepo.getConfigByShortCode("BOFA_API", ILMCoreConstants.BOFA_TRANSACTION_API_PP)
+					.get(0).getValue().toString();
+		}
+		
+
+		List<NostroApiCommon> listNostroApiCommon = new ArrayList<>();
+		BOFAApiResponseDTO bofaTransApiResponseDTO = null;
+		try {
+			
+			HttpEntity<Object> transactionEntity = new HttpEntity<Object>(transactionBody, headers);
+			ResponseEntity<String> transactionResponse = restTemplate.exchange(transactionsApi, HttpMethod.POST,
+					transactionEntity, String.class);
+
+			// Transaction API conversion starts
+			ObjectMapper objectMapper = new ObjectMapper();
+			bofaTransApiResponseDTO = objectMapper.readValue(transactionResponse.getBody(), new TypeReference<BOFAApiResponseDTO>() {
+			});
+			NostroApiCommon nostroApiCommon = new NostroApiCommon();
+			List<NostroTransaction> listNostroTransaction = new ArrayList<>();
+			List<NostroBalanceDTO> balanceList = new ArrayList<>();
+			List<BOFAAccountTransactions> bofaAccountTransactions = bofaTransApiResponseDTO.getAccountTransactions();
+			if(CollectionUtils.isNotEmpty(bofaAccountTransactions)) {
+				List<BofaTransactions> bofaList = bofaAccountTransactions.get(0).getTransactions();
+				if(CollectionUtils.isNotEmpty(bofaList)) {
+					Map<String, BigDecimal> openingbalMap = new HashMap<>();
+					Map<String, BigDecimal> closingbalMap = new HashMap<>();
+					for (BofaTransactions transaction : bofaList) {
+						if(transaction.getTransactionType().compareToIgnoreCase(ILMCoreConstants.BOFA_TRANSACTION_TYPE_DETAIL) == 0) {
+							NostroTransaction nostroTrans = new NostroTransaction();
+							nostroTrans.setDateOfTransaction(transaction.getValueDate());
+							nostroTrans.setTransactionType(transaction.getCreditDebitIndicator());
+							nostroTrans.setTotalAmount(transaction.getAmount());
+							nostroTrans.setTransactionRemarks(transaction.getTransactionDescription());
+							nostroTrans.setCurrency(bofaAccountTransactions.get(0).getCurrency());
+							listNostroTransaction.add(nostroTrans);
+						}else {
+							if(transaction.getTransactionCode().compareToIgnoreCase(ILMCoreConstants.BOFA_OPENINGBAL_TRNCODE) == 0){
+								openingbalMap.put(transaction.getValueDate(), transaction.getAmount());
+							}else if(transaction.getTransactionCode().compareToIgnoreCase(ILMCoreConstants.BOFA_CLOSINGBAL_TRNCODE) == 0) {
+								closingbalMap.put(transaction.getValueDate(), transaction.getAmount());
+							}
+						}
+						
+					}
+					if(!closingbalMap.isEmpty()) {
+						for (Map.Entry<String, BigDecimal> entry : closingbalMap.entrySet()) {
+							NostroBalanceDTO balanceDTO = new NostroBalanceDTO();
+							balanceDTO.setAsOfDate(entry.getKey());
+							balanceDTO.setOpeningBalance(openingbalMap.get(entry.getKey()));
+							balanceDTO.setRunningBalance(entry.getValue());
+							balanceList.add(balanceDTO);
+						}
+					}
+				}
+			}
+			nostroApiCommon.setNostroBalanceDTO(balanceList);
+			nostroApiCommon.setNostroTransactionDTO(listNostroTransaction);				
+			listNostroApiCommon.add(nostroApiCommon);
+		}catch(HttpClientErrorException exception) {
+			ObjectMapper errorMapper = new ObjectMapper();
+			BofaErrorMsg bofaErrorMsg = new BofaErrorMsg();
+			NostroApiCommon nostroApiCommon = new NostroApiCommon();
+			try {
+				bofaErrorMsg = errorMapper.readValue(exception.getResponseBodyAsString(), new TypeReference<BofaErrorMsg>() {});
+				nostroApiCommon.setErrorMsg(bofaErrorMsg.getErrorDesc().get(0).getDescription());
+				listNostroApiCommon.add(nostroApiCommon);
+			} catch (Exception e) {
+				LOGGER.info("BofaErrorApiRespHandler's Catch : ", e);
+			}
+		}catch (Exception e) {
+			LOGGER.info("BofaApiRespHandler's Catch : ", e);
 		}
 		return listNostroApiCommon;
 	}
 
 	@Override
 	public String getNostroApiType() {
-		return ILMCoreConstants.BANK_OF_NEW_YORK;
+		return ILMCoreConstants.BANK_OF_AMERICA_NY;
 	}
-
 }
-
-
-
-
-
-
-
-
-
-package com.maybank.ilm.core.dao;
-
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
-
-public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
-
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndAccountType(Long entitySkey, String accountType);
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndCurrencySkeyAndAccountType(Long entitySkey,Long currencySkey,String accountType);
-	public EntityAccountMapDefinition findFirstByEntityIdentifierAndAccountTypeAndCurrencySkey(String entityIdentifier, String accountType, Long currencySkey);
-	public List<EntityAccountMapDefinition> findByAccountType(String accountType);
-	public EntityAccountMapDefinition findFirstByEntitySkey(Long entitySkey);
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndCountrySkeyAndCurrencySkey(Long entitySkey, Long countrySkey, Long currencySkey);
-	public List<EntityAccountMapDefinition> getDefnByNostroInd(Character nostroInd);
-	public List<EntityAccountMapDefinition> findByEntityAcctMapSkey(Long entityAcctMapSkey);
-	public List<EntityAccountMapDefinition> findByEntityIdentifier(String bic);
-	@Query("SELECT dic.currencyCode FROM DimCurrency dic WHERE dic.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
-	public String findCurrencyCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
-
-	@Query("SELECT dc.countryCode FROM DimCountry dc WHERE dc.countrySkey IN(SELECT DISTINCT eam.countrySkey FROM EntityAccountMapDefinition eam WHERE eam.entityIdentifier = :entityIdentifier AND eam.nostroInd = :nostroInd)")
-	public String findCountryCodeByEntityIdentifier(final String entityIdentifier, final Character nostroInd);
-
-	public Optional<EntityAccountMapDefinition> findFirstByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
-	public EntityAccountMapDefinition findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndNostroBankName(Long countrySkey, Long entitySkey, Long currencySkey, String nostroAgent);
-	public List <EntityAccountMapDefinition> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
-	public EntityAccountMapDefinition findByAccountNumber(String accountNumber);
-	
-}
-
-
-
-
-
-
-
-
-
-
-
-package com.maybank.ilm.core.dao;
-
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-
-import com.maybank.ilm.entity.Config;
-
-
-public interface ConfigRepo extends JpaRepository<Config, Long> {
-
-	@Query("SELECT cf FROM Config cf where cf.configType =:configEntry")
-	public List<Config> getConfigvalues(String configEntry);
-	
-	@Query("DELETE  FROM Config cf where cf.configId =:configId")
-	public void delConfig(Long configId);
-
-	public Config saveAndFlush(Config config);
-
-	@Transactional
-	public void deleteByConfigId(Long configId);
-	
-	@Query("SELECT cf FROM Config cf where cf.configType =:configEntry and cf.shortCode like :shortCode ")
-	public List<Config> getConfigByShortCode(String configEntry,String shortCode);
-
-}
-
-
-
-
-package com.maybank.ilm.entity;
-
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
-
-@Entity
-@Table(name = "CONFIG")
-public class Config {
-
-	@Id
-	@SequenceGenerator(name = "configId", sequenceName = "SEQ_CONFIG_ID", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "configId")
-	@Column(name = "CONFIG_ID")
-	private Long configId;
-	
-	@Column(name = "CONFIG_ENTRY")
-	private String configType;
-	
-	@Column(name = "CONFIG_SHORT_CODE")
-	private String shortCode;
-	
-	@Column(name = "CONFIG_VALUE")
-	private String value;
-
-	public Long getConfigId() {
-		return configId;
-	}
-
-	public void setConfigId(Long configId) {
-		this.configId = configId;
-	}
-
-	public String getConfigType() {
-		return configType;
-	}
-
-	public void setConfigType(String configType) {
-		this.configType = configType;
-	}
-
-	public String getShortCode() {
-		return shortCode;
-	}
-
-	public void setShortCode(String shortCode) {
-		this.shortCode = shortCode;
-	}
-
-	public String getValue() {
-		return value;
-	}
-
-	public void setValue(String value) {
-		this.value = value;
-	}
-
-	@Override
-	public String toString() {
-		return "Config [configId=" + configId + ", configType=" + configType + ", shortCode=" + shortCode + ", value="
-				+ value + "]";
-	}
-		
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-package com.maybank.ilm.dto.Nostro.bnydto;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(value = Include.NON_EMPTY)
-public class BnyBalanceList {
-
-	@Override
-	public String toString() {
-		return "BnyBalanceList [type=" + type + ", amount=" + amount + ", dateTime=" + dateTime + "]";
-	}
-
-	private BnyBalanceInner type;
-	private BigDecimal amount;
-	private String dateTime;
-	
-	public String getDateTime() {
-	return dateTime;
-}
-	
-	/*
-	 * public String getDate() { LocalDateTime dateFormat =
-	 * LocalDateTime.parse(dateTime); dateTime =
-	 * dateFormat.format(DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a"));
-	 * return dateTime; }
-	 */
-	
-//	public void setDateTime(String dateTime) {
-//		this.dateTime = dateTime;
-//	}
-	public void setDate( Map<String,String> innerDate) {
-		this.dateTime = innerDate.get("dateTime").substring(0, 10);
-	}
-
-	public BigDecimal getAmount() {
-		return amount;
-	}
-
-	public void setAmount(BigDecimal amount) {
-		this.amount = amount;
-	}
-
-	public BnyBalanceInner getType() {
-		return type;
-	}
-
-	public void setType(BnyBalanceInner type) {
-		this.type = type;
-	}
-
-}
-
-
-
-
-
-package com.maybank.ilm.dto.Nostro.bnydto;
-
-import java.util.Map;
-
-public class BnyBalanceInner {
-	@Override
-	public String toString() {
-		return "BnyBalanceInner [codeOrProprietary=" + codeOrProprietary + "]";
-	}
-
-	private String codeOrProprietary;
-	
-
-	public String getCodeOrProprietary() {
-		return codeOrProprietary;
-	}
-
-	public void setCodeOrProprietary(Map<String,String> innerType) {
-		this.codeOrProprietary = innerType.get("code");
-	}
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-name: CI-Build-Packaging
-
-on: 
- workflow_dispatch:
- 
- workflow_call:
-
-jobs:
-  Job1:
-    uses: MBBLABS/MLPL_DEVOPS/.github/workflows/MLPL_BuildResuable-workflow.yml@master
-                 
-    with:
-      BuildScriptPath: "/MLPLDEVOPS/jadmin/NEW_GITHUB_WORKSPACE"
-      AppGrpName: "OTHER_APPS_SVN2GITHUB_BuildInstaller_TRUNK.pl ILM2.0"
-      ShellType: "perl"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-name: Core-NightlyBuildPipeline
-
-on: 
- 
- schedule:  #Every day at 12 AM (midnight) - MYT except for Saturday and Sunday(Conversion: 2:30 AM MYT = 6:30 PM UTC (Previous Day))
-  - cron:  "30 18 * * 1-5"  
-   
- workflow_dispatch: 
-
-jobs:
-  NightlyBuild-Step1:
-    uses: ./.github/workflows/CI-Build-Packaging.yml
-  NightlyBuild-Step2:
-    needs: NightlyBuild-Step1
-    if: always()
-    uses: ./.github/workflows/CI-AppServerDeployment.yml
