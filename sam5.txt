@@ -1,161 +1,23 @@
-import static org.mockito.Mockito.*;
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.json.JSONObject;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.maybank.ilm.core.dao.ConfigRepo;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.dto.Nostro.NostroApiCommon;
-import com.maybank.ilm.dto.Nostro.NostroRequestDTO;
-import com.maybank.ilm.dto.Nostro.bofadto.BOFAApiResponseDTO;
-import com.maybank.ilm.dto.Nostro.bofadto.BofaTransactions;
-import com.maybank.ilm.dto.Nostro.bofadto.BOFAAccountTransactions;
-import com.maybank.ilm.dto.Nostro.bofadto.BofaErrorMsg;
-import com.maybank.ilm.entity.Config;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-
-@RunWith(MockitoJUnitRunner.class)
-public class BofaApiRespHandlerTest {
-
-    @InjectMocks
-    private BofaApiRespHandler bofaApiRespHandler;
-
-    @Mock
-    private EntityAccountMappingRepo accountMappingRepo;
-
-    @Mock
-    private RestTemplate restTemplate;
-
-    @Mock
-    private ConfigRepo configRepo;
-
-    @Mock
-    private ObjectMapper objectMapper;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+class Block4Tag22FTest {
 
     @Test
-    public void testNostroApiService() throws Exception {
-        // Setup mock data
-        NostroRequestDTO apiDTO = new NostroRequestDTO();
-        apiDTO.setFromDate("2024-01-01");
-        apiDTO.setToDate("2024-01-31");
-        apiDTO.setReportType(ILMCoreConstants.INTRA_DAY);
+    void testGetterAndSetter() {
+        Block4Tag22F block4Tag22F = new Block4Tag22F();
 
-        // Mocking ConfigRepo responses for config values
-        List<Config> authTokenConfig = new ArrayList<>();
-        authTokenConfig.add(createConfig("Bearer some_token"));
-        when(configRepo.getConfigByShortCode(ILMCoreConstants.BOFA_AUTH_TOKEN_URL, ILMCoreConstants.BOFA_AUTH_TOKEN_URL))
-            .thenReturn(authTokenConfig);
+        // Test getter and setter for block4Tag22FQualifier
+        block4Tag22F.setBlock4Tag22FQualifier("qualifier");
+        assertEquals("qualifier", block4Tag22F.getBlock4Tag22FQualifier());
 
-        List<Config> bofaAccountConfig = new ArrayList<>();
-        bofaAccountConfig.add(createConfig("123456789"));
-        when(configRepo.getConfigByShortCode("BOFA_ACCOUNTNO", ILMCoreConstants.BOFA_ACCOUNTNO))
-            .thenReturn(bofaAccountConfig);
+        // Test getter and setter for block4Tag22FDataSrc
+        block4Tag22F.setBlock4Tag22FDataSrc("dataSrc");
+        assertEquals("dataSrc", block4Tag22F.getBlock4Tag22FDataSrc());
 
-        List<Config> bofaBankIDConfig = new ArrayList<>();
-        bofaBankIDConfig.add(createConfig("BOFAID123"));
-        when(configRepo.getConfigByShortCode("BOFA_BANKID", ILMCoreConstants.BOFA_BANKID))
-            .thenReturn(bofaBankIDConfig);
-
-        List<Config> transactionsApiConfig = new ArrayList<>();
-        transactionsApiConfig.add(createConfig("http://bofa.com/api"));
-        when(configRepo.getConfigByShortCode("BOFA_API", ILMCoreConstants.BOFA_TRANSACTION_API_SD))
-            .thenReturn(transactionsApiConfig);
-
-        // Mocking RestTemplate and token retrieval
-        ResponseEntity<String> tokenResponse = mock(ResponseEntity.class);
-        when(tokenResponse.getBody()).thenReturn("{\"access_token\":\"some_token\"}");
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-            .thenReturn(tokenResponse);
-
-        // Mocking response for transaction API call
-        BOFAApiResponseDTO bofaApiResponse = new BOFAApiResponseDTO();
-        List<BOFAAccountTransactions> accountTransactions = new ArrayList<>();
-        BOFAAccountTransactions accountTransaction = new BOFAAccountTransactions();
-        accountTransaction.setCurrency("USD");
-
-        List<BofaTransactions> transactions = new ArrayList<>();
-        BofaTransactions transaction = new BofaTransactions();
-        transaction.setTransactionType("DETAIL");
-        transaction.setAmount(BigDecimal.valueOf(1000));
-        transaction.setValueDate("2024-01-01");
-        transaction.setCreditDebitIndicator("CREDIT");
-        transaction.setTransactionDescription("Test transaction");
-        transactions.add(transaction);
-
-        accountTransaction.setTransactions(transactions);
-        accountTransactions.add(accountTransaction);
-        bofaApiResponse.setAccountTransactions(accountTransactions);
-
-        // Mocking ObjectMapper behavior
-        when(objectMapper.readValue(anyString(), eq(BOFAApiResponseDTO.class))).thenReturn(bofaApiResponse);
-
-        // Call the method to test
-        List<NostroApiCommon> result = bofaApiRespHandler.nostroApiService(apiDTO);
-
-        // Assertions
-        assertNotNull(result);
-        assertFalse(result.isEmpty());
-        NostroApiCommon nostroApiCommon = result.get(0);
-        assertNotNull(nostroApiCommon.getNostroTransactionDTO());
-        assertNotNull(nostroApiCommon.getNostroBalanceDTO());
-        assertEquals(1, nostroApiCommon.getNostroTransactionDTO().size());
-        assertEquals("USD", nostroApiCommon.getNostroTransactionDTO().get(0).getCurrency());
-    }
-
-    @Test
-    public void testNostroApiService_withHttpClientErrorException() throws Exception {
-        // Setup mock data
-        NostroRequestDTO apiDTO = new NostroRequestDTO();
-        apiDTO.setFromDate("2024-01-01");
-        apiDTO.setToDate("2024-01-31");
-        apiDTO.setReportType(ILMCoreConstants.INTRA_DAY);
-
-        // Mocking error response
-        HttpClientErrorException exception = mock(HttpClientErrorException.class);
-        when(exception.getResponseBodyAsString()).thenReturn("{\"errorDesc\":[{\"description\":\"Error occurred\"}]}");
-        when(restTemplate.exchange(anyString(), eq(HttpMethod.POST), any(HttpEntity.class), eq(String.class)))
-            .thenThrow(exception);
-
-        BofaErrorMsg bofaErrorMsg = new BofaErrorMsg();
-        when(objectMapper.readValue(anyString(), eq(BofaErrorMsg.class))).thenReturn(bofaErrorMsg);
-
-        // Call the method to test
-        List<NostroApiCommon> result = bofaApiRespHandler.nostroApiService(apiDTO);
-
-        // Assertions
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals("Error occurred", result.get(0).getErrorMsg());
-    }
-
-    private Config createConfig(String value) {
-        Config config = new Config();
-        config.setValue(value);
-        return config;
+        // Test getter and setter for block4Tag22FIndicator
+        block4Tag22F.setBlock4Tag22FIndicator("indicator");
+        assertEquals("indicator", block4Tag22F.getBlock4Tag22FIndicator());
     }
 }
