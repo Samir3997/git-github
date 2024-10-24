@@ -1,41 +1,23 @@
-package com.maybank.ilm.embeddable;
+Certainly! Here’s a sample email you can use to accept the offer:
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+---
 
-@Embeddable
-public class Block4Tag22F {
+Subject: Acceptance of Offer for Senior Product Engineer Position
 
-	@Column(name = "V_BLOCK4_TAG_22F_QUALIFIER") 
-	private String block4Tag22FQualifier; 
+Dear [HR Manager's Name],
 
-	@Column(name = "V_BLOCK4_TAG_22F_DATA_SRC") 
-	private String block4Tag22FDataSrc; 
+I hope this message finds you well. I am writing to formally accept the offer of employment for the position of Senior Product Engineer with MBB Labs Private Limited. I am excited about the opportunity to contribute to the team and am grateful for the trust placed in me.
 
-	@Column(name = "V_BLOCK4_TAG_22F_INDICATOR") 
-	private String block4Tag22FIndicator;
+I have reviewed the terms and conditions outlined in the offer letter and am pleased to accept them. Please let me know if you require any further information or documentation from my side.
 
-	public String getBlock4Tag22FQualifier() {
-		return block4Tag22FQualifier;
-	}
+Thank you once again for this opportunity. I look forward to joining the team on [start date].
 
-	public void setBlock4Tag22FQualifier(String block4Tag22FQualifier) {
-		this.block4Tag22FQualifier = block4Tag22FQualifier;
-	}
+Best regards,
 
-	public String getBlock4Tag22FDataSrc() {
-		return block4Tag22FDataSrc;
-	}
+[Your Name]  
+[Your Phone Number]  
+[Your LinkedIn Profile or Other Contact Information, if applicable]
 
-	public void setBlock4Tag22FDataSrc(String block4Tag22FDataSrc) {
-		this.block4Tag22FDataSrc = block4Tag22FDataSrc;
-	}
+---
 
-	public String getBlock4Tag22FIndicator() {
-		return block4Tag22FIndicator;
-	}
-
-	public void setBlock4Tag22FIndicator(String block4Tag22FIndicator) {
-		this.block4Tag22FIndicator = block4Tag22FIndicator;
-	}
-}
+Feel free to customize it as needed!
