@@ -1,17 +1,30 @@
-@startuml
-actor User
-participant BlotterController
-participant BlotterService
-participant AccountBalanceAggregation
-participant EntityAccountMapDefinition
-participant AccountBalanceMgmtRepo
+The sequence diagram command for `getClosingBalances` based on the provided classes might look like this in PlantUML:
 
-User -> BlotterController: getBalancesByEntity(entitySkey, currencySkey, timezone, indicator, entityAcctMapSkey, selectedDate)
-BlotterController -> BlotterService: getBalancesByEntity(...)
-BlotterService -> AccountBalanceMgmtRepo: findAccountBalanceByEntityAndDate(...)
-AccountBalanceMgmtRepo --> BlotterService: List<AccountBalanceAggregation>
-BlotterService -> EntityAccountMapDefinition: getEntityAccountDefinition(...)
-EntityAccountMapDefinition --> BlotterService: Account Definition Data
-BlotterService --> BlotterController: Aggregated Account Balances
-BlotterController --> User: Response with Account Balances
+```plantuml
+@startuml
+actor Client
+boundary ClosingBalanceController
+control ClosingBalanceServiceImpl
+entity EntityAccountMappingRepo
+entity DimCountryRepo
+entity ClosingBalanceDao
+
+Client -> ClosingBalanceController : POST /closingbal
+ClosingBalanceController -> ClosingBalanceServiceImpl : getClosingBalance(closingBalanceDto)
+
+alt country = SG
+    ClosingBalanceServiceImpl -> DimCountryRepo : findByCountrySkey(closingBalanceDto.getCountrySkey())
+    ClosingBalanceServiceImpl -> ClosingBalanceDao : getClosingBalanceForSingapore(eamMainSkey, fromDate, toDate)
+else country != SG
+    ClosingBalanceServiceImpl -> DimCountryRepo : findByCountrySkey(closingBalanceDto.getCountrySkey())
+    ClosingBalanceServiceImpl -> EntityAccountMappingRepo : findByEntitySkeyAndAccountType()
+    ClosingBalanceServiceImpl -> ClosingBalanceDao : getClosingBalance(eamMainSkey, eamSRRSkey, fromDate, toDate)
+end
+
+ClosingBalanceServiceImpl --> ClosingBalanceController : ClosingBalanceDto
+ClosingBalanceController --> Client : ResponseEntity<CommonResponseEntity<ClosingBalanceDto>>
+
 @enduml
+```
+
+This script outlines the process where `getClosingBalances` in `ClosingBalanceController` interacts with `ClosingBalanceServiceImpl`, and conditionally calls either `getClosingBalanceForSingapore` or `getClosingBalance` based on the country, making calls to repository classes for data access.
