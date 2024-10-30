@@ -1,10 +1,6 @@
 package com.maybank.ilm.controller;
 
 import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,1659 +8,391 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.convert.JodaTimeConverters.DateTimeToDateConverter;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.maybank.ilm.core.filemanager.service.FileProcessingService;
-import com.maybank.ilm.core.intradayliqavail.service.IntradayLiqAvailService;
-import com.maybank.ilm.core.service.BlotterService;
-import com.maybank.ilm.core.util.DateUtil;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
-import com.maybank.ilm.dto.BlotterAcctsAddnDataDTO;
-import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.dto.RequestAnalyticsDTO;
-import com.maybank.ilm.dto.SRRConfigsCheckDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.core.service.ClosingBalanceService;
+import com.maybank.ilm.dto.ClosingBalanceDto;
+import com.maybank.ilm.dto.PaymentPosParamsDTO;
 import com.maybank.ilm.utility.cdto.CommonResponseEntity;
 
 @Controller
 @RequestMapping("/")
-public class BlotterController {
-	
+public class ClosingBalanceController {
+
+	private static final Logger LOGGER = LogManager.getLogger(ClosingBalanceController.class);
+
 	@Autowired
-	private BlotterService blotterService;
+	ClosingBalanceService balanceService;
 	
-	@Autowired
-	private FileProcessingService fileProcessingService;
+	String success = "success";
 	
-	@Autowired
-	private IntradayLiqAvailService ilaService;
-	
-	private static final Logger LOGGER=LogManager.getLogger(BlotterController.class);
-	
-	String success="success";
-	
-	@GetMapping(value="/ilmbalances")
+	@PostMapping(value="/closingbal")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<Map<String, List<AccountBalanceAggregation>>>> getBalancesByEntity(@RequestParam Long entitySkey,@RequestParam Long currencySkey,
-			@RequestParam String timezone, @RequestParam String indicator, @RequestParam Long entityAcctMapSkey,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate selectedDate) {
-		System.out.println("Blotter Controller {} getBalancesByEntity : "+"entitySkey =,"+entitySkey + " , currencySkey ==" +currencySkey + ", eamSkey = "+entityAcctMapSkey);
-		Map<String, List<AccountBalanceAggregation>> aggregatedData =  blotterService.getBalancesByEntity(entitySkey,currencySkey,timezone, indicator,entityAcctMapSkey, selectedDate);
-		return new ResponseEntity<>(new CommonResponseEntity<Map<String, List<AccountBalanceAggregation>>>(1l, success, "getBalancesByEntity", aggregatedData),HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<ClosingBalanceDto>> getClosingBalances(@RequestBody ClosingBalanceDto closingBalanceDto) {
+		LOGGER.info("Closing balance controller {} getClosingBalances"+closingBalanceDto.toString());
+		ClosingBalanceDto balanceDto = balanceService.getClosingBalance(closingBalanceDto);
+		return new ResponseEntity<>(new CommonResponseEntity<ClosingBalanceDto>(1l, success, "getClosingBalances", balanceDto),
+				HttpStatus.OK);
 	}
 	
-	@GetMapping(value="/version")
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<String>>getVersion() {
-		String version= ILMCoreConstants.App_Version; //NOSONAR
-		return new ResponseEntity<>(new CommonResponseEntity<String>(1l, success, "getVersion", version),HttpStatus.OK);
-	}
-	
-	
-	@PostMapping(value="/projectedbalance")
+	@RequestMapping(value="/closingbalExcel", method=RequestMethod.POST,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<BigDecimal>> getProjectedBalance(@RequestBody BlotterParamsDTO paramsDto){
-		LOGGER.info("Blotter Controller {} getProjectedBalance",paramsDto.toString());
-		BigDecimal projectedBalance = blotterService.getProjectedBalance(paramsDto);
-		return new ResponseEntity<>(new CommonResponseEntity<BigDecimal>(1l, success, "getProjectedBalance", projectedBalance),HttpStatus.OK);
-	}
-	
-	
-	
-	@PostMapping(value="/drilldown")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<List<AccountBalanceManagement>>> getDrillDownDetails(@RequestBody BlotterParamsDTO paramsDto){
-		LOGGER.info("Blotter Controller {} getDrillDownDetails",paramsDto.getValueDt());
-		List<AccountBalanceManagement> managements = blotterService.getDrillDownDetails(paramsDto);
-		return new ResponseEntity<>(new CommonResponseEntity<List<AccountBalanceManagement>>(1l, success, "getDrillDownDetails", managements),HttpStatus.OK);
-	}
-	
-	@PostMapping(value="/getblotteracctsaddndt")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<BlotterAcctsAddnDataDTO>> getBlotterAcctsAddnData(@RequestBody RequestAnalyticsDTO analyticsDTO){
-		LOGGER.info("Blotter Controller {} getBlotterAcctsAddnData",analyticsDTO.getAnalysisInd());
-		BlotterAcctsAddnDataDTO blotterSRRDataDTO = blotterService.getBlotterAcctsAddnData(analyticsDTO);
-		return new ResponseEntity<>(new CommonResponseEntity<BlotterAcctsAddnDataDTO>(1l, success, "getBlotterAcctsAddnData", blotterSRRDataDTO),HttpStatus.OK);
-	}
-	
-	@PostMapping(value="/getkacctlimit")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<List<BigDecimal>>> getKAccountLimitFromConfig(@RequestBody RequestAnalyticsDTO analyticsDTO) {
-		LOGGER.info("Blotter Controller {} getKAccountLimitFromConfig",analyticsDTO.getAnalysisInd());
-		List<BigDecimal> kAcctLimit = blotterService.getKAccountLimitFromConfig(analyticsDTO);
-		return new ResponseEntity<>(new CommonResponseEntity<List<BigDecimal>>(1l, success, "getKAccountLimitFromConfig", kAcctLimit),HttpStatus.OK);
-	}
-	
-	@GetMapping(value="/checksrrconfig")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<List<SRRConfigsCheckDTO>>> checkForSRRConfigurations(@RequestParam String timeZone) {
-		LOGGER.info("Blotter Controller {} checkForSRRConfigurations",timeZone);
-		List<SRRConfigsCheckDTO> configsCheckDTOs = blotterService.checkForSRRConfigurations(timeZone);
-		return new ResponseEntity<>(new CommonResponseEntity<List<SRRConfigsCheckDTO>>(1l, success, "checkForSRRConfigurations", configsCheckDTOs),HttpStatus.OK);
-	}
-	
-	@GetMapping(value="/triggerwebscheduledtasks")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<String>> triggerWebScheduledTasks() {
-		LOGGER.info("Blotter Controller triggerWebScheduledTasks");
-		blotterService.triggerWebScheduledTasks();
-		return new ResponseEntity<>(new CommonResponseEntity<String>(1l, success, "triggerWebScheduledTasks", "Success"),HttpStatus.OK);
-	}
-	
-	@GetMapping(value="/triggetreasuryoutgoing")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<String>> triggerTreasuryOutgoing(@RequestParam String timeZone) {
-		LOGGER.info("Blotter Controller {} triggerTreasuryOutgoing", timeZone);
-		fileProcessingService.saveTreasuryOutgoingToPMD(timeZone);
-		return new ResponseEntity<>(new CommonResponseEntity<String>(1l, success, "triggerTreasuryOutgoing", "Success"),HttpStatus.OK);
-	}
-	
-	@RequestMapping(value="/blotterdrilldownexport", method=RequestMethod.POST,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public void getDrillDownDetailsExcel(@RequestBody BlotterParamsDTO paramsDto,HttpServletResponse httpServletResponse) {
-		LOGGER.info("BlotterController {} getDrillDownDetailsExcel");
+	public void getClosingBalanceExcel(@RequestBody ClosingBalanceDto closingBalanceDto,HttpServletResponse httpServletResponse) {
+		LOGGER.info("Closing balance controller {} closingbalExcel"+closingBalanceDto.toString());
 		XSSFWorkbook workbook=null;
 		try {
 			httpServletResponse.setContentType("application/vnd.ms-excel");
-			httpServletResponse.setHeader("Content-Disposition", "attachment; filename=Blotter DrillDown.xlsx");
-			workbook =blotterService.getDrillDownDetailsExcel(paramsDto);
+			httpServletResponse.setHeader("Content-Disposition", "attachment; filename=Closing Balance Details ExcelSheet.xlsx");
+			workbook =balanceService.getClosingBalanceExcel(closingBalanceDto);
 			OutputStream out = httpServletResponse.getOutputStream();
 			workbook.write(out);
 			out.flush();
 			out.close();
 			workbook.close();
 		} catch(Exception exception) {
-			LOGGER.error("Error IN :getDrillDownDetailsExcel", exception);
+			LOGGER.error("Error IN :closingbalExcel", exception);
 		}
 	}
-	
-	@RequestMapping(value="/unsettledtransactionsexport", method=RequestMethod.GET,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public void getUnsettledTransactionsExcel(HttpServletResponse httpServletResponse) {
-		LOGGER.info("BlotterController {} getUnsettledTransactionsExcel");
-		XSSFWorkbook workbook=null;
-		try {
-			httpServletResponse.setContentType("application/vnd.ms-excel");
-			httpServletResponse.setHeader("Content-Disposition", "attachment; filename=Unsettled Transaction Sheetn.xlsx");
-			workbook =blotterService.getUnsettledTransactionsExcel();
-			OutputStream out = httpServletResponse.getOutputStream();
-			workbook.write(out);
-			out.flush();
-			out.close();
-			workbook.close();
-		} catch(Exception exception) {
-			LOGGER.error("Error IN :getUnsettledTransactionsExcel", exception);
-		}
-	}
-	
-	@GetMapping(value="/triggerilacalc")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<String>> triggerILACalculations(@RequestParam String timeZone) {
-		LOGGER.info("Blotter Controller {} triggerILACalculations", timeZone);
-		ilaService.calculateAndSaveILABalances(timeZone);
-		return new ResponseEntity<>(new CommonResponseEntity<String>(1l, success, "triggerILACalculations", "Success"),HttpStatus.OK);
-	}
-	
-	@RequestMapping(value="/blotterviewsummaryexport", method=RequestMethod.POST,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public void getViewSummaryDetailsExcel(@RequestBody AccountBalanceAggregationDTO aggregationDTO,HttpServletResponse httpServletResponse) {
-		XSSFWorkbook workbook=null;
-		try {
-			workbook =blotterService.getViewSummaryDetailsExcel(aggregationDTO,httpServletResponse);
-			OutputStream out = httpServletResponse.getOutputStream();
-			workbook.write(out);
-			out.flush();
-			out.close();
-			workbook.close();
-		} catch(Exception exception) {
-			LOGGER.error("Error IN :getViewSummaryDetailsExcel", exception);
-		}
-	}
-	
-	@GetMapping(value="/triggerSweepingWebScheduledTasks")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<String>> triggerSweepingWebScheduledTasks() {
-		LOGGER.info("Blotter Controller triggerSweepingWebScheduledTasks");
-		blotterService.triggerSweepingWebScheduledTasks();
-		return new ResponseEntity<>(new CommonResponseEntity<String>(1l, success, "triggerSweepingWebScheduledTasks", "Success"),HttpStatus.OK);
-	}
-	
-	
 
 }
 
 
+
 package com.maybank.ilm.core.service;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
-import com.maybank.ilm.dto.BlotterAcctsAddnDataDTO;
-import com.maybank.ilm.dto.RequestAnalyticsDTO;
-import com.maybank.ilm.dto.SRRConfigsCheckDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.dto.ClosingBalanceDto;
 
-public interface BlotterService {
-
-	public Map<String, List<AccountBalanceAggregation>> getBalancesByEntity(Long entitySkey, Long currencySkey, String timezone, String indicator ,Long entityAcctMapSkey, LocalDate selectedDate);
+public interface ClosingBalanceService {
 	
-	public List<AccountBalanceManagement> getDrillDownDetails(BlotterParamsDTO paramsDto);	
+	public ClosingBalanceDto getClosingBalance(ClosingBalanceDto closingBalanceDto);
 	
-	public void saveOpeningBalancesInAggr(String timezone);
-	
-	public void saveExcessSRRAmount(LocalDate date , String indicator);
-	
-	public void saveFutureDatedTransactionsToAggr(String timezone);
-	
-	public BlotterAcctsAddnDataDTO getBlotterAcctsAddnData(RequestAnalyticsDTO analyticsDTO);
-	
-	public List<BigDecimal> getKAccountLimitFromConfig(RequestAnalyticsDTO analyticsDTO); 
-	
-	public List<SRRConfigsCheckDTO> checkForSRRConfigurations(String timeZone);
-	
-	public void triggerWebScheduledTasks();
-	
-	public XSSFWorkbook getDrillDownDetailsExcel(BlotterParamsDTO paramsDto);	
-		
-	public XSSFWorkbook getViewSummaryDetailsExcel(AccountBalanceAggregationDTO aggregationDTO, HttpServletResponse httpServletResponse);
-	
-	public XSSFWorkbook getUnsettledTransactionsExcel();
-   
-    public void correctBalances(LocalDate date);
-    
-    public BigDecimal getProjectedBalance(BlotterParamsDTO paramsDTO);
-    
-    public void triggerSweepingWebScheduledTasks();
-
-
+	XSSFWorkbook getClosingBalanceExcel(ClosingBalanceDto closingBalanceDto);
 
 }
-
 
 
 
 package com.maybank.ilm.core.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 
-import com.ibm.disthub2.impl.formats.OldEnvelop.payload.is;
 import com.maybank.ilm.anno.Find;
 import com.maybank.ilm.anno.FindNormEx;
-import com.maybank.ilm.core.dao.AccountBalanceAggrRepo;
-import com.maybank.ilm.core.dao.AccountBalanceMgmtRepo;
-import com.maybank.ilm.core.dao.BlotterDao;
-import com.maybank.ilm.core.dao.ConfigRepo;
-import com.maybank.ilm.core.dao.DimDao;
+import com.maybank.ilm.core.dao.ClosingBalanceDao;
+import com.maybank.ilm.core.dao.DimCountryRepo;
 import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.dao.ExcessSrrAmountRepo;
-import com.maybank.ilm.core.dao.FinMT103Repo;
-import com.maybank.ilm.core.dao.FinMT103Tag71FRepo;
-import com.maybank.ilm.core.dao.FinMT200Repo;
-import com.maybank.ilm.core.dao.FinMT202Repo;
-import com.maybank.ilm.core.dao.FinMT400Repo;
-import com.maybank.ilm.core.dao.FinMT900Repo;
-import com.maybank.ilm.core.dao.FinMT910Repo;
-import com.maybank.ilm.core.dao.FinMT940Repo;
-import com.maybank.ilm.core.dao.HolidayMasterRepo;
-import com.maybank.ilm.core.dao.ILMConfigRepo;
-import com.maybank.ilm.core.dao.KAccountConfigDao;
-import com.maybank.ilm.core.dao.SRRAccountMgmtDao;
-import com.maybank.ilm.core.dao.SRRConfigurationRepo;
-import com.maybank.ilm.core.dao.SweepingAmountDetailsRepo;
-import com.maybank.ilm.core.filemanager.service.FileProcessingService;
-import com.maybank.ilm.core.intradayliqavail.service.IntradayLiqAvailService;
-import com.maybank.ilm.core.util.DateUtil;
 import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.AccountBalanceAggregationDTO;
-import com.maybank.ilm.dto.BlotterAcctsAddnDataDTO;
-import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.dto.DimDTO;
-import com.maybank.ilm.dto.FCYTreasuryDataDTO;
-import com.maybank.ilm.dto.ILMBalancesParamsDTO;
-import com.maybank.ilm.dto.RequestAnalyticsDTO;
-import com.maybank.ilm.dto.SRRConfigsCheckDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
+import com.maybank.ilm.dto.ClosingBalanceDto;
 import com.maybank.ilm.entity.EntityAccountMapDefinition;
-import com.maybank.ilm.entity.ExcessSrrAmount;
-import com.maybank.ilm.entity.FinMT103;
-import com.maybank.ilm.entity.FinMT200;
-import com.maybank.ilm.entity.FinMT202;
-import com.maybank.ilm.entity.FinMT400;
-import com.maybank.ilm.entity.FinMT900;
-import com.maybank.ilm.entity.FinMT910;
-import com.maybank.ilm.entity.FinMT940;
-import com.maybank.ilm.entity.HolidayMaster;
-import com.maybank.ilm.entity.KAccountConfiguration;
-import com.maybank.ilm.entity.MT103Tag71F;
-import com.maybank.ilm.entity.SRRConfiguration;
-import com.maybank.ilm.entity.SweepingAmountDetails;
 
 @Service
-public class BlotterServiceImpl extends IlmAbstractMessageHandler implements BlotterService{
+public class ClosingBalanceServiceImpl implements ClosingBalanceService {
+	
+	private static final Logger LOGGER = LogManager.getLogger(ClosingBalanceServiceImpl.class);
 	
 	@Autowired
-	SRRAccountMgmntImpl srrAccountMgmntImpl;
-	@Autowired
-	private BlotterDao blotterDao;
+	EntityAccountMappingRepo eamRepo;
 	
 	@Autowired
-	private EntityAccountMappingRepo entityAccountMappingRepo;
+	DimCountryRepo dimCountryRepo;
 	
 	@Autowired
-	private EntityAccountMappingRepo eamRepo;
-	
-	@Autowired
-	private AccountBalanceAggrRepo acctBalAggrRepo;
-	
-	@Autowired
-	private ExcessSrrAmountRepo excessSrrAmountRepo;
-	
-	@Autowired
-	private AccountBalanceMgmtRepo accountBalanceMgmtRepo;
-	
-	@Autowired
-	private SRRConfigurationRepo srrConfigRepo;
-	
-	@Autowired
-	private SRRAccountMgmtDao srrMgmtDao;
-	
-	@Autowired
-	private KAccountConfigDao kAcctConfigDao;
-	
-	@Autowired
-	private DimService dimService;
-	
-	@Autowired
-	private CashflowProjectionService cfProjService;
-	
-	@Autowired
-	private FileProcessingService fileProcessingService;
-	
-	@Autowired
-	private IntradayLiqAvailService ilaService;
-	
-	@Autowired
-	private HolidayMasterRepo holidayMasterRepo;
-	
-	@Autowired
-	private FinMT103Repo finMT103Repo ;
-	
-	@Autowired
-	private FinMT103Tag71FRepo mt103Tag71FRepo ;
-	
-	@Autowired
-	private FinMT200Repo finMT200Repo ;
-	
-	@Autowired
-	private FinMT202Repo finMT202Repo ;
-	
-	@Autowired
-	private FinMT400Repo finMT400Repo ;
-	
-	@Autowired
-	private FinMT900Repo finMT900Repo ;
-	
-	@Autowired
-	private FinMT910Repo finMT910Repo ;
-	
-	@Autowired
-	private FinMT940Repo finMT940Repo ;
-	
-	@Autowired
-	private ILMConfigRepo ilmConfigRepo;
-	
-	@Autowired
-	private ILMAsyncService ilmAsyncService;
-	
-	@Autowired
-	private ConfigRepo configRepo;
-	
-	@Autowired
-	private DimDao dimDao;
-	
-	@Autowired
-	private RentasBalancingService rentasBalancingService;
-	
-	@Autowired
-	private SweepingAmountDetailsRepo fCYManualInputRepo;
-	
-	@Autowired
-	private FCYBlotterService fCYBlotterService;
-	
-	private static final Logger LOGGER=LogManager.getLogger(BlotterServiceImpl.class);
-	
+	ClosingBalanceDao closingBalanceDao ;
+
 	@Override
+	@Find(arguments = { "RequestAnalyticsDTO" }, returnType = "ClosingBalanceDto", type = "JSON")
 	@FindNormEx
-	public Map<String, List<AccountBalanceAggregation>> getBalancesByEntity(Long entitySkey, Long currencySkey, String timezone, String indicator , Long entityAcctMapSkey,
-			LocalDate selectedDate) {		
-	LocalDateTime endTime = DateUtil.getCurrentDateTimeByZone(timezone);
-	Map<String, List<AccountBalanceAggregation>> accountWiseBalList = new HashMap<>();
-	if(endTime != null) {
-		LocalDate valueDt = selectedDate != null ? selectedDate : endTime.toLocalDate();
-		List<String> acctTypes = new ArrayList<>(Arrays.asList(ILMCoreConstants.MAINACCOUNT,ILMCoreConstants.KACCOUNT, 
-				ILMCoreConstants.SRRACCOUNT, ILMCoreConstants.SRRACCTSECURITIES, ILMCoreConstants.NOSTROACCOUNT));
-		LocalDateTime startTime = selectedDate != null ? LocalDateTime.of(selectedDate, LocalTime.of(0, 1)) :
-										LocalDateTime.of(endTime.toLocalDate(), LocalTime.of(0, 1));
-		List<ILMBalancesParamsDTO> paramsDTOs = getBalsParamsDTOs(acctTypes, entitySkey ,currencySkey ,entityAcctMapSkey);
-		for(ILMBalancesParamsDTO dto : paramsDTOs){
-			String acctName = dto.getAcctName();
-			Long eamSkey = dto.getEamSkey();
-			String aggrInd = dto.getAggrInd();
-			LOGGER.info("acctName  == "+dto.getAcctName()+" , eamSkey == "+ dto.getEamSkey() +" , aggrInd =="+ dto.getAggrInd());
-			AccountBalanceAggregation openingAggr = new AccountBalanceAggregation(null, eamSkey, BigDecimal.ZERO, null, valueDt, BigDecimal.ZERO, BigDecimal.ZERO);
-			if(eamSkey != null) {
-				AccountBalanceAggregation openingAggrBal = acctBalAggrRepo.findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd
-						(eamSkey, valueDt, ILMCoreConstants.OPENINGBALANCE, aggrInd);
-				if(openingAggrBal != null) {
-					openingAggr = openingAggrBal;
-				}
-				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
-				if(indicator.contentEquals(ILMCoreConstants.ILM_BALANCES)) {
-					AccountBalanceAggregation aggregation = finMsgDao.getLastUpdatedAcctBalAggr(eamSkey, valueDt, aggrInd);
-					if(aggregation != null)
-						aggregations.add(aggregation);
-				}else {
-					aggregations = blotterDao.getAggrsBetweenBusinessDts(eamSkey, valueDt, startTime, endTime, aggrInd);
-				}
-				LOGGER.info("@@ aggregations == "+ aggregations.toString());
-				setAcctWiseBalList(aggregations, accountWiseBalList, eamSkey, valueDt, acctName, openingAggr);
-			}else {
-				accountWiseBalList.put(acctName, defaultAcctBalMap(eamSkey, valueDt));
-			}
-		}
+	public ClosingBalanceDto getClosingBalance(ClosingBalanceDto closingBalanceDto) {
+	    String country = dimCountryRepo.findByCountrySkey(closingBalanceDto.getCountrySkey()).getCountryCode();
+	    return "SG".equals(country) ? this.getClosingBalForSGD(closingBalanceDto) : this.getClosingBalForMYR(closingBalanceDto);
 	}
-	return accountWiseBalList;
-	}
+
 	
-	private void setAcctWiseBalList(List<AccountBalanceAggregation> aggregations, Map<String, List<AccountBalanceAggregation>> accountWiseBalList,
-												Long eamSkey, LocalDate valueDt, String acctName, AccountBalanceAggregation openingAggr) {
-		if(CollectionUtils.isNotEmpty(aggregations)) {
-			List<AccountBalanceAggregation> nostroAggrs = aggregations;
-			aggregations=getAmountsInMillions(aggregations);
-			if(acctName.contentEquals(ILMCoreConstants.NOSTROACCOUNT)) {
-				AccountBalanceManagement latestMT950Entry = openingAggr.getTrackerID() != null ? accountBalanceMgmtRepo.findByTrackerID(openingAggr.getTrackerID()) : null;
-				LOGGER.info("----------Latest MT950 entry--------");
-				LOGGER.info(latestMT950Entry);
-				LocalDate latestMT950Date = latestMT950Entry != null ? latestMT950Entry.getValueDate() : null;
-				openingAggr.setLatestMT950Date(latestMT950Date);
-				if(accountWiseBalList.containsKey(acctName) || accountWiseBalList.containsKey(acctName+" OB")) {
-					accountWiseBalList.get(acctName).addAll(nostroAggrs);
-					accountWiseBalList.get(acctName+" OB").add((Arrays.asList(openingAggr)).get(0));
+	private ClosingBalanceDto getClosingBalForMYR(ClosingBalanceDto closingBalanceDto) {
+		ClosingBalanceDto balanceDto = new ClosingBalanceDto();
+		balanceDto.setCountry(ILMCoreConstants.MALAYSIA);
+		List<EntityAccountMapDefinition> entityDefn = eamRepo.findByEntitySkeyAndAccountType(closingBalanceDto.getEntitySkey(),
+				ILMCoreConstants.MAINACCOUNT);
+		List<EntityAccountMapDefinition> srrEamDefn = eamRepo.findByEntitySkeyAndAccountType(closingBalanceDto.getEntitySkey(),
+				ILMCoreConstants.SRRACCOUNT);
+		
+		List<EntityAccountMapDefinition> nostroDefn = new ArrayList<>();
+		if(closingBalanceDto.getNostroAgentSkey() != null) {
+			nostroDefn = eamRepo.findByEntityAcctMapSkey(closingBalanceDto.getNostroAgentSkey());
+			entityDefn = null;
+			srrEamDefn = null;
+		}
+		BigDecimal mainMinBal = BigDecimal.ZERO;
+		BigDecimal mainMaxBal = BigDecimal.ZERO;
+		BigDecimal mainAvgBal = BigDecimal.ZERO;
+		BigDecimal srrMinBal = BigDecimal.ZERO;
+		BigDecimal srrMaxBal = BigDecimal.ZERO;
+		BigDecimal srrAvgBal = BigDecimal.ZERO;
+		if(CollectionUtils.isNotEmpty(entityDefn) && CollectionUtils.isNotEmpty(srrEamDefn)) {
+			Long eamMainSkey = entityDefn.get(0).getEntityAcctMapSkey();//NOSONAR
+			Long eamSRRSkey = srrEamDefn.get(0).getEntityAcctMapSkey();
+			LocalDate fromDate = closingBalanceDto.getFromDate();
+			LocalDate toDate = closingBalanceDto.getToDate();
+			balanceDto = closingBalanceDao.getClosingBalance(eamMainSkey, eamSRRSkey, fromDate , toDate );
+			
+			LinkedHashMap<String, ArrayList<BigDecimal>> closingBalances = balanceDto.getDatedAmounts();
+			LinkedHashMap<String, BigDecimal> mainClosingBalances = new LinkedHashMap<>();
+			LinkedHashMap<String, BigDecimal> srrClosingBalances = new LinkedHashMap<>();
+			if(!closingBalances.isEmpty()) {
+				for(Map.Entry<String, ArrayList<BigDecimal>> entry : closingBalances.entrySet()) {
+					mainClosingBalances.put(entry.getKey(), entry.getValue().get(0));
+					srrClosingBalances.put(entry.getKey(), entry.getValue().get(1));
 				}
-				else {
-					accountWiseBalList.put(acctName, nostroAggrs);
-					accountWiseBalList.put(acctName+" OB", (new ArrayList<AccountBalanceAggregation>(Arrays.asList(openingAggr))));
-				}
-			}else {
-				accountWiseBalList.put(acctName, aggregations);
-				accountWiseBalList.put(acctName+" OB", getAmountsInMillions(new ArrayList<AccountBalanceAggregation>(Arrays.asList(openingAggr))));
+			}
+			if(!mainClosingBalances.isEmpty()) {
+				mainMaxBal = Collections.max(mainClosingBalances.values());
+				mainMinBal = Collections.min(mainClosingBalances.values());
+				BigDecimal mainSum = BigDecimal.valueOf(mainClosingBalances.values().stream().mapToDouble(BigDecimal::doubleValue).sum());
+				mainAvgBal = mainSum.divide(BigDecimal.valueOf(mainClosingBalances.size()), 2 , RoundingMode.HALF_UP);
+			}
+			if(!srrClosingBalances.isEmpty()) {
+				srrMaxBal = Collections.max(srrClosingBalances.values());
+				srrMinBal = Collections.min(srrClosingBalances.values());
+				BigDecimal srrSum = BigDecimal.valueOf(srrClosingBalances.values().stream().mapToDouble(BigDecimal::doubleValue).sum());
+				srrAvgBal = srrSum.divide(BigDecimal.valueOf(srrClosingBalances.size()), 2 , RoundingMode.HALF_UP);
 			}
 			
-		}else {
-			if(accountWiseBalList.containsKey(acctName)) {
-				accountWiseBalList.get(acctName).add(defaultAcctBalMap(eamSkey, valueDt).get(0));
-			}
-			else {
-				accountWiseBalList.put(acctName, defaultAcctBalMap(eamSkey, valueDt));
-			}
-		}
-	}
-	
-	
-	private List<ILMBalancesParamsDTO> getBalsParamsDTOs(List<String> acctTypes, Long entitySkey ,Long currencySkey ,Long entityAcctMapSkey){		
-		List<ILMBalancesParamsDTO> paramsDTOs = new ArrayList<>(); 
-		LOGGER.info("entity map skey of selected agent : "+entityAcctMapSkey);
-		for(String acct : acctTypes) {
-			List<EntityAccountMapDefinition> definitions = null ;
-			if(entityAcctMapSkey != null && entityAcctMapSkey > 0 && acct.contentEquals(ILMCoreConstants.NOSTROACCOUNT)) {
-				definitions = entityAccountMappingRepo.findByEntityAcctMapSkey(entityAcctMapSkey);
-				LOGGER.info("inside each agent definition");
-			}else {
-				definitions = entityAccountMappingRepo.findByEntitySkeyAndCurrencySkeyAndAccountType(entitySkey, currencySkey ,acct);
-			}
-			LOGGER.info(" Acct == "+ acct +" , definitions == "+ definitions.toString());
-			if(CollectionUtils.isNotEmpty(definitions)) {
-				if (acct.contentEquals(ILMCoreConstants.NOSTROACCOUNT)) {
-					for(EntityAccountMapDefinition defn : definitions) {
-						setILMBalParamsDTO(defn.getEntityAcctMapSkey(), acct, paramsDTOs);
-					}
-//					setILMBalParamsDTO(definitions.get(0).getEntityAcctMapSkey(), acct, paramsDTOs);
-				}else {
-					setILMBalParamsDTO(definitions.get(0).getEntityAcctMapSkey(), acct, paramsDTOs);
+			balanceDto.setMainCashMaxClosingBal(mainMaxBal);
+			balanceDto.setMainCashMinClosingBal(mainMinBal);
+			balanceDto.setMainCashAvgClosingBal(mainAvgBal);
+			balanceDto.setSrrCashMaxClosingBal(srrMaxBal);
+			balanceDto.setSrrCashMinClosingBal(srrMinBal);
+			balanceDto.setSrrCashAvgClosingBal(srrAvgBal);
+		
+		} else {
+			Long eamMainSkey = CollectionUtils.isNotEmpty(nostroDefn)? 
+					nostroDefn.get(0).getEntityAcctMapSkey() : CollectionUtils.isNotEmpty(entityDefn)? entityDefn.get(0).getEntityAcctMapSkey(): null;//NOSONAR
+			LocalDate fromDate = closingBalanceDto.getFromDate();
+			LocalDate toDate = closingBalanceDto.getToDate();
+			balanceDto = closingBalanceDao.getClosingBalanceforInvestmentIslamic(eamMainSkey, fromDate , toDate );
+			LinkedHashMap<String, ArrayList<BigDecimal>> closingBalances = balanceDto.getDatedAmounts();
+			LinkedHashMap<String, BigDecimal> mainClosingBalances = new LinkedHashMap<>();
+			if(!closingBalances.isEmpty()) {
+				for(Map.Entry<String, ArrayList<BigDecimal>> entry : closingBalances.entrySet()) {
+					mainClosingBalances.put(entry.getKey(), entry.getValue().get(0));
 				}
-			}else {
-				LOGGER.info("definitions is empty");
 			}
+			if(!mainClosingBalances.isEmpty()) {
+				mainMaxBal = Collections.max(mainClosingBalances.values());
+				mainMinBal = Collections.min(mainClosingBalances.values());
+				BigDecimal mainSum = BigDecimal.valueOf(mainClosingBalances.values().stream().mapToDouble(BigDecimal::doubleValue).sum());
+				mainAvgBal = mainSum.divide(BigDecimal.valueOf(mainClosingBalances.size()), 2 , RoundingMode.HALF_UP);
+			}
+			balanceDto.setMainCashMaxClosingBal(mainMaxBal);
+			balanceDto.setMainCashMinClosingBal(mainMinBal);
+			balanceDto.setMainCashAvgClosingBal(mainAvgBal);
 		}
-		LOGGER.info(" paramsDTOs == "+paramsDTOs.toString());
-		return paramsDTOs;
+			
+		return balanceDto ;
 	}
 	
-	private void setILMBalParamsDTO(Long eamSkey, String acct, List<ILMBalancesParamsDTO> paramsDTOs) {
-		if(acct.contentEquals(ILMCoreConstants.SRRACCTSECURITIES)) {
-			ILMBalancesParamsDTO paramsDTOSecurities = new ILMBalancesParamsDTO(acct, eamSkey, ILMCoreConstants.SRRSECURITIES);
-			paramsDTOs.add(paramsDTOSecurities);
-		}else {
-			ILMBalancesParamsDTO paramsDTO = new ILMBalancesParamsDTO(acct, eamSkey, ILMCoreConstants.OTHERS);
-			paramsDTOs.add(paramsDTO);
-		}
+	private ClosingBalanceDto getClosingBalForSGD(ClosingBalanceDto closingBalanceDto) {
+	    ClosingBalanceDto balanceDto = new ClosingBalanceDto();
+	    
+	    List<EntityAccountMapDefinition> entityDefn = eamRepo.findByEntitySkeyAndAccountType(closingBalanceDto.getEntitySkey(),
+				ILMCoreConstants.RTGSAccount);
+	    
+	    BigDecimal RTGSMinBal = BigDecimal.ZERO;
+	    BigDecimal RTGSMaxBal = BigDecimal.ZERO;
+	    BigDecimal RTGSAvgBal = BigDecimal.ZERO;
+	    
+	    if (!entityDefn.isEmpty()) {
+	        Long eamMainSkey = entityDefn.get(0).getEntityAcctMapSkey();
+	        LocalDate fromDate = closingBalanceDto.getFromDate();
+			LocalDate toDate = closingBalanceDto.getToDate();
+	        
+	        balanceDto = Optional.ofNullable(closingBalanceDao.getClosingBalanceForSingapore(eamMainSkey, fromDate, toDate))
+	                .orElse(new ClosingBalanceDto());
+	        
+	        LinkedHashMap<String, ArrayList<BigDecimal>> closingBalances = Optional.ofNullable(balanceDto.getDatedAmounts()).orElse(new LinkedHashMap<>());
+	        LinkedHashMap<String, BigDecimal> RTGSClosingBalances = new LinkedHashMap<>();
+	        
+	        if (!closingBalances.isEmpty()) {
+	            closingBalances.forEach((key, value) -> RTGSClosingBalances.put(key, value.get(0)));
+	        }
+	        
+	        if (!RTGSClosingBalances.isEmpty()) {
+	            RTGSMaxBal = Collections.max(RTGSClosingBalances.values());
+	            RTGSMinBal = Collections.min(RTGSClosingBalances.values());
+	            BigDecimal RTGSSum = BigDecimal.valueOf(RTGSClosingBalances.values().stream()
+	                    .mapToDouble(BigDecimal::doubleValue)
+	                    .sum());
+	            RTGSAvgBal = RTGSSum.divide(BigDecimal.valueOf(RTGSClosingBalances.size()), 2, RoundingMode.HALF_UP);
+	        }
+	        balanceDto.setRtgsMinClosingBal(RTGSMinBal);
+	        balanceDto.setRtgsMaxClosingBal(RTGSMaxBal);
+	        balanceDto.setRtgsAvgClosingBal(RTGSAvgBal);
+	    }
+	    balanceDto.setCountry(ILMCoreConstants.SINGAPORE);
+	    return balanceDto;
 	}
+
 	
-	private List<AccountBalanceAggregation> defaultAcctBalMap(Long eamSkey, LocalDate valueDt) {
-		List<AccountBalanceAggregation> aggrs = new ArrayList<>();
-		AccountBalanceAggregation aggregation = new AccountBalanceAggregation(null, eamSkey, BigDecimal.ZERO, null, valueDt, BigDecimal.ZERO, BigDecimal.ZERO);
-		aggrs.add(aggregation);
-		return aggrs;
-	}
 	
 	@Override
-	@FindNormEx
-	public List<AccountBalanceManagement> getDrillDownDetails(BlotterParamsDTO paramsDto){
-		List<Long> eamSkeys = new ArrayList<>();
-		if(paramsDto.getEntityAcctMapSkey() == 0 ) {
-			List<EntityAccountMapDefinition> nostroDefinitions = eamRepo.findByEntitySkeyAndCurrencySkeyAndAccountType(paramsDto.getEntitySkey(), paramsDto.getCurrencySkey(), paramsDto.getAcctName());
-			if(CollectionUtils.isNotEmpty(nostroDefinitions)) {
-				for(EntityAccountMapDefinition def : nostroDefinitions) {
-					eamSkeys.add(def.getEntityAcctMapSkey());
+	public XSSFWorkbook getClosingBalanceExcel(ClosingBalanceDto closingBalanceDto) {
+		ClosingBalanceDto balanceDto = getClosingBalance(closingBalanceDto);
+		XSSFWorkbook workBook = new XSSFWorkbook();
+		int rowNum = 0;
+		int colNum = 0;
+		Font font = workBook.createFont();
+		font.setBold(true);
+		font.setFontHeightInPoints((short) 24);
+		font.setFontName("Courier New");
+		CellStyle style = workBook.createCellStyle();
+		style.setFont(font);
+		XSSFSheet sheet = workBook.createSheet("Closing Balance Details");
+		if (ILMCoreConstants.SINGAPORE.equals(balanceDto.getCountry())) {
+			Row row = sheet.createRow(rowNum++);
+			row.createCell(colNum++).setCellValue("Date");
+			row.createCell(colNum++).setCellValue("RTGS Account Closing Balance");
+			row.setRowStyle(style);
+			LinkedHashMap<String, ArrayList<BigDecimal>> amounts = balanceDto.getDatedAmounts();
+			for (Map.Entry<String, ArrayList<BigDecimal>> entry : amounts.entrySet()) {
+				Row row1 = sheet.createRow(rowNum++);
+				colNum = 0;
+				SimpleDateFormat inputFromat = new SimpleDateFormat("yyyy-MM-dd");
+				SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+				try {
+					String date = sm.format(inputFromat.parse(entry.getKey().substring(0, 10)));
+					row1.createCell(colNum++).setCellValue(date);
+					row1.createCell(colNum++).setCellValue(entry.getValue().get(0).doubleValue());
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					LOGGER.info("context : ", e);
 				}
 			}
-		}
-		List<AccountBalanceManagement> drillDownDetails = blotterDao.getDrillDownDetails(paramsDto,eamSkeys);
-		if(paramsDto.getAcctName().equals(ILMCoreConstants.NOSTROACCOUNT) && CollectionUtils.isNotEmpty(drillDownDetails)
-				&&paramsDto.getDrillDownInd().equalsIgnoreCase(ILMCoreConstants.PROJECTED_BALANCE)) {
-			return findCharges(drillDownDetails);
-		}else {
-			return drillDownDetails;
-		}
-	}
-	
-	private List<AccountBalanceManagement> findCharges (List<AccountBalanceManagement> drillDownDetails){
-		for (AccountBalanceManagement mgmt : drillDownDetails) {
-			String msgType = mgmt.getMessageType();
-			Long trackerID = mgmt.getTrackerID();
-			switch(msgType) {
-				case ILMCoreConstants.MESSAGETYPE103 :
-					//FinMT103 mt103 = finMT103Repo.findByTrackerid(trackerID);
-					//MT103Tag71F mt103Tag71F = mt103Tag71FRepo.findTopByMt103SkeyOrderByMt103Tag71FIndexDesc(mt103.getMt103Skey());
-					mgmt.setSenderToReceiverInfo(null /*mt103.getTags72() != null ? mt103.getTags72().getBlock4Tag72Nar1() != null ? mt103.getTags72().getBlock4Tag72Nar1() :null : null*/);
-					mgmt.setDetailsOfCharges(null /*mt103.getTag70To71() != null ? mt103.getTag70To71().getBlock4Tag71a() != null ? mt103.getTag70To71().getBlock4Tag71a() : null :null*/);
-					mgmt.setReceiversCharges(null /*mt103.getTag70To71() != null ? mt103.getTag70To71().getBlock4Tag71gReceivCharge() != null ? mt103.getTag70To71().getBlock4Tag71gReceivCharge():null : null*/);
-					mgmt.setSendersCharges(null /*mt103Tag71F != null ? mt103Tag71F.getMt103Tag71FSenderCharge() != null ? mt103Tag71F.getMt103Tag71FSenderCharge() : null : null*/);
-					break;
-				case ILMCoreConstants.MESSAGETYPE200 :
-					//FinMT200 mt200 = finMT200Repo.findByTrackerid(trackerID);
-					mgmt.setSenderToReceiverInfo(null/*mt200.getTags72() != null ? mt200.getTags72().getBlock4Tag72Nar1() != null ? mt200.getTags72().getBlock4Tag72Nar1() :null : null*/);
-					break;
-				case ILMCoreConstants.MESSAGETYPE202 :
-					//FinMT202 mt202 = finMT202Repo.findByTrackerid(trackerID);
-					mgmt.setRelatedReference(null /*mt202.getBlock4() != null ? mt202.getBlock4().getBlock4Tag21() : null*/);
-					mgmt.setSenderToReceiverInfo(null /*mt202.getTags72() != null ? mt202.getTags72().getBlock4Tag72Nar1() != null ? mt202.getTags72().getBlock4Tag72Nar1() :null : null*/);
-					break;
-				case ILMCoreConstants.MESSAGETYPE400 :
-					//FinMT400 mt400 = finMT400Repo.findByTrackerid(trackerID);
-					mgmt.setRelatedReference(null /*mt400.getBlock4().getBlock4Tag21()*/);
-					mgmt.setSenderToReceiverInfo(null /*mt400.getTags72() != null ? mt400.getTags72().getBlock4Tag72Nar1() != null ? mt400.getTags72().getBlock4Tag72Nar1() :null : null*/);
-					break;
-				case ILMCoreConstants.MESSAGETYPE900 :
-					//FinMT900 mt900 = finMT900Repo.findByTrackerid(trackerID);
-					mgmt.setRelatedReference(null /*mt900.getBlock4() != null ? mt900.getBlock4().getBlock4Tag21() : null*/);
-					mgmt.setSenderToReceiverInfo(null /*mt900.getTags72() != null ? mt900.getTags72().getBlock4Tag72Nar1() != null ? mt900.getTags72().getBlock4Tag72Nar1() :null : null*/);
-					break;
-				case ILMCoreConstants.MESSAGETYPE910 :
-					//FinMT910 mt910 = finMT910Repo.findByTrackerid(trackerID);
-					mgmt.setRelatedReference(null /*mt910.getBlock4() != null ? mt910.getBlock4().getBlock4Tag21() : null*/);
-					mgmt.setSenderToReceiverInfo(null /*mt910.getTags72() != null ? mt910.getTags72().getBlock4Tag72Nar1() != null ? mt910.getTags72().getBlock4Tag72Nar1() :null : null*/);
-					break;
-			}
-		}
-		return drillDownDetails;
-	}
-	
-	
-	private List<AccountBalanceAggregation> getAmountsInMillions(List<AccountBalanceAggregation> aggregations){
-		List<AccountBalanceAggregation> balanceAggregations=aggregations.stream().map(it->{
-			AccountBalanceAggregation p=new AccountBalanceAggregation();
-			BeanUtils.copyProperties(it, p);
-			if(p.getTotalAmnt() != null)
-				p.setTotalAmnt(p.getTotalAmnt().divide(BigDecimal.valueOf(1000000)));
-			if(p.getTotalInFlowAmnt() != null)
-				p.setTotalInFlowAmnt(p.getTotalInFlowAmnt().divide(BigDecimal.valueOf(1000000)));
-			if(p.getTotalOutFlowAmnt() != null)
-				p.setTotalOutFlowAmnt(p.getTotalOutFlowAmnt().divide(BigDecimal.valueOf(1000000)));
-	
-			return p;
-		}).collect(Collectors.toList());
-		
-		
-		return balanceAggregations;
-	}
-	
-	@Override
-	@Find(arguments= {"timeZone"})
-	public void saveOpeningBalancesInAggr(String timezone) {
-		try {
-			LocalDateTime currentDateTime = DateUtil.getCurrentDateTimeByZone(timezone);
-			if(currentDateTime != null) {
-				LocalDate currentDate = currentDateTime.toLocalDate();
-				LocalDate prevDate = currentDate.minusDays(1l);
-				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
-				List<EntityAccountMapDefinition> defns = new ArrayList<>();
-				List<EntityAccountMapDefinition> srrDefns = getOpeningBalanceForAllAccts(ILMCoreConstants.SRRACCOUNT);
-				List<EntityAccountMapDefinition> srrSecuritiesDefns = getOpeningBalanceForAllAccts(ILMCoreConstants.SRRACCTSECURITIES);
-				List<EntityAccountMapDefinition> rtgsDefns = getOpeningBalanceForAllAccts(ILMCoreConstants.RTGSACCOUNT);
-				List<EntityAccountMapDefinition> casaDefns = getOpeningBalanceForAllAccts(ILMCoreConstants.CASACCOUNT);
-				List<EntityAccountMapDefinition> cashCusDefns = getOpeningBalanceForAllAccts(ILMCoreConstants.CASHCUSTODYACCOUNT);
-				defns.addAll(getOpeningBalanceForAllAccts(ILMCoreConstants.MAINACCOUNT));
-				defns.addAll(srrDefns);
-				defns.addAll(rtgsDefns);
-				defns.addAll(casaDefns);
-				defns.addAll(cashCusDefns);
-				List<Long> eamSkeys = new ArrayList<>();
-				eamSkeys.addAll(rtgsDefns.stream().map(e -> e.getEntityAcctMapSkey()).collect(Collectors.toList()));
-				eamSkeys.addAll(casaDefns.stream().map(e -> e.getEntityAcctMapSkey()).collect(Collectors.toList()));
-				eamSkeys.addAll(cashCusDefns.stream().map(e -> e.getEntityAcctMapSkey()).collect(Collectors.toList()));
-				//defns.addAll(getOpeningBalanceForAllAccts(ILMCoreConstants.NOSTROACCOUNT));
-				LOGGER.info("@@1 nostro entities: "+ getOpeningBalanceForAllAccts(ILMCoreConstants.NOSTROACCOUNT));
-				List<AccountBalanceManagement> openingBals = blotterDao.getOpeningBalance(prevDate);
-				List<AccountBalanceManagement> openingBalsSG = blotterDao.getOpeningBalanceSG(eamSkeys, prevDate);
-				if(CollectionUtils.isNotEmpty(openingBalsSG)) {
-					openingBals.addAll(openingBalsSG);
-				}else {
-					LOGGER.info("NO opening Bal found for SG defns");
-				}
-				LOGGER.info("@@2 openingbals from mt940: "+ openingBals.toString());
-				List<String> msgTypes = new ArrayList<>(Arrays.asList(ILMCoreConstants.MESSAGETYPE950));
-				msgTypes.add(ILMCoreConstants.MXTYPECAMT05300108);
-				
-				for(EntityAccountMapDefinition mapDefinition : defns) {
-					LOGGER.info("Current Definition : "+ mapDefinition.getEntityAcctMapSkey());
-					Long entityAcctMapSkey = mapDefinition.getEntityAcctMapSkey();
-					AccountBalanceManagement management = getOpeningBalMgmtByEAMSkey(openingBals, entityAcctMapSkey);
-					if(management != null) {
-						Long count = blotterDao.getCountOfTransactionsAfterMT940(management.getBusinessDtTime(), prevDate, mapDefinition.getEntityAcctMapSkey(), msgTypes);
-						if(count == 0l) {
-							LOGGER.info("Inside count If");
-							aggregations.add(setAcctBalAggrsUsing940(management.getAmount(),management.getAmountSign(), management.getEntityAcctMapSkey(), 
-									currentDateTime, currentDate, ILMCoreConstants.OTHERS, ILMCoreConstants.OPENINGBALANCE));
-							aggregations.add(setAcctBalAggrsUsing940(management.getAmount(),management.getAmountSign(), management.getEntityAcctMapSkey(), 
-									currentDateTime, prevDate, ILMCoreConstants.OTHERS, ILMCoreConstants.CLOSINGBALANCE));
-						}else {
-							LOGGER.info("Inside count Else");
-							List<AccountBalanceAggregation> aggrs = getOpeningBalByPrevDayAggr(entityAcctMapSkey, prevDate, currentDateTime, currentDate, 
-									ILMCoreConstants.OTHERS, "NOT_K_ACCT");
-							aggregations.addAll(aggrs);
-						}	
-					}else {
-						LOGGER.info("@@ mt940 not present for eam : "+ mapDefinition.getEntityAcctMapSkey());
-						List<AccountBalanceAggregation> aggrs = getOpeningBalByPrevDayAggr(entityAcctMapSkey, prevDate, currentDateTime, currentDate, ILMCoreConstants.OTHERS, "NOT_K_ACCT");
-						aggregations.addAll(aggrs);
+			rowNum = rowNum + 2;
+			Row row2 = sheet.createRow(rowNum++);
+			colNum = 0;
+			row2.createCell(colNum++).setCellValue("Average Closing Balance");
+			row2.createCell(colNum++).setCellValue(balanceDto.getRtgsAvgClosingBal().doubleValue());
+			Row row3 = sheet.createRow(rowNum++);
+			colNum = 0;
+			row3.createCell(colNum++).setCellValue("Minimum Closing Balance");
+			row3.createCell(colNum++).setCellValue(balanceDto.getRtgsMaxClosingBal().doubleValue());
+			Row row4 = sheet.createRow(rowNum++);
+			colNum = 0;
+			row4.createCell(colNum++).setCellValue("Maximum Closing Balance");
+			row4.createCell(colNum++).setCellValue(balanceDto.getRtgsMinClosingBal().doubleValue());
+		} else {
+
+			if (balanceDto.getSrrCashAvgClosingBal() != null) {
+				Row row = sheet.createRow(rowNum++);
+				row.createCell(colNum++).setCellValue("Date");
+				row.createCell(colNum++).setCellValue("Main Account Closing Balance");
+				row.createCell(colNum++).setCellValue("SRR Cash Closing Balance");
+				row.setRowStyle(style);
+				LinkedHashMap<String, ArrayList<BigDecimal>> amounts = balanceDto.getDatedAmounts();
+				for (Map.Entry<String, ArrayList<BigDecimal>> entry : amounts.entrySet()) {
+					Row row1 = sheet.createRow(rowNum++);
+					colNum = 0;
+					SimpleDateFormat inputFromat = new SimpleDateFormat("yyyy-MM-dd");
+					SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+					try {
+						String date = sm.format(inputFromat.parse(entry.getKey().substring(0, 10)));
+						row1.createCell(colNum++).setCellValue(date);
+						row1.createCell(colNum++).setCellValue(entry.getValue().get(0).doubleValue());
+						row1.createCell(colNum++).setCellValue(entry.getValue().get(1).doubleValue());
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						LOGGER.info("context : ", e);
 					}
 				}
-				aggregations.addAll(setKAccountAggrs(currentDateTime, currentDate, prevDate));
-				aggregations.addAll(getOpeningBalForSRRSecurities(srrSecuritiesDefns, currentDateTime, currentDate, prevDate));
-				acctBalAggrRepo.saveAll(aggregations);
-			}
-		}catch (Exception e) {
-			LOGGER.error(String.format("Exception while migrating opening balances %s", e));
-		}
-	}
-	
-	private AccountBalanceManagement getOpeningBalMgmtByEAMSkey(List<AccountBalanceManagement> mgmts, Long entityAcctMapSkey) {
-		AccountBalanceManagement balanceManagement = null;
-		for(AccountBalanceManagement management : mgmts) {
-			if(management.getEntityAcctMapSkey().equals(entityAcctMapSkey))
-				return management;
-		}
-		return balanceManagement;
-	}
-	
-	private List<AccountBalanceAggregation> getOpeningBalByPrevDayAggr(Long entityAcctMapSkey, LocalDate prevDate, LocalDateTime currentDateTime, 
-			LocalDate currentDate, String aggrInd, String acctType) {
-		List<AccountBalanceAggregation> aggrs = new ArrayList<>();
-		AccountBalanceAggregation lastAggrPrevDay = finMsgDao.getLastUpdatedAcctBalAggr(entityAcctMapSkey, prevDate, aggrInd);
-		AccountBalanceAggregation currentDayAggr = null;
-		if(lastAggrPrevDay != null) {
-			String amntSign = lastAggrPrevDay.getTotalAmnt().compareTo(BigDecimal.ZERO) >= 0 ? ILMCoreConstants.PLUS : ILMCoreConstants.MINUS;
-			if(!acctType.contentEquals(ILMCoreConstants.KACCOUNT)) {
-				currentDayAggr = setAcctBalAggrs(lastAggrPrevDay.getTotalAmnt().abs(), amntSign, entityAcctMapSkey, currentDateTime, currentDate, 
-						aggrInd, ILMCoreConstants.OPENINGBALANCE);
-				aggrs.add(currentDayAggr);
-			}
-			if(lastAggrPrevDay.getOpeningClosingBalInd() != null) {
-				AccountBalanceAggregation closingBalPrevDayAggr = setAcctBalAggrs(lastAggrPrevDay.getTotalAmnt().abs(), amntSign, entityAcctMapSkey, currentDateTime, prevDate,
-						aggrInd, ILMCoreConstants.CLOSINGBALANCE);
-				aggrs.add(closingBalPrevDayAggr);
-			}else {
-				lastAggrPrevDay.setOpeningClosingBalInd(ILMCoreConstants.CLOSINGBALANCE);
-				aggrs.add(lastAggrPrevDay);
-			}
-		}else {
-			AccountBalanceAggregation newAcctBalAggr = new AccountBalanceAggregation(entityAcctMapSkey, 
-					BigDecimal.valueOf(0), currentDateTime, currentDate, BigDecimal.valueOf(0), 
-					BigDecimal.valueOf(0), aggrInd, ILMCoreConstants.OPENINGBALANCE);
-			aggrs.add(newAcctBalAggr);
-		}
-		LOGGER.info("@@6 aggrs : "+aggrs);
-		return aggrs;
-	}
-	
-	private List<AccountBalanceAggregation> getOpeningBalForSRRSecurities(List<EntityAccountMapDefinition> srrSecuritiesDefns, LocalDateTime currentDateTime, LocalDate currentDate,  LocalDate prevDate) {
-		List<AccountBalanceAggregation> aggrs = new ArrayList<>();
-		if(CollectionUtils.isNotEmpty(srrSecuritiesDefns)) {
-			for(EntityAccountMapDefinition defn : srrSecuritiesDefns) {
-				List<AccountBalanceAggregation> aggregations = getOpeningBalByPrevDayAggr(defn.getEntityAcctMapSkey(), prevDate, currentDateTime, currentDate, ILMCoreConstants.SRRSECURITIES, ILMCoreConstants.SRRACCTSECURITIES);
-				aggrs.addAll(aggregations);
-			}
-		}
-		return aggrs;
-	}
-	
-	private AccountBalanceAggregation setAcctBalAggrs(BigDecimal mgmtAmnt, String amntSign, Long entityAcctMapSkey, 
-				LocalDateTime currentDateTime, LocalDate currentDate, String aggrInd, String openingClosingBalInd) {
-		AccountBalanceAggregation aggregation = new AccountBalanceAggregation();
-		if(openingClosingBalInd.contentEquals(ILMCoreConstants.CLOSINGBALANCE)) {
-			if(amntSign.contentEquals(ILMCoreConstants.PLUS)) {
-				aggregation.setTotalAmnt(mgmtAmnt);
-				aggregation.setTotalInFlowAmnt(BigDecimal.ZERO);
-				aggregation.setTotalOutFlowAmnt(BigDecimal.ZERO);
-			}else {
-				BigDecimal negAmnt = mgmtAmnt.multiply(new BigDecimal(-1));
-				aggregation.setTotalAmnt(negAmnt);
-				aggregation.setTotalOutFlowAmnt(BigDecimal.ZERO);
-				aggregation.setTotalInFlowAmnt(BigDecimal.ZERO);
-			}
-		}else if(openingClosingBalInd.contentEquals(ILMCoreConstants.OPENINGBALANCE)) {
-			if(amntSign.contentEquals(ILMCoreConstants.PLUS)) {
-				aggregation.setTotalAmnt(mgmtAmnt);
-			}else {
-				BigDecimal negAmnt = mgmtAmnt.multiply(new BigDecimal(-1));
-				aggregation.setTotalAmnt(negAmnt);
-			}
-			aggregation.setTotalInFlowAmnt(BigDecimal.ZERO);
-			aggregation.setTotalOutFlowAmnt(BigDecimal.ZERO);
-		}
-		aggregation.setEntityAcctMapSkey(entityAcctMapSkey);
-		aggregation.setBusinessDtTime(currentDateTime);
-		aggregation.setValueDate(currentDate);
-		aggregation.setAggrInd(aggrInd);
-		aggregation.setOpeningClosingBalInd(openingClosingBalInd);
-		return aggregation;
-	}
-	
-	private AccountBalanceAggregation setAcctBalAggrsUsing940(BigDecimal mgmtAmnt, String amntSign, Long entityAcctMapSkey, 
-			LocalDateTime currentDateTime, LocalDate currentDate, String aggrInd, String openingClosingBalInd) {
-	
-	AccountBalanceAggregation aggregation = new AccountBalanceAggregation();
-	if(openingClosingBalInd.contentEquals(ILMCoreConstants.CLOSINGBALANCE)) {
-		AccountBalanceAggregation lastAggrPrevDay = finMsgDao.getLastUpdatedAcctBalAggr(entityAcctMapSkey, currentDate, aggrInd);
-		if(amntSign.contentEquals(ILMCoreConstants.PLUS)) {
-			aggregation.setTotalAmnt(mgmtAmnt);
-		}else {
-			BigDecimal negAmnt = mgmtAmnt.multiply(new BigDecimal(-1));
-			aggregation.setTotalAmnt(negAmnt);
-		}
-		aggregation.setTotalInFlowAmnt(lastAggrPrevDay != null ? lastAggrPrevDay.getTotalInFlowAmnt() : BigDecimal.ZERO );
-		aggregation.setTotalOutFlowAmnt(lastAggrPrevDay != null ? lastAggrPrevDay.getTotalOutFlowAmnt() : BigDecimal.ZERO );
-		
-	}else if(openingClosingBalInd.contentEquals(ILMCoreConstants.OPENINGBALANCE)) {
-		if(amntSign.contentEquals(ILMCoreConstants.PLUS)) {
-			aggregation.setTotalAmnt(mgmtAmnt);
-		}else {
-			BigDecimal negAmnt = mgmtAmnt.multiply(new BigDecimal(-1));
-			aggregation.setTotalAmnt(negAmnt);
-		}
-		aggregation.setTotalInFlowAmnt(BigDecimal.ZERO);
-		aggregation.setTotalOutFlowAmnt(BigDecimal.ZERO);
-	}
-	aggregation.setEntityAcctMapSkey(entityAcctMapSkey);
-	aggregation.setBusinessDtTime(currentDateTime);
-	aggregation.setValueDate(currentDate);
-	aggregation.setAggrInd(aggrInd);
-	aggregation.setOpeningClosingBalInd(openingClosingBalInd);
-	return aggregation;
-}
-	
-	private List<AccountBalanceAggregation> setKAccountAggrs(LocalDateTime currentDateTime, LocalDate currentDate, LocalDate prevDate){
-		List<EntityAccountMapDefinition> defns = getOpeningBalanceForAllAccts(ILMCoreConstants.KACCOUNT);
-		List<AccountBalanceAggregation> kAcctAggrs = new ArrayList<>();
-		for(EntityAccountMapDefinition definition : defns) {
-			AccountBalanceAggregation aggregation = new AccountBalanceAggregation(definition.getEntityAcctMapSkey(), BigDecimal.ZERO, 
-					currentDateTime, currentDate, BigDecimal.ZERO, BigDecimal.ZERO, ILMCoreConstants.OTHERS, ILMCoreConstants.OPENINGBALANCE);
-			kAcctAggrs.add(aggregation);
-			kAcctAggrs.addAll(getOpeningBalByPrevDayAggr(definition.getEntityAcctMapSkey(), prevDate, currentDateTime, currentDate, 
-					ILMCoreConstants.OTHERS, ILMCoreConstants.KACCOUNT));
-		}
-		return kAcctAggrs;
-	}
-	
-	private List<EntityAccountMapDefinition> getOpeningBalanceForAllAccts(String acctType) {
-		List<EntityAccountMapDefinition> defns = new ArrayList<>();
-		defns.addAll(eamRepo.findByAccountType(acctType));
-		return defns;
-	}
-	
-	@Override
-	@Find(arguments= {"timezone"})
-	@FindNormEx
-	public void saveFutureDatedTransactionsToAggr(String timezone) {
-		try {
-			LocalDateTime currentDateTime = DateUtil.getCurrentDateTimeByZone(timezone);
-			if(currentDateTime != null) {
-				LocalDate currentDate = currentDateTime.toLocalDate();
-				List<BlotterParamsDTO> futureDatedTransacsSum = blotterDao.getFutureDatedTransactions(currentDate);
-				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
-				if(CollectionUtils.isNotEmpty(futureDatedTransacsSum)) {
-					for(BlotterParamsDTO paramsDTO : futureDatedTransacsSum) {
-						BigDecimal amnt = paramsDTO.getFutureDatedAggrAmnt();
-						String amntSign = ILMCoreConstants.PLUS;
-						BigDecimal inFlow = BigDecimal.ZERO;
-						BigDecimal outFlow = BigDecimal.ZERO;
-						if(amnt.compareTo(BigDecimal.ZERO) < 0) {
-							amntSign = ILMCoreConstants.MINUS;
-							outFlow = amnt;
-						}else {
-							inFlow = amnt;
-						}
-						String aggrInd = ILMCoreConstants.OTHERS;
-						AccountBalanceAggregation aggregation = super.aggregateBalance(paramsDTO.getEntityAcctMapSkey(), currentDate, amnt.abs(), 
-								amntSign, currentDateTime, inFlow, outFlow, aggrInd, null);
-						aggregations.add(aggregation);
-					}	
+				rowNum = rowNum + 2;
+				Row row2 = sheet.createRow(rowNum++);
+				colNum = 0;
+				row2.createCell(colNum++).setCellValue("Average Closing Balance");
+				row2.createCell(colNum++).setCellValue(balanceDto.getMainCashAvgClosingBal().doubleValue());
+				row2.createCell(colNum++).setCellValue(balanceDto.getSrrCashAvgClosingBal().doubleValue());
+				Row row3 = sheet.createRow(rowNum++);
+				colNum = 0;
+				row3.createCell(colNum++).setCellValue("Minimum Closing Balance");
+				row3.createCell(colNum++).setCellValue(balanceDto.getMainCashMinClosingBal().doubleValue());
+				row3.createCell(colNum++).setCellValue(balanceDto.getSrrCashMinClosingBal().doubleValue());
+				Row row4 = sheet.createRow(rowNum++);
+				colNum = 0;
+				row4.createCell(colNum++).setCellValue("Maximum Closing Balance");
+				row4.createCell(colNum++).setCellValue(balanceDto.getMainCashMaxClosingBal().doubleValue());
+				row4.createCell(colNum++).setCellValue(balanceDto.getSrrCashMaxClosingBal().doubleValue());
+			} else {
+				Row row = sheet.createRow(rowNum++);
+				row.createCell(colNum++).setCellValue("Date");
+				row.createCell(colNum++).setCellValue("Main Account Closing Balance");
+				row.setRowStyle(style);
+				LinkedHashMap<String, ArrayList<BigDecimal>> amounts = balanceDto.getDatedAmounts();
+				for (Map.Entry<String, ArrayList<BigDecimal>> entry : amounts.entrySet()) {
+					Row row1 = sheet.createRow(rowNum++);
+					colNum = 0;
+					SimpleDateFormat inputFromat = new SimpleDateFormat("yyyy-MM-dd");
+					SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
+					try {
+						String date = sm.format(inputFromat.parse(entry.getKey().substring(0, 10)));
+						row1.createCell(colNum++).setCellValue(date);
+						row1.createCell(colNum++).setCellValue(entry.getValue().get(0).doubleValue());
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						LOGGER.info("context : ", e);
+					}
 				}
-				acctBalAggrRepo.saveAll(aggregations);
+				rowNum = rowNum + 2;
+				Row row2 = sheet.createRow(rowNum++);
+				colNum = 0;
+				row2.createCell(colNum++).setCellValue("Average Closing Balance");
+				row2.createCell(colNum++).setCellValue(balanceDto.getMainCashAvgClosingBal().doubleValue());
+				Row row3 = sheet.createRow(rowNum++);
+				colNum = 0;
+				row3.createCell(colNum++).setCellValue("Minimum Closing Balance");
+				row3.createCell(colNum++).setCellValue(balanceDto.getMainCashMinClosingBal().doubleValue());
+				Row row4 = sheet.createRow(rowNum++);
+				colNum = 0;
+				row4.createCell(colNum++).setCellValue("Maximum Closing Balance");
+				row4.createCell(colNum++).setCellValue(balanceDto.getMainCashMaxClosingBal().doubleValue());
 			}
-		}catch (Exception e) {
-			LOGGER.error(String.format("Exception while migrating future dated transactions %s", e));
 		}
-	}
 
-	@Override
-	@Find(arguments= {"RequestAnalyticsDTO"},returnType="BlotterAcctsAddnDataTo",type="JSON")
-	@FindNormEx
-	public BlotterAcctsAddnDataDTO getBlotterAcctsAddnData(RequestAnalyticsDTO analyticsDTO) {
-		BlotterAcctsAddnDataDTO blotterAcctsAddnDataDTO = new BlotterAcctsAddnDataDTO();
-		LocalDate currDate = DateUtil.getCurrentDateTimeByZone(analyticsDTO.getTimeZone()).toLocalDate();
-		BigDecimal minSRRAmntInMillions = BigDecimal.ZERO;
-		BigDecimal elInMillions = BigDecimal.ZERO;
-		List<Long> countrySkeys =  analyticsDTO.getCountrySkeys();
-		List<Long> entitySkeys =  analyticsDTO.getEntitySkeys();
-		List<Long> currencySkeys =  analyticsDTO.getCurrencySkeys();
-		BigDecimal maxSRRRatio = BigDecimal.ZERO;
-		if(currDate != null) {
-			SRRConfiguration elConfig = getSRRConfig(countrySkeys, entitySkeys, currencySkeys, ILMCoreConstants.EL, currDate);
-			SRRConfiguration mSrrConfig = getSRRConfig(countrySkeys, entitySkeys, currencySkeys, ILMCoreConstants.MSRR, currDate);
-			if(elConfig != null && mSrrConfig != null) {
-				BigDecimal eligibleLiability = elConfig.getEligibleLiability();
-				BigDecimal minSRRRatio = mSrrConfig.getMinSRRRatioReq().divide(BigDecimal.valueOf(100));
-				BigDecimal minSRRAmnt = eligibleLiability.multiply(minSRRRatio);
-				minSRRAmntInMillions = minSRRAmnt.divide(BigDecimal.valueOf(1000000)); 
-				elInMillions = eligibleLiability.divide(BigDecimal.valueOf(1000000));
-				maxSRRRatio = mSrrConfig.getMaxSRRRatioReq();
-			}
-			blotterAcctsAddnDataDTO.setEligibleLiability(elInMillions);
-			blotterAcctsAddnDataDTO.setMinSRRAmnt(minSRRAmntInMillions);
-			blotterAcctsAddnDataDTO.setMaxSRRRatio(maxSRRRatio);
-		}
-		return blotterAcctsAddnDataDTO;
-	}
-	
-	@Override
-	@Find(arguments= {"requestAnalyticsDto"},returnType="BigDecimal",type= "JSON")
-	@FindNormEx
-	public List<BigDecimal> getKAccountLimitFromConfig(RequestAnalyticsDTO analyticsDTO) {
-		List<BigDecimal> kAcctLimit = new ArrayList<BigDecimal>();
-		List<KAccountConfiguration> existingkAcctConfigs = kAcctConfigDao.getKAcctConfigByDims(analyticsDTO.getCountrySkeys(), analyticsDTO.getEntitySkeys(), 
-				analyticsDTO.getCurrencySkeys(), ILMCoreConstants.TRANCHEDEFN);
-		if(CollectionUtils.isNotEmpty(existingkAcctConfigs)) {
-			Optional<KAccountConfiguration> kAcctLimtConfigOptional = existingkAcctConfigs.stream().findFirst();
-			if(kAcctLimtConfigOptional.isPresent()) {
-				KAccountConfiguration kAcctLimtConfig = kAcctLimtConfigOptional.get();
-				kAcctLimit.add(kAcctLimtConfig.getBorrowingLimit());
-				kAcctLimit.add(kAcctLimtConfig.getThreshold());
-			}
-		}
-		return kAcctLimit; 
-	}
-	
-	private SRRConfiguration getSRRConfig(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currSkeys, String defnType, LocalDate currDate) {
-		return srrConfigRepo.findFirstByCountrySkeyInAndEntitySkeyInAndCurrencySkeyInAndDefnTypeAndEffectiveFromLessThanEqualAndEffectiveToGreaterThanEqualAndLatestRecInd
-				(countrySkeys, entitySkeys,currSkeys, defnType, currDate, currDate, ILMCoreConstants.YIND);
-	}
-	
-	@Override
-	@Find(arguments= {"timeZone"},returnType="List<SRRConfigsCheckDTO>",type= "JSON")
-	public List<SRRConfigsCheckDTO> checkForSRRConfigurations(String timeZone) {
-		Long countrySkey = 0l;
-		List<SRRConfigsCheckDTO> configsCheckDTOs = new ArrayList<>();
-		List<DimDTO>  entities = new ArrayList<>();
-		List<DimDTO> countries = dimService.getCountryDetails();
-		Optional<DimDTO> countryMY = countries.stream().filter(p -> p.getName().contentEquals("Malaysia")).findFirst();
-		if(countryMY.isPresent()) {
-			countrySkey = countryMY.get().getSkey();
-			entities = dimService.getEntityDetails(countrySkey);
-		}
-		Long currSkey = getCurrencySkey();
-		List<Long> countrySkeys = new ArrayList<>(Arrays.asList(countrySkey));
-		List<Long> currSkeys = new ArrayList<>(Arrays.asList(currSkey));
-		LocalDateTime currDateTime = DateUtil.getCurrentDateTimeByZone(timeZone);
-		if(currDateTime != null) {
-			LocalDate currDate = currDateTime.toLocalDate();
-			LocalDate nextDay = currDate.plusDays(1l);
-			for(DimDTO entityDTO : entities) {
-				List<Long> entitySkeys = new ArrayList<>(Arrays.asList(entityDTO.getSkey()));
-				SRRConfiguration elConfig = getSRRConfig(countrySkeys, entitySkeys, currSkeys, ILMCoreConstants.EL, nextDay);
-				SRRConfiguration mSrrConfig =  getSRRConfig(countrySkeys, entitySkeys, currSkeys, ILMCoreConstants.MSRR, nextDay);
-				isNullThenCreateSRRDTOs(configsCheckDTOs, elConfig, mSrrConfig, entityDTO, nextDay);
-			}
-		}
-		return configsCheckDTOs;
-	}
-	
-	private void isNullThenCreateSRRDTOs(List<SRRConfigsCheckDTO> configsCheckDTOs, SRRConfiguration elConfig, SRRConfiguration mSrrConfig, DimDTO entityDTO, LocalDate nextDay) {
-		if(Objects.isNull(elConfig)) {
-			SRRConfigsCheckDTO checkDTO = new SRRConfigsCheckDTO(entityDTO.getName(), ILMCoreConstants.EL);
-			setStartAndEndDatesOfNextFortNight(checkDTO, nextDay);
-			configsCheckDTOs.add(checkDTO);
-			LOGGER.debug("Blotter Service {} isNullThenCreateSRRDTOs",checkDTO);
-		}
-		if(Objects.isNull(mSrrConfig)) {
-			SRRConfigsCheckDTO checkDTO = new SRRConfigsCheckDTO(entityDTO.getName(), ILMCoreConstants.MSRR);
-			checkDTO.setFromDate(nextDay);
-			configsCheckDTOs.add(checkDTO);
-			LOGGER.debug("Blotter Service {} isNullThenCreateSRRDTOs",checkDTO);
-		}
-	}
-	
-	private Long getCurrencySkey() {
-		Long currSkey = 0l;
-		Long countrySkeyDummy = 0l;
-		List<DimDTO> currencies = dimService.getCurrencyDetails(countrySkeyDummy, 'a');
-		Optional<DimDTO> currMYR = currencies.stream().filter(p -> p.getName().contentEquals("Malaysian Ringgit")).findFirst();
-		if(currMYR.isPresent()) {
-			currSkey = currMYR.get().getSkey();
-		}
-		return currSkey;
-	}
-	
-	private void setStartAndEndDatesOfNextFortNight(SRRConfigsCheckDTO checkDTO, LocalDate nextDay) {
-		LocalDate fifteenthDt = LocalDate.of(nextDay.getYear(), nextDay.getMonth(), 15);
-		if(nextDay.isBefore(fifteenthDt) || nextDay.isEqual(fifteenthDt)) {
-			checkDTO.setFromDate(LocalDate.of(nextDay.getYear(), nextDay.getMonth(), 1));
-			checkDTO.setToDate(fifteenthDt);
-		}else if(nextDay.isAfter(fifteenthDt)) {
-			checkDTO.setFromDate(fifteenthDt.plusDays(1l));
-			checkDTO.setToDate(nextDay.withDayOfMonth(nextDay.lengthOfMonth()));
-		}
-	}
-	
-	@Override
-	public void triggerWebScheduledTasks() {
-		LOGGER.info("INSIDE ILM-WEB SCHEDULED TASKS ");
-		String timezone = cfProjService.getConfigValue(ILMCoreConstants.ILMTIMEZONE);
-		saveOpeningClosingBalancesForNostro(timezone);
-		saveOpeningBalancesInAggr(timezone);
-		saveFutureDatedTransactionsToAggr(timezone);
-		saveFutureDatedTxnsToAggrForNostro(timezone);
-		fileProcessingService.saveTreasuryOutgoingToPMD(timezone);
-		ilaService.calculateAndSaveILABalances(timezone);
-		LOGGER.info("NOW SAVE EXCESS SRR WILL START ");
-		saveExcessSRRAmount(LocalDate.now().minusDays(1) ,"Schedular");
-	}
-	
-	@Override
-	public void triggerSweepingWebScheduledTasks() {
-		LOGGER.info("INSIDE ILM-SWEEPING SCHEDULED TASKS ");
-		String timezone = cfProjService.getConfigValue(ILMCoreConstants.ILMTIMEZONE);
-		this.saveSweepingAmount(timezone);
-		//saveSweepingAmnts(timezone);
-//		this.saveLongBalance(timezone);
-		rentasBalancingService.calculateILMClosingBalanceForRentas(timezone);
-		String notification = "New Data Available!";
-		ilmAsyncService.sendNotificationToUIWithFC(notification, "WEBSOCKET_URL_BLOTTER%", "SERVICE_PROVIDERS");
-	}
-	
-//	private void saveSweepingAmnts(String timezone) {
-//		List<EntityAccountMapDefinition> nostroDefns = eamRepo.findByAccountType(ILMCoreConstants.NOSTROACCOUNT);
-//		List<String> primarySweepingAccts = configRepo.getConfigvalues(ILMCoreConstants.PRIMARY_SWEEPING_ACCT).stream().
-//				map(Config::getValue).collect(Collectors.toList());
-//		LocalDate valueDt = DateUtil.getCurrentDateTimeByZone(timezone).toLocalDate();
-//		if(CollectionUtils.isNotEmpty(nostroDefns)) {
-//			Map<Long ,List<EntityAccountMapDefinition>> currencyEamMap = nostroDefns.stream()
-//					.collect(Collectors.groupingBy(EntityAccountMapDefinition::getCurrencySkey));
-//			Map<String , BigDecimal> sweepingAmntMap = new HashMap<>();
-//			for(Map.Entry<Long, List<EntityAccountMapDefinition>> entry : currencyEamMap.entrySet()) {
-//				BigDecimal primeSweepingAmnt = BigDecimal.ZERO;
-//				String primeSweepingAcct = null;
-//				if(CollectionUtils.isNotEmpty(entry.getValue())){
-//					List<EntityAccountMapDefinition> defns = entry.getValue();
-//					for(EntityAccountMapDefinition defn : defns) {
-//						AccountBalanceAggregation aggregation = finMsgDao.getLastUpdatedAcctBalAggr(defn.getEntityAcctMapSkey(),valueDt, ILMCoreConstants.OTHERS);
-//						if(aggregation!= null && !primarySweepingAccts.contains(defn.getAccountName())) {
-//							sweepingAmntMap.put(defn.getAccountName(), aggregation.getTotalAmnt());
-//							primeSweepingAmnt =  primeSweepingAmnt.add(aggregation.getTotalAmnt());
-//						}else if(primarySweepingAccts.contains(defn.getAccountName())) {
-//							primeSweepingAcct = defn.getAccountName();
-//						}
-//					}
-//					sweepingAmntMap.put(primeSweepingAcct, primeSweepingAmnt);
-//					
-//				}
-//				String currShortCode = dimDao.getCurrCodeBySkey(entry.getKey());
-//				List<IlmConfig> configs = ilmConfigRepo.getConfigvalues(ILMCoreConstants.SWEEPING_AMNT+"_"+currShortCode);
-//				if(CollectionUtils.isNotEmpty(configs)) {
-//					for(IlmConfig config : configs) {
-//						if(sweepingAmntMap.containsKey(config.getShortCode())) {
-//							config.setValue(sweepingAmntMap.get(config.getShortCode()).toString());
-//						}
-//					}
-//				}
-//				ilmConfigRepo.saveAll(configs);
-//				
-//			}
-//			
-//			
-//		}
-//	}
-//	
-//	
-//	private void saveLongBalance(String timezone) {
-//		List<EntityAccountMapDefinition> nostroDefns = eamRepo.findByAccountType(ILMCoreConstants.NOSTROACCOUNT);
-//		if (CollectionUtils.isNotEmpty(nostroDefns)) {
-//			List<String> mainAgent = nostroDefns.stream()
-//					.filter(defn -> ILMCoreConstants.MainAgent.equals(defn.getTypeOfNostroAgent()))
-//					.map(EntityAccountMapDefinition::getAccountName).collect(Collectors.toList());
-//			Map<Long, List<EntityAccountMapDefinition>> currencyEamMap = nostroDefns.stream()
-//					.collect(Collectors.groupingBy(EntityAccountMapDefinition::getCurrencySkey));
-//			LocalDate valueDt = DateUtil.getCurrentDateTimeByZone(timezone).toLocalDate();
-//			Map<String, BigDecimal> longBalanceAmntMap = new HashMap<>();
-//			for (Map.Entry<Long, List<EntityAccountMapDefinition>> entry : currencyEamMap.entrySet()) {
-//				BigDecimal longBalanceAmnt = BigDecimal.ZERO;
-//				String mainAgentAcct = null;
-//				if (CollectionUtils.isNotEmpty(entry.getValue())) {
-//					List<EntityAccountMapDefinition> defns = entry.getValue();
-//					for (EntityAccountMapDefinition defn : defns) {
-//						AccountBalanceAggregation aggregation = finMsgDao.getLastUpdatedAcctBalAggr(
-//								defn.getEntityAcctMapSkey(), valueDt, ILMCoreConstants.OTHERS);
-//						if (!mainAgent.contains(defn.getAccountName())
-//								&& !defn.getSweepingAmountCalculationInd().equals('N')) {
-//							BigDecimal totalAmount = Optional.ofNullable(aggregation.getTotalAmnt()).orElseGet(() -> BigDecimal.ZERO)
-//									.subtract(Optional.ofNullable(defn.getMinBalance()).orElseGet(() -> BigDecimal.ZERO));
-//							longBalanceAmntMap.put(defn.getAccountName(), totalAmount);
-//							longBalanceAmnt = longBalanceAmnt.add(totalAmount);
-//						} else if (mainAgent.contains(defn.getAccountName())) {
-//							mainAgentAcct = defn.getAccountName();
-//						}
-//					}
-//					longBalanceAmntMap.put(mainAgentAcct, longBalanceAmnt);
-//				}
-//			}
-//			Optional.ofNullable(longBalanceAmntMap)
-//	        .ifPresent(map -> map.forEach((key, value) -> {
-//	            FCYManualInputDTO fcyManualInputDTO = new FCYManualInputDTO();
-//	            fcyManualInputDTO.setRefLabel("LONG_BALANCE");
-//	            fcyManualInputDTO.setNostroAgent(key);
-//	            fcyManualInputDTO.setValueDate(LocalDate.now());
-//	            fcyManualInputDTO.setCreateDate(LocalDateTime.now());
-//	            fcyManualInputDTO.setLongBalance(value);
-//	            fCYManualInputRepo.save(fcyManualInputDTO);
-//	        }));
-//		}
-//	}
-
-	private void saveSweepingAmount(String timezone) {
-		List<FCYTreasuryDataDTO> projectedBal =	fCYBlotterService.prepareSweepingTreasuryData(null, null, null, "Schduler",timezone,null);
-		projectedBal.stream().forEach(data->{
-			SweepingAmountDetails sweepingAmountDetails = new SweepingAmountDetails();
-			sweepingAmountDetails.setRefLabel("SWEEPING_AMOUNT");
-			sweepingAmountDetails.setNostroAgent(data.getRefLable());
-			sweepingAmountDetails.setSweepingAmount(data.getProjectBal());
-			sweepingAmountDetails.setValueDate(DateUtil.getCurrentDateTimeByZone(timezone).toLocalDate());
-            sweepingAmountDetails.setEamSkey(data.getEntityAccMapSkey());
-            fCYManualInputRepo.save(sweepingAmountDetails);
-		});
-	}
-
-
-
-	
-	private void saveFutureDatedTxnsToAggrForNostro(String timezone) {
-		try {
-			LocalDateTime currentDateTime = DateUtil.getCurrentDateTimeByZone(timezone);
-			if(currentDateTime != null) {
-				LocalDate currentDate = currentDateTime.toLocalDate();
-				List<String> msgTypes = new ArrayList<>(Arrays.asList(ILMCoreConstants.MESSAGETYPE400,
-						ILMCoreConstants.MESSAGETYPE900,ILMCoreConstants.MESSAGETYPE910,
-						ILMCoreConstants.MESSAGETYPE940,ILMCoreConstants.MESSAGETYPE950,
-						ILMCoreConstants.MESSAGETYPE192,ILMCoreConstants.MESSAGETYPE292 , ILMCoreConstants.MXTYPECAMT05300108));
-				List<BlotterParamsDTO> futureDatedTransacsSum = blotterDao.getNostroFutureDatedTransactions(currentDate,msgTypes);
-				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
-				if(CollectionUtils.isNotEmpty(futureDatedTransacsSum)) {
-					for(BlotterParamsDTO paramsDTO : futureDatedTransacsSum) {
-						BigDecimal amnt = paramsDTO.getFutureDatedAggrAmnt();
-						String amntSign = ILMCoreConstants.PLUS;
-						BigDecimal inFlow = BigDecimal.ZERO;
-						BigDecimal outFlow = BigDecimal.ZERO;
-						if(amnt.compareTo(BigDecimal.ZERO) < 0) {
-							amntSign = ILMCoreConstants.MINUS;
-							outFlow = amnt;
-						}else {
-							inFlow = amnt;
-						}
-						String aggrInd = ILMCoreConstants.OTHERS;
-						AccountBalanceAggregation aggregation = super.aggregateBalance(paramsDTO.getEntityAcctMapSkey(), currentDate, amnt.abs(), 
-								amntSign, currentDateTime, inFlow, outFlow, aggrInd, null);
-						aggregations.add(aggregation);
-					}	
-				}
-				acctBalAggrRepo.saveAll(aggregations);
-			}
-		}catch (Exception e) {
-			LOGGER.error(String.format("Exception while migrating future dated transactions %s", e));
-		}
-	}
-	
-	
-	private void saveOpeningClosingBalancesForNostro(String timezone) {
-		try {
-			List<AccountBalanceAggregation> aggregations = new ArrayList<>();
-			LocalDateTime currentDateTime = DateUtil.getCurrentDateTimeByZone(timezone);
-			LocalDate currentDate = currentDateTime.toLocalDate();
-			/** LocalDate prevDate = currentDate.minusDays(1);
-			Boolean isPrevDayholiday = false; **/
-			List<EntityAccountMapDefinition> nostroAccounts = entityAccountMappingRepo.getDefnByNostroInd('Y');
-			for(EntityAccountMapDefinition nostroAcc : nostroAccounts) {
-				/** List<HolidayMaster> holidays = holidayMasterRepo.getAllHolidays(prevDate, prevDate, nostroAcc.getCurrencySkey());
-				if(holidays.size() != 0 || DateUtil.isWeekend(prevDate)) {
-					isPrevDayholiday = true;
-				} **/
-				Boolean isTag64Present = false;
-				Long latestMT950TrackerID = null;
-				AccountBalanceAggregation aggrOpening = null;
-				AccountBalanceAggregation aggrClosing = null;
-				/** AccountBalanceAggregation prevDayOpeningAgrr = 
-						acctBalAggrRepo.findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd(nostroAcc.getEntityAcctMapSkey(), 
-								prevDate, ILMCoreConstants.OPENINGBALANCE, ILMCoreConstants.OTHERS); **/
-				AccountBalanceManagement latestMt950 = accountBalanceMgmtRepo.findFirstByEntityAcctMapSkeyAndMessageTypeOrderByTrackerIDDesc(
-						nostroAcc.getEntityAcctMapSkey(), ILMCoreConstants.MESSAGETYPE950);
-				LOGGER.info("----------- Latest MT 950 object ----------");
-				LOGGER.info(latestMt950);
-				BigDecimal latestClosingBalAmnt = latestMt950 != null ? latestMt950.getAmount() : BigDecimal.ZERO; //NOSONAR
-				LOGGER.info("----------- Latest MT 950 amount ----------");
-				LOGGER.info(latestClosingBalAmnt);
-				
-				if(!ObjectUtils.isEmpty(latestMt950)) {
-					FinMT940 finMT940 = finMT940Repo.findByTrackerID(latestMt950.getTrackerID()); //NOSONAR
-					isTag64Present = finMT940 != null && !ObjectUtils.isEmpty(finMT940.getMt940Block4().getBlock4Tag64CloseAvailBal());
-					latestMT950TrackerID = latestMt950.getTrackerID();
-				}
-				
-				if(isTag64Present.equals(Boolean.FALSE)) {
-					LOGGER.info("Tag64 is not present in the latest Mt950");
-					BigDecimal futureDatedTotalAmnt = accountBalanceMgmtRepo.getFutureDatedTotalAmountByMessageTypeInAndEntityAcctMapSkeyAndValueDate
-							(Arrays.asList(ILMCoreConstants.MESSAGETYPE103, ILMCoreConstants.MESSAGETYPE202), nostroAcc.getEntityAcctMapSkey(), currentDate);
-					LOGGER.info("------------ Sum of Future dated amounts ---------");
-					LOGGER.info(futureDatedTotalAmnt);
-					latestClosingBalAmnt = futureDatedTotalAmnt != null ? latestClosingBalAmnt.subtract(futureDatedTotalAmnt) : latestClosingBalAmnt;
-					LOGGER.info(latestClosingBalAmnt);
-				}
-
-				aggrOpening = new AccountBalanceAggregation(nostroAcc.getEntityAcctMapSkey(), latestClosingBalAmnt, currentDateTime, currentDate, BigDecimal.ZERO,
-						BigDecimal.ZERO, ILMCoreConstants.OTHERS, ILMCoreConstants.OPENINGBALANCE, latestMT950TrackerID);
-				aggrClosing = new AccountBalanceAggregation(nostroAcc.getEntityAcctMapSkey(), latestClosingBalAmnt, currentDateTime, currentDate.minusDays(1), BigDecimal.ZERO,
-						BigDecimal.ZERO, ILMCoreConstants.OTHERS, ILMCoreConstants.CLOSINGBALANCE, latestMT950TrackerID);
-				aggregations.add(aggrOpening);
-				aggregations.add(aggrClosing);
-			}
-			acctBalAggrRepo.saveAll(aggregations);
-		} catch (Exception e) {
-			LOGGER.error(String.format("Exception while creating opening and closing balances for nostro accounts %s", e));
-		}
-	}
-	
-	
-	@Override
-	@Find(arguments= {"timeZone"})
-	public void saveExcessSRRAmount(LocalDate date ,String indicator) {
-		LOGGER.info("INSIDE SAVE EXCESS SRR AMOUNT METHOD ");
-		List<EntityAccountMapDefinition> eamDefinitions = new ArrayList<>();
-		try {
-			eamDefinitions = entityAccountMappingRepo.findByAccountType(ILMCoreConstants.SRRACCOUNT);
-		}catch(Exception e ) {
-			LOGGER.info("THIS ERROR OCCURED WHILE FETCHING EAMDEFNS IN EAM REPO- FIND BY ACCOUNT TYPE : "+ e);
-		}
-		for(EntityAccountMapDefinition eamDef: eamDefinitions) {
-			LOGGER.info("INSIDE FOR LOOP FOR EACH EAM DEF : "+ eamDef.getEntityAcctMapSkey());
-		List<Long> countrySkeys = new ArrayList<>();
-		List<Long> entitySkeys = new ArrayList<>();
-		List<Long> currencySkeys = new ArrayList<>();
-		List<SRRConfiguration> srrconfs = new ArrayList<>();
-			List<SRRConfiguration> allSrrconfs = new ArrayList<>();
-		List<SRRConfiguration> srrconfsEL = new ArrayList<>();
-			countrySkeys.add(eamDef.getCountrySkey());
-			entitySkeys.add(eamDef.getEntitySkey());
-			currencySkeys.add(eamDef.getCurrencySkey());
-			RequestAnalyticsDTO analyticsDto = new RequestAnalyticsDTO();
-			analyticsDto.setCountrySkeys(countrySkeys);
-			analyticsDto.setEntitySkeys(entitySkeys);
-			analyticsDto.setCurrencySkeys(currencySkeys);
-			
-			BigDecimal minSrrReq = BigDecimal.ZERO;
-			BigDecimal el = BigDecimal.ZERO;
-			
-			analyticsDto.setDefinationType(ILMCoreConstants.MSRR);
-			try {
-				allSrrconfs = srrMgmtDao.getSrrConfigByType(analyticsDto);
-				srrconfs = srrMgmtDao.findSrrConfigWithDefnTypeAndDate(analyticsDto, date);
-				minSrrReq = srrconfs.get(0).getMinSRRRatioReq();
-				LOGGER.info("MIN SRR CONF FOUND FOR DATE : "+ date);
-				LOGGER.info("Min SRR Ratio : " + minSrrReq);
-			}catch(Exception e ) {
-				LOGGER.info("THIS ERROR OCCURED IN SRRMGMT DAO- GET SRR CONFIG BY TYPE MSRR : "+ e);
-				continue;
-			}
-			
-			SRRConfiguration eligibleLiability= new SRRConfiguration();
-			analyticsDto.setDefinationType(ILMCoreConstants.EL);
-			try {
-				srrconfsEL = srrMgmtDao.findSrrConfigWithDefnTypeAndDate(analyticsDto, date);
-				eligibleLiability = srrconfsEL.get(0);
-				el = eligibleLiability.getEligibleLiability();
-				LOGGER.info("Eligible Liability found for Date : "+date);
-				LOGGER.info("Eligible Liability : " + el);
-			}catch(Exception e ) {
-				LOGGER.info("THIS ERROR OCCURED IN SRR MGMT DAO GET SRR CONFIG BY TYPE EL : "+ e);
-				continue;
-			}
-			
-			RequestAnalyticsDTO requestAnalyticsDTO = new RequestAnalyticsDTO();
-			requestAnalyticsDTO.setCountrySkeys(countrySkeys);
-			requestAnalyticsDTO.setEntitySkeys(entitySkeys);
-			requestAnalyticsDTO.setCurrencySkeys(currencySkeys);
-			requestAnalyticsDTO.setDefinationType(ILMCoreConstants.MSRR);
-			requestAnalyticsDTO.setTimeZone(ILMCoreConstants.ILMTIMEZONE);
-			requestAnalyticsDTO.setFromDate(eligibleLiability.getEffectiveFrom());
-			requestAnalyticsDTO.setToDate(eligibleLiability.getEffectiveTo());
-			requestAnalyticsDTO.setEntityAcctmapSkey(eamDef.getEntityAcctMapSkey());
-			
-			List<AccountBalanceAggregationDTO> balances = new ArrayList<>();
-			List<EntityAccountMapDefinition> eamSecurities  = new ArrayList<>();
-			
-			eamSecurities =eamRepo.findByEntitySkeyAndAccountType(eamDef.getEntitySkey(), ILMCoreConstants.SRRACCTSECURITIES);
-			if (eamSecurities.size()>0) {
-				requestAnalyticsDTO.setEamSkeySecurities(eamSecurities.get(0).getEntityAcctMapSkey());
-			}
-			Integer daysDiff=DateUtil.daysBetween(eligibleLiability.getEffectiveFrom(),eligibleLiability.getEffectiveTo())+1;
-			srrAccountMgmntImpl.getTotalAggrs(balances, requestAnalyticsDTO,eligibleLiability , daysDiff, date, allSrrconfs);
-			balances=balances.stream().filter(it->it.getValueDate().isBefore(date) || it.getValueDate().equals(date)).collect(Collectors.toList());
-			BigDecimal dailySrrPerc= BigDecimal.ZERO;
-			for(AccountBalanceAggregationDTO balance : balances ) {
-				if(balance.getValueDate().equals(date)) {
-					dailySrrPerc = balance.getCalculatedDailySrrPercentage();
-				}
-			}
-			LOGGER.info("@@Daily Srr Perc is : "+ dailySrrPerc +" for date :" +date);
-			BigDecimal excessSrrAmount = BigDecimal.valueOf(0);
-			List<AccountBalanceAggregationDTO> srrCashClosingBalAggr = balances.stream().filter(it->it.getValueDate().equals(date)).collect(Collectors.toList());
-			BigDecimal srrCashClosingBal = srrCashClosingBalAggr.get(0).getCashBalance();
-			try {
-				excessSrrAmount = ((dailySrrPerc.subtract(minSrrReq)).multiply(el)).divide(BigDecimal.valueOf(100));
-				LOGGER.info("excessSrrAmount : " + excessSrrAmount);
-			}catch(Exception e) {
-				LOGGER.info("CORRESPONDING ROW IN AGGREGATE TABLE NOT FOUND; THIS ERROR OCCURED IN CALCULATION : "+ e);
-			}
-			LOGGER.info("Excess Srr Amount : "+excessSrrAmount +" and srr cash closing bal : "+srrCashClosingBal);
-			ExcessSrrAmount esa = new ExcessSrrAmount();
-			if(indicator.equals("EditEL")) {
-				esa = excessSrrAmountRepo.getExcessSrr(eamDef.getEntityAcctMapSkey(), date);
-				if(esa != null) {
-					esa.setExcessSrrAmount(excessSrrAmount.compareTo(srrCashClosingBal) > 0?srrCashClosingBal:excessSrrAmount);
-					LOGGER.info("NOW WE WILL SAVE THE ESA");
-					excessSrrAmountRepo.save(esa);
-				}
-			}
-			else {
-				esa.setEffectiveDate(date);
-				esa.setEntityAccMapSkey(eamDef.getEntityAcctMapSkey());
-				esa.setExcessSrrAmount(excessSrrAmount.compareTo(srrCashClosingBal) > 0?srrCashClosingBal:excessSrrAmount);	
-				LOGGER.info("NOW WE WILL SAVE THE ESA");
-				excessSrrAmountRepo.save(esa);
-			}
-		}
-	}
-	@Override
-	@Find(arguments= {"Blotter Params DTO"},returnType="Excel WorkBook",type="JSON",comment="generate_excel_blotter_drilldown")
-	@FindNormEx
-	public XSSFWorkbook getDrillDownDetailsExcel(BlotterParamsDTO paramsDto) {
-		List<Long> eamSkeys = new ArrayList<>();
-		if(paramsDto.getEntityAcctMapSkey() == 0 ) {
-			List<EntityAccountMapDefinition> nostroDefinitions = eamRepo.findByEntitySkeyAndCurrencySkeyAndAccountType(paramsDto.getEntitySkey(), paramsDto.getCurrencySkey(), paramsDto.getAcctName());
-			if(CollectionUtils.isNotEmpty(nostroDefinitions)) {
-				for(EntityAccountMapDefinition def : nostroDefinitions) {
-					eamSkeys.add(def.getEntityAcctMapSkey());
-				}
-			}
-		}
-		List<AccountBalanceManagement> acctBalMgmts = blotterDao.getDrillDownDetails(paramsDto,eamSkeys);
-		List<String> headers = null;
-		List<Map<String, String>> headerValMap = null;
-		if(paramsDto.getAcctName().equalsIgnoreCase(ILMCoreConstants.NOSTROACCOUNT)
-				&& paramsDto.getDrillDownInd().equalsIgnoreCase(ILMCoreConstants.RUNNING_BALANCE)) {
-			headers = new ArrayList<String>(Arrays.asList("Message Type","Amount","Sender","Receiver","Settlement Ind","Senders Reference","Processed Timestamp"));
-			headerValMap = getNostroHeadersValMap(acctBalMgmts);
-		}else if(paramsDto.getAcctName().equalsIgnoreCase(ILMCoreConstants.NOSTROACCOUNT)
-				&& paramsDto.getDrillDownInd().equalsIgnoreCase(ILMCoreConstants.PROJECTED_BALANCE)) {
-			List<AccountBalanceManagement> projectedAcctBalMgmts = findCharges(acctBalMgmts);
-			headers = new ArrayList<String>(Arrays.asList("Message Type","Amount","Sender","Receiver","Settlement Ind","Senders Reference","Processed Timestamp",
-					"Related Reference","Sender To Receiver Info","Details Of Charges","Senders Charges","Receivers Charges"));
-			headerValMap = getProjectedNostroHeadersValMap(projectedAcctBalMgmts);
-		}
-		else {
-			headers = new ArrayList<String>(Arrays.asList("Message Type","Amount","Sender","Receiver","Counter Party","TRN Code","Senders Reference","Processed Timestamp"));
-			headerValMap = getHeadersValMap(acctBalMgmts);
-		}
-		XSSFWorkbook workBook= super.generateExcelWorkbook(headers, headerValMap, "DrillDown Sheet");
 		return workBook;
-	}
-	
-	@Override
-	@Find(returnType="Excel WorkBook",type="JSON",comment="generate_excel_unsettled_transactions")
-	@FindNormEx
-	public XSSFWorkbook getUnsettledTransactionsExcel() {
-		List<AccountBalanceManagement> acctBalMgmts = accountBalanceMgmtRepo.findBySettlementIndOrderByBusinessDtTimeDesc(ILMCoreConstants.NIND);
-		List<String> headers = new ArrayList<String>(Arrays.asList("Message Type","Amount","Sender","Receiver","Settlement Indicator","Senders Reference","Processed Timestamp"));
-		List<Map<String, String>> headerValMap = new ArrayList<>();
-		for(AccountBalanceManagement management : acctBalMgmts) {
-			String amountStr = null;
-			if(management.getAmount() != null && management.getAmountSign() != null) {
-				BigDecimal amount =  management.getAmountSign().contentEquals(ILMCoreConstants.PLUS)
-						?  management.getAmount() : management.getAmount().multiply(new BigDecimal(-1));
-				amountStr = amount.toString();
-			}
-			Map<String, String> row = new HashMap<>();
-			row.put("Message Type", management.getMessageType());
-			row.put("Amount",amountStr);
-			row.put("Sender",management.getSenderCode());
-			row.put("Receiver",management.getReceiverCode());
-			row.put("Settlement Indicator",management.getSettlementInd().toString());
-			row.put("Senders Reference",management.getSendersRef());
-			row.put("Processed Timestamp",management.getBusinessDtTime() != null ? management.getBusinessDtTime().toString() : null);
-			headerValMap.add(row);
-		}
-		XSSFWorkbook workBook= super.generateExcelWorkbook(headers, headerValMap, "Unsettled Transaction Sheet");
-		return workBook;
-	}
-	
-	@Override
-	@Find(arguments= {"Blotter Params DTO"},returnType="Excel WorkBook",type="JSON",comment="generate_excel_blotter_view_summary")
-	@FindNormEx
-	public XSSFWorkbook getViewSummaryDetailsExcel(AccountBalanceAggregationDTO aggregationDTO, HttpServletResponse httpServletResponse) {
-		BigDecimal totalInFlowAmnt = aggregationDTO.getTotalInFlowAmnt();
-		BigDecimal totalOutFlowAmnt = aggregationDTO.getTotalOutFlowAmnt();
-		httpServletResponse.setContentType("application/vnd.ms-excel");
-		List<String> headers = new ArrayList<String>(Arrays.asList("Incoming", "Outgoing", "Net" ));
-		List<Map<String, String>> headerValMap = getHeadersValMapSummary(totalInFlowAmnt,totalOutFlowAmnt);
-		XSSFWorkbook workBook= super.generateExcelWorkbook(headers, headerValMap, "ViewSummary Sheet");
-		return workBook;	
-	}
-	
-	private List<Map<String, String>> getHeadersValMapSummary(BigDecimal totalInFlowAmnt,BigDecimal totalOutFlowAmnt) {
-		List<Map<String, String>> headerValMap = new ArrayList<>();	
-		Map<String, String> row = new HashMap<>();
-		row.put("Net", (totalInFlowAmnt.add(totalOutFlowAmnt)).toString());
-		row.put("Incoming",totalInFlowAmnt.toString());
-		row.put("Outgoing",totalOutFlowAmnt.toString());
-		headerValMap.add(row);
-		return headerValMap;
-	}
-	
-	private List<Map<String, String>> getHeadersValMap(List<AccountBalanceManagement> acctBalMgmts) {
-		List<Map<String, String>> headerValMap = new ArrayList<>();
-		for(AccountBalanceManagement management : acctBalMgmts) {
-			String amountStr = null;
-			if(management.getAmount() != null && management.getAmountSign() != null) {
-				BigDecimal amount =  management.getAmountSign().contentEquals(ILMCoreConstants.PLUS)
-						?  management.getAmount() : management.getAmount().multiply(new BigDecimal(-1));
-				amountStr = amount.toString();
-			}
-			Map<String, String> row = new HashMap<>();
-			row.put("Message Type", management.getActualMessageType() != null ? management.getActualMessageType() : management.getMessageType());
-			row.put("Amount",amountStr);
-			row.put("Sender",management.getSenderCode());
-			row.put("Receiver",management.getReceiverCode());
-			row.put("Counter Party",management.getCounterParty() != null ? management.getCounterParty() : null);
-			row.put("TRN Code",management.getTrnCode());
-			row.put("Senders Reference",management.getSendersRef());
-			row.put("Processed Timestamp",management.getBusinessDtTime() != null ? management.getBusinessDtTime().toString() : null);
-			headerValMap.add(row);
-		}
-		return headerValMap;
-	}
-	
-	private List<Map<String, String>> getNostroHeadersValMap(List<AccountBalanceManagement> acctBalMgmts) {
-		List<Map<String, String>> headerValMap = new ArrayList<>();
-		for(AccountBalanceManagement management : acctBalMgmts) {
-			String amountStr = null;
-			if(management.getAmount() != null && management.getAmountSign() != null) {
-				BigDecimal amount =  management.getAmountSign().contentEquals(ILMCoreConstants.PLUS)
-						?  management.getAmount() : management.getAmount().multiply(new BigDecimal(-1));
-				amountStr = amount.toString();
-			}
-			Map<String, String> row = new HashMap<>();
-			row.put("Message Type", management.getMessageType());
-			row.put("Amount",amountStr);
-			row.put("Sender",management.getSenderCode());
-			row.put("Receiver",management.getReceiverCode());
-			row.put("Settlement Ind", management.getSettlementInd() != null ? management.getSettlementInd().toString(): null);
-			row.put("Senders Reference",management.getSendersRef());
-			row.put("Processed Timestamp",management.getBusinessDtTime() != null ? management.getBusinessDtTime().toString() : null);
-			headerValMap.add(row);
-		}
-		return headerValMap;
+
 	}
 
-	private List<Map<String, String>> getProjectedNostroHeadersValMap(List<AccountBalanceManagement> acctBalMgmts) {
-		List<Map<String, String>> headerValMap = new ArrayList<>();
-		for(AccountBalanceManagement management : acctBalMgmts) {
-			String amountStr = null;
-			if(management.getAmount() != null && management.getAmountSign() != null) {
-				BigDecimal amount =  management.getAmountSign().contentEquals(ILMCoreConstants.PLUS)
-						?  management.getAmount() : management.getAmount().multiply(new BigDecimal(-1));
-				amountStr = amount.toString();
-			}
-			Map<String, String> row = new HashMap<>();
-			row.put("Message Type", management.getMessageType());
-			row.put("Amount",amountStr);
-			row.put("Sender",management.getSenderCode());
-			row.put("Receiver",management.getReceiverCode());
-			row.put("Settlement Ind", management.getSettlementInd().toString());
-			row.put("Senders Reference",management.getSendersRef());
-			row.put("Processed Timestamp",management.getBusinessDtTime() != null ? management.getBusinessDtTime().toString() : null);
-			row.put("Related Reference", management.getRelatedReference() != null ? management.getRelatedReference() : null);
-			row.put("Sender To Receiver Info", management.getSenderToReceiverInfo() != null ? management.getSenderToReceiverInfo() : null);
-			row.put("Details Of Charges", management.getDetailsOfCharges()!=null ? management.getDetailsOfCharges() : null);
-			row.put("Senders Charges", management.getSendersCharges()!= null ? management.getSendersCharges().toString() : null);
-			row.put("Receivers Charges", management.getReceiversCharges()!=null ? management.getReceiversCharges().toString():null);
-			headerValMap.add(row);
-		}
-		return headerValMap;
-	}
-
-	
-	@Override
-	public void correctBalances(LocalDate date) {
-		List<EntityAccountMapDefinition> defns = eamRepo.findAll();
-		for(EntityAccountMapDefinition defn : defns) {
-			Long eamSkey = defn.getEntityAcctMapSkey();
-			List<AccountBalanceManagement> mgmts = accountBalanceMgmtRepo.findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeAsc(date, eamSkey);
-			List<AccountBalanceAggregation> aggrs = acctBalAggrRepo.findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeAsc(date, eamSkey);
-			HashMap<Long, AccountBalanceManagement> mgmtMap = new HashMap<>();
-			for(int len=0; len<mgmts.size(); len++) {
-				if(mgmts.get(len).getTrackerID()!= null) {
-					mgmtMap.put(mgmts.get(len).getTrackerID(), mgmts.get(len));
-				}
-			}
-			AccountBalanceAggregation openingBal = aggrs.get(0);
-			aggrs.remove(0);
-			BigDecimal aggrTotalAmount = null;
-			for(int i=0;i<aggrs.size();i++) {
-				AccountBalanceAggregation aggroriginal = aggrs.get(i);
-				BigDecimal originalAmount = aggroriginal.getTotalAmnt();
-				System.out.print("aggrOriginalAmnt : "+originalAmount);
-				if(!ILMCoreConstants.CLOSINGBALANCE.equalsIgnoreCase(aggroriginal.getOpeningClosingBalInd())) {
-					AccountBalanceManagement mgmt = mgmtMap.get(aggrs.get(i).getTrackerID());
-					if(mgmt!= null) {
-						BigDecimal amount = mgmt.getAmount(); 
-						String sign = mgmt.getAmountSign();
-						if(sign.equals(ILMCoreConstants.MINUS)) {
-							amount = amount.negate();
-						}
-						if(i==0) {
-							aggrTotalAmount = openingBal.getTotalAmnt().add(amount);
-							if(sign.equals(ILMCoreConstants.MINUS)) {
-								aggrs.get(i).setTotalOutFlowAmnt(amount);
-							}else if(sign.equals(ILMCoreConstants.PLUS)){
-								aggrs.get(i).setTotalInFlowAmnt(amount);
-							}
-						}else {
-							AccountBalanceAggregation prevAggr = aggrs.get(i-1);
-							aggrTotalAmount = prevAggr.getTotalAmnt().add(amount);
-							if(sign.equals(ILMCoreConstants.MINUS)) {
-								aggrs.get(i).setTotalOutFlowAmnt(prevAggr.getTotalOutFlowAmnt().add(amount));
-								aggrs.get(i).setTotalInFlowAmnt(prevAggr.getTotalInFlowAmnt());
-							}else if(sign.equals(ILMCoreConstants.PLUS)){
-								aggrs.get(i).setTotalInFlowAmnt(prevAggr.getTotalInFlowAmnt().add(amount));
-								aggrs.get(i).setTotalOutFlowAmnt(prevAggr.getTotalOutFlowAmnt());
-							}
-						}
-						aggrs.get(i).setTotalAmnt(aggrTotalAmount);
-						System.out.print("changedAggrAmnt : "+aggrs.get(i).getTotalAmnt());
-						if(originalAmount.compareTo(aggrTotalAmount)!=0) {
-							System.out.println("aggrOriginal : "+originalAmount);
-							System.out.println("changedAggr : "+aggrTotalAmount);
-						}
-					}
-					
-				}else {
-					if(aggrs.size() > 1) {
-						AccountBalanceAggregation prevAggr = aggrs.get(i-1);
-						aggrs.get(i).setTotalOutFlowAmnt(prevAggr.getTotalOutFlowAmnt());
-						aggrs.get(i).setTotalInFlowAmnt(prevAggr.getTotalInFlowAmnt());
-					}
-				}
-			}
-				
-			try {
-				Thread.sleep(500);
-			} catch (Exception e) { //NOSONAR
-				// TODO: handle exception
-			}
-			acctBalAggrRepo.saveAll(aggrs);
-			
-		}
-		
-	}
-	
-	@Override
-	public BigDecimal getProjectedBalance(BlotterParamsDTO paramsDTO) {
-		List<Long> eamSkeys=new ArrayList<Long>();
-		if(paramsDTO.getEntityAcctMapSkey() <= 0) {
-			List<EntityAccountMapDefinition> definitions = eamRepo.findByEntitySkeyAndCountrySkeyAndCurrencySkey(paramsDTO.getEntitySkey(), paramsDTO.getCountrySkey(), paramsDTO.getCurrencySkey());
-			try {
-				eamSkeys = definitions.stream().map(EntityAccountMapDefinition::getEntityAcctMapSkey)
-					.collect(Collectors.toList());
-			}catch(NullPointerException e) {
-				LOGGER.error("No Data in EntityAccountMapDefinition",e);
-			}
-		}else {
-			eamSkeys.add(paramsDTO.getEntityAcctMapSkey());
-		}
-		List<String> msgTypes = new ArrayList<>(Arrays.asList(ILMCoreConstants.MESSAGETYPE103,
-				ILMCoreConstants.MESSAGETYPE200,ILMCoreConstants.MESSAGETYPE202));
-		BigDecimal projectedBalance = blotterDao.getProjectedBalance(paramsDTO.getValueDt(), eamSkeys, msgTypes);
-	
-		return projectedBalance ;
-}
-	
-	
 }
 
 
 
-
-package com.maybank.ilm.core.dao;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import com.maybank.ilm.dto.BlotterParamsDTO;
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-import com.maybank.ilm.entity.AccountBalanceManagement;
-
-public interface BlotterDao {
-
-	public List<AccountBalanceAggregation> getBalancesByEntity(Long entityAcctMapSkey, LocalDate valueDt);
-	
-	public List<AccountBalanceManagement> getDrillDownDetails(BlotterParamsDTO paramsDto , List<Long> eamSkeys);
-
-	public List<AccountBalanceAggregation> getAggrsBetweenBusinessDts(Long entityAcctMapSkey, LocalDate valueDt, LocalDateTime startTime, LocalDateTime endTime, String aggrInd);
-
-	public List<AccountBalanceManagement> getOpeningBalance(LocalDate valueDate);
-	
-	public List<AccountBalanceManagement> getOpeningBalanceSG(List<Long> eamSkeys, LocalDate valueDate);
-	
-	public Long getCountOfTransactionsAfterMT940(LocalDateTime businessDt, LocalDate valueDt, Long entityAcctMapSkey, List<String> msgTypes);
-
-	public List<BlotterParamsDTO> getFutureDatedTransactions(LocalDate valueDt);
-	
-	public List<BlotterParamsDTO> getNostroFutureDatedTransactions(LocalDate valueDt , List<String> msgTypes);
-	
-	public BigDecimal getProjectedBalance(LocalDate valueDt, List<Long> eamSkeys, List<String> msgTypes);
-}
-
-
-
-
-
-
-package com.maybank.ilm.core.dao;
-
-import java.time.LocalDate;
-import java.util.List;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.maybank.ilm.entity.AccountBalanceAggregation;
-
-@Transactional(transactionManager = "transactionManager",propagation=Propagation.NOT_SUPPORTED)
-public interface AccountBalanceAggrRepo extends JpaRepository<AccountBalanceAggregation, Long>{
-	@Query("Select aba from AccountBalanceAggregation aba where aba.valueDate = :date and aba.openingClosingBalInd = 'CLOSING_BALANCE' and aba.entityAcctMapSkey = :entityAcctMapSkey" )
-	public List<AccountBalanceAggregation> getClosingBalances (LocalDate date, Long entityAcctMapSkey);
-	public List<AccountBalanceAggregation> findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeDesc(LocalDate valueDate, Long entityAcctMapSkey);
-	public AccountBalanceAggregation findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd(Long entityAcctMapSkey,LocalDate valueDate, String openingClosingBalInd, String aggrInd);
-	public List<AccountBalanceAggregation> findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeAsc(LocalDate valueDate, Long entityAcctMapSkey);
-	public List<AccountBalanceAggregation> findByValueDateAndOpeningClosingBalIndAndEntityAcctMapSkeyIn(LocalDate valueDate ,String openingClosingBalInd, List<Long> eamSkeyList);
-}
