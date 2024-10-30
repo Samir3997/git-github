@@ -1,23 +1,240 @@
-Certainly! Here’s a sample email you can use to accept the offer:
+package com.maybank.ilm.controller;
 
----
+import java.util.List;
 
-Subject: Acceptance of Offer for Senior Product Engineer Position
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-Dear [HR Manager's Name],
+import com.maybank.ilm.core.service.KAccountConfigService;
+import com.maybank.ilm.entity.KAccountConfiguration;
+import com.maybank.ilm.utility.cdto.CommonResponseEntity;
 
-I hope this message finds you well. I am writing to formally accept the offer of employment for the position of Senior Product Engineer with MBB Labs Private Limited. I am excited about the opportunity to contribute to the team and am grateful for the trust placed in me.
+@Controller
+@RequestMapping("/")
+public class KAccountConfigController {
 
-I have reviewed the terms and conditions outlined in the offer letter and am pleased to accept them. Please let me know if you require any further information or documentation from my side.
+	@Autowired
+	KAccountConfigService configService;
+	
+	private static final Logger LOGGER=LogManager.getLogger(KAccountConfigController.class);
+	
+	String success="SUCCESS";
+	
+	@GetMapping(value="/getkaccconfigdefns")
+	@ResponseBody
+	@CrossOrigin("${cors.urls}")
+	public ResponseEntity<CommonResponseEntity<List<KAccountConfiguration>>> getKAcctConfigByDims(@RequestParam List<Long> countrySkeys, @RequestParam List<Long> entitySkeys, 
+						@RequestParam List<Long> currencySkeys, @RequestParam String defnType) {
+		LOGGER.info("KAccountConfigController {} getKAcctConfigByDims");
+		List<KAccountConfiguration> definitions = configService.getKAcctConfigByDims(countrySkeys, entitySkeys, currencySkeys, defnType);
+		return new ResponseEntity<>(new CommonResponseEntity<List<KAccountConfiguration>>(1l, success, "getKAcctConfigByDims", definitions),HttpStatus.OK);
+	}
+	
+	@PostMapping(value="/savekaccconfig")
+	@ResponseBody
+	@CrossOrigin("${cors.urls}")
+	public ResponseEntity<CommonResponseEntity<String>> saveKAcctConfigDefns(@RequestBody KAccountConfiguration configDefn) {
+		LOGGER.info("KAccountConfigController {} saveKAcctConfigDefns");
+		String saveValidateMsg = configService.saveKAcctConfigDefn(configDefn);
+		return new ResponseEntity<>(new CommonResponseEntity<String>(1l, success, "saveKAcctConfigDefns", saveValidateMsg),HttpStatus.OK);
+	}
+	
+	@GetMapping(value="/deletekaccconfig")
+	@ResponseBody
+	@CrossOrigin("${cors.urls}")
+	public ResponseEntity<CommonResponseEntity<List<KAccountConfiguration>>> deleteKAcctConfigDefn(@RequestParam List<Long> skeys, @RequestParam List<Long> countrySkeys, @RequestParam List<Long> entitySkeys, 
+			@RequestParam List<Long> currencySkeys) {
+		LOGGER.info("KAccountConfigController {} deleteKAcctConfigDefn");
+		List<KAccountConfiguration> configs = configService.deleteKAcctConfigDefn(skeys, countrySkeys, entitySkeys, currencySkeys);
+		return new ResponseEntity<>(new CommonResponseEntity<List<KAccountConfiguration>>(1l, success, "deleteKAcctConfigDefn", configs),HttpStatus.OK);
+	}
+}
 
-Thank you once again for this opportunity. I look forward to joining the team on [start date].
 
-Best regards,
 
-[Your Name]  
-[Your Phone Number]  
-[Your LinkedIn Profile or Other Contact Information, if applicable]
 
----
 
-Feel free to customize it as needed!
+package com.maybank.ilm.core.service;
+
+import java.util.List;
+
+import com.maybank.ilm.entity.KAccountConfiguration;
+
+public interface KAccountConfigService {
+	
+	public List<KAccountConfiguration> getKAcctConfigByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys, String defnType);
+	
+	public String saveKAcctConfigDefn(KAccountConfiguration configuration);
+	
+	public List<KAccountConfiguration> deleteKAcctConfigDefn(List<Long> defnskeys, List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys);
+}
+
+
+package com.maybank.ilm.core.service;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.maybank.ilm.anno.Find;
+import com.maybank.ilm.anno.FindNormEx;
+import com.maybank.ilm.core.dao.EntityAccountMappingDao;
+import com.maybank.ilm.core.dao.KAccountConfigDao;
+import com.maybank.ilm.core.dao.KAccountConfigRepo;
+import com.maybank.ilm.core.util.ILMCoreConstants;
+import com.maybank.ilm.entity.KAccountConfiguration;
+
+@Service
+public class KAccountConfigServiceImpl implements KAccountConfigService{
+
+	@Autowired
+	KAccountConfigDao configDao;
+	
+	@Autowired
+	EntityAccountMappingDao mappingDao;
+	
+	@Autowired
+	KAccountConfigRepo kAcctConfigRepo;
+	
+	@Override
+	@Find(arguments={"country ID","entity ID","currency Id","Defn Type"},returnType="K Acct Config by Dims",type="JSON",comment="k_account_config_by_dim")
+	@FindNormEx
+	public List<KAccountConfiguration> getKAcctConfigByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys, String defnType){
+		return configDao.getKAcctConfigByDims(countrySkeys, entitySkeys, currencySkeys, defnType);
+	}
+	
+	@Override
+	@Find(arguments="K acct configuration",returnType="Save validation message",type="JSON",comment="k_account_config_def")
+	@FindNormEx
+	public String saveKAcctConfigDefn(KAccountConfiguration configuration) {
+		String saveValidateMsg = ILMCoreConstants.SAVEDSUCCESS;
+		List<KAccountConfiguration> existingConfigs = getKAcctConfigByDims(new ArrayList<Long>(Arrays.asList(configuration.getCountrySkey())), 
+				new ArrayList<Long>(Arrays.asList(configuration.getEntitySkey())), new ArrayList<Long>(Arrays.asList(configuration.getCurrencySkey())), 
+				configuration.getDefnType());
+		if(configuration.getDefnType().contentEquals(ILMCoreConstants.TRANCHEDEFN)){
+			if(CollectionUtils.isNotEmpty(existingConfigs)) {
+				KAccountConfiguration latestEffecFromConfig = existingConfigs.get(0);  //We get the sorted array from getKAcctConfigByDims
+				LocalDate latestExistingFromDt = latestEffecFromConfig.getEffectiveFrom();
+				LocalDate newExisFromDt = configuration.getEffectiveFrom();
+				if(newExisFromDt.compareTo(latestExistingFromDt) > 0) {
+					latestEffecFromConfig.setEffectiveTo(newExisFromDt.minusDays(1l));
+					configuration.setEffectiveTo(LocalDate.of(2099, 12, 31));
+					mappingDao.updateAny(latestEffecFromConfig);
+					mappingDao.saveAny(configuration);
+				}else {
+					saveValidateMsg = ILMCoreConstants.KACCTCONFIGMSG+latestExistingFromDt;
+				}
+			}else {
+				configuration.setEffectiveTo(LocalDate.of(2099, 12, 31));
+				mappingDao.saveAny(configuration);
+			}
+		}else{
+			if(CollectionUtils.isNotEmpty(existingConfigs)) {
+				existingConfigs.forEach(p -> p.setLatestRecInd(ILMCoreConstants.NIND));
+				kAcctConfigRepo.saveAll(existingConfigs);
+			}
+			configuration.setLatestRecInd(ILMCoreConstants.YIND);
+			kAcctConfigRepo.save(configuration);
+		}
+		
+		return saveValidateMsg;
+	}
+	
+	@Override
+	@Find(arguments= {"repo Id","Country Id","List Entity Id","currency Id"},returnType="List K acct Config",type="JSON",comment="delete_k_account")
+	@FindNormEx
+	public  List<KAccountConfiguration> deleteKAcctConfigDefn(List<Long> skeys, List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys) {
+		for(Long skey : skeys) {
+			kAcctConfigRepo.deleteById(skey);
+		}
+		List<KAccountConfiguration> configs = getKAcctConfigByDims(countrySkeys, entitySkeys,  currencySkeys,ILMCoreConstants.TRANCHEDEFN);
+		if(CollectionUtils.isNotEmpty(configs)) {
+			configs.get(0).setEffectiveTo(LocalDate.of(2099, 12, 31));
+			mappingDao.updateAny(configs.get(0));
+		}
+		return configs;
+	}
+}
+
+
+
+package com.maybank.ilm.core.dao;
+
+import java.util.List;
+
+import com.maybank.ilm.entity.KAccountConfiguration;
+
+public interface KAccountConfigDao {
+
+	public List<KAccountConfiguration> getKAcctConfigByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys, String defnType);
+	public void deleteKAcctConfigDefn(List<Long> skeys);
+}
+
+
+package com.maybank.ilm.core.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
+import javax.transaction.Transactional;
+
+import org.springframework.stereotype.Repository;
+
+import com.maybank.ilm.entity.KAccountConfiguration;
+
+@Repository
+public class KAccountConfigDaoImpl implements KAccountConfigDao{
+
+	@PersistenceContext
+	EntityManager em;
+	
+	@Override
+	public List<KAccountConfiguration> getKAcctConfigByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys, String defnType){
+		CriteriaBuilder builder = em.getCriteriaBuilder();
+		CriteriaQuery<KAccountConfiguration> criteria = builder.createQuery(KAccountConfiguration.class);
+		Root<KAccountConfiguration> root = criteria.from(KAccountConfiguration.class);
+		criteria.select(root);
+		List<Predicate> wherepredicates = new ArrayList<>();
+		wherepredicates.add(root.get("countrySkey").in(countrySkeys));
+		wherepredicates.add(root.get("entitySkey").in(entitySkeys));
+		wherepredicates.add(root.get("currencySkey").in(currencySkeys));
+		wherepredicates.add(builder.equal(root.get("defnType"), defnType));
+		Predicate[] predArray = new Predicate[wherepredicates.size()];
+		wherepredicates.toArray(predArray);
+		criteria.where(predArray);
+		criteria.orderBy(builder.desc(root.get("effectiveFrom")));
+		return em.createQuery(criteria).getResultList();
+	}
+	
+	@Override
+	@Transactional
+	public void deleteKAcctConfigDefn(List<Long> skeys) {
+		TypedQuery<?> query = em.createNamedQuery("DELETEKACCTCONFIGDEFNSBYSKEYS", KAccountConfiguration.class);
+		query.setParameter("defnSkeys", skeys);
+		query.executeUpdate();
+	}
+}
