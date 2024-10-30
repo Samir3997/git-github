@@ -1,36 +1,12 @@
-Here’s a structured description of the `getKAcctConfigByDims` method to help with generating a sequence diagram. Each header represents an interaction in the sequence.
+```plaintext
+Title: Sequence Diagram for getKAcctConfigByDims
 
----
+Actors: Client, KAccountConfigController, KAccountConfigService, KAccountConfigDao
 
-### **Sequence Diagram for `getKAcctConfigByDims`**
-
-1. **Title**: Sequence Diagram for `getKAcctConfigByDims`
-
-2. **Actors**: 
-   - **Client**
-   - **KAccountConfigController**
-   - **KAccountConfigService**
-   - **KAccountConfigDao**
-
-3. **Sequence Steps**:
-
-   **Step 1**: `Client -> KAccountConfigController`: **HTTP GET Request**  
-   - The client sends a `GET` request to the endpoint `/getkaccconfigdefns` on the `KAccountConfigController`.  
-   - Parameters include `countrySkeys`, `entitySkeys`, `currencySkeys`, and `defnType` for filtering configurations.
-
-   **Step 2**: `KAccountConfigController -> KAccountConfigService`: **Invoke `getKAcctConfigByDims`**  
-   - The `KAccountConfigController` logs the action and calls the `getKAcctConfigByDims` method in `KAccountConfigService`, passing the parameters received from the client.
-
-   **Step 3**: `KAccountConfigService -> KAccountConfigDao`: **Database Query for Account Configurations**  
-   - The `KAccountConfigServiceImpl` calls `getKAcctConfigByDims` on `KAccountConfigDao` to retrieve `KAccountConfiguration` entities matching the provided dimensions.
-   - A `CriteriaQuery` is built with conditions on `countrySkeys`, `entitySkeys`, `currencySkeys`, and `defnType`, and results are ordered by the `effectiveFrom` date in descending order.
-
-   **Step 4**: `KAccountConfigDao -> KAccountConfigService`: **Return Filtered Configurations**  
-   - `KAccountConfigDao` returns a list of `KAccountConfiguration` entities matching the filter criteria back to `KAccountConfigServiceImpl`.
-
-   **Step 5**: `KAccountConfigService -> KAccountConfigController`: **Return Filtered Configurations**  
-   - `KAccountConfigServiceImpl` returns the list of configurations to `KAccountConfigController`.
-
-   **Step 6**: `KAccountConfigController -> Client`: **Response with Configurations**  
-   - The `KAccountConfigController` wraps the configurations in a `CommonResponseEntity` with a success message and sends an HTTP response back to the client with `HttpStatus.OK`.
-
+Client -> KAccountConfigController: HTTP GET Request with parameters (countrySkeys, entitySkeys, currencySkeys, defnType)
+KAccountConfigController -> KAccountConfigService: Invoke getKAcctConfigByDims with parameters
+KAccountConfigService -> KAccountConfigDao: Database Query for Account Configurations by dimensions
+KAccountConfigDao -> KAccountConfigService: Return Filtered Configurations
+KAccountConfigService -> KAccountConfigController: Return Filtered Configurations
+KAccountConfigController -> Client: Response with Configurations (CommonResponseEntity with success message, HttpStatus.OK)
+```
