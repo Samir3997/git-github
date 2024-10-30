@@ -1,23 +1,36 @@
-import org.junit.jupiter.api.Test;
+Here’s a structured description of the `getKAcctConfigByDims` method to help with generating a sequence diagram. Each header represents an interaction in the sequence.
 
-import static org.junit.jupiter.api.Assertions.*;
+---
 
-class Block4Tag22FTest {
+### **Sequence Diagram for `getKAcctConfigByDims`**
 
-    @Test
-    void testGetterAndSetter() {
-        Block4Tag22F block4Tag22F = new Block4Tag22F();
+1. **Title**: Sequence Diagram for `getKAcctConfigByDims`
 
-        // Test getter and setter for block4Tag22FQualifier
-        block4Tag22F.setBlock4Tag22FQualifier("qualifier");
-        assertEquals("qualifier", block4Tag22F.getBlock4Tag22FQualifier());
+2. **Actors**: 
+   - **Client**
+   - **KAccountConfigController**
+   - **KAccountConfigService**
+   - **KAccountConfigDao**
 
-        // Test getter and setter for block4Tag22FDataSrc
-        block4Tag22F.setBlock4Tag22FDataSrc("dataSrc");
-        assertEquals("dataSrc", block4Tag22F.getBlock4Tag22FDataSrc());
+3. **Sequence Steps**:
 
-        // Test getter and setter for block4Tag22FIndicator
-        block4Tag22F.setBlock4Tag22FIndicator("indicator");
-        assertEquals("indicator", block4Tag22F.getBlock4Tag22FIndicator());
-    }
-}
+   **Step 1**: `Client -> KAccountConfigController`: **HTTP GET Request**  
+   - The client sends a `GET` request to the endpoint `/getkaccconfigdefns` on the `KAccountConfigController`.  
+   - Parameters include `countrySkeys`, `entitySkeys`, `currencySkeys`, and `defnType` for filtering configurations.
+
+   **Step 2**: `KAccountConfigController -> KAccountConfigService`: **Invoke `getKAcctConfigByDims`**  
+   - The `KAccountConfigController` logs the action and calls the `getKAcctConfigByDims` method in `KAccountConfigService`, passing the parameters received from the client.
+
+   **Step 3**: `KAccountConfigService -> KAccountConfigDao`: **Database Query for Account Configurations**  
+   - The `KAccountConfigServiceImpl` calls `getKAcctConfigByDims` on `KAccountConfigDao` to retrieve `KAccountConfiguration` entities matching the provided dimensions.
+   - A `CriteriaQuery` is built with conditions on `countrySkeys`, `entitySkeys`, `currencySkeys`, and `defnType`, and results are ordered by the `effectiveFrom` date in descending order.
+
+   **Step 4**: `KAccountConfigDao -> KAccountConfigService`: **Return Filtered Configurations**  
+   - `KAccountConfigDao` returns a list of `KAccountConfiguration` entities matching the filter criteria back to `KAccountConfigServiceImpl`.
+
+   **Step 5**: `KAccountConfigService -> KAccountConfigController`: **Return Filtered Configurations**  
+   - `KAccountConfigServiceImpl` returns the list of configurations to `KAccountConfigController`.
+
+   **Step 6**: `KAccountConfigController -> Client`: **Response with Configurations**  
+   - The `KAccountConfigController` wraps the configurations in a `CommonResponseEntity` with a success message and sends an HTTP response back to the client with `HttpStatus.OK`.
+
