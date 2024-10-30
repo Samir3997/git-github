@@ -1,12 +1,17 @@
-```plaintext
-Title: Sequence Diagram for getKAcctConfigByDims
+@startuml
+actor User
+participant BlotterController
+participant BlotterService
+participant AccountBalanceAggregation
+participant EntityAccountMapDefinition
+participant AccountBalanceMgmtRepo
 
-Actors: Client, KAccountConfigController, KAccountConfigService, KAccountConfigDao
-
-Client -> KAccountConfigController: HTTP GET Request with parameters (countrySkeys, entitySkeys, currencySkeys, defnType)
-KAccountConfigController -> KAccountConfigService: Invoke getKAcctConfigByDims with parameters
-KAccountConfigService -> KAccountConfigDao: Database Query for Account Configurations by dimensions
-KAccountConfigDao -> KAccountConfigService: Return Filtered Configurations
-KAccountConfigService -> KAccountConfigController: Return Filtered Configurations
-KAccountConfigController -> Client: Response with Configurations (CommonResponseEntity with success message, HttpStatus.OK)
-```
+User -> BlotterController: getBalancesByEntity(entitySkey, currencySkey, timezone, indicator, entityAcctMapSkey, selectedDate)
+BlotterController -> BlotterService: getBalancesByEntity(...)
+BlotterService -> AccountBalanceMgmtRepo: findAccountBalanceByEntityAndDate(...)
+AccountBalanceMgmtRepo --> BlotterService: List<AccountBalanceAggregation>
+BlotterService -> EntityAccountMapDefinition: getEntityAccountDefinition(...)
+EntityAccountMapDefinition --> BlotterService: Account Definition Data
+BlotterService --> BlotterController: Aggregated Account Balances
+BlotterController --> User: Response with Account Balances
+@enduml
