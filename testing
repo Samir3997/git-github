@@ -1,27 +1,30 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+@Embeddable
+public class Block4Tag94H {
 
-public class Block4Tag94CFTest {
+	@Column(name = "V_BLOCK4_TAG_94H_QUALIFIER") 
+	private String block4Tag94HQualifier; 
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag94CF block4Tag94CF = new Block4Tag94CF();
+	@Column(name = "V_BLOCK4_TAG_94H_BIC") 
+	private String block4Tag94HBic;
+	
+	public String getBlock4Tag94HQualifier() {
+		return block4Tag94HQualifier;
+	}
 
-        // Set properties
-        block4Tag94CF.setBlock4Tag94CQualifier("QualifierC");
-        block4Tag94CF.setBlock4Tag94CCountryCode("CountryCodeC");
-        block4Tag94CF.setBlock4Tag94FQualifier("QualifierF");
-        block4Tag94CF.setBlock4Tag94FCode("CodeF");
-        block4Tag94CF.setBlock4Tag94FBic("BICF");
+	public void setBlock4Tag94HQualifier(String block4Tag94HQualifier) {
+		this.block4Tag94HQualifier = block4Tag94HQualifier;
+	}
 
-        // Assert properties
-        assertEquals("QualifierC", block4Tag94CF.getBlock4Tag94CQualifier());
-        assertEquals("CountryCodeC", block4Tag94CF.getBlock4Tag94CCountryCode());
-        assertEquals("QualifierF", block4Tag94CF.getBlock4Tag94FQualifier());
-        assertEquals("CodeF", block4Tag94CF.getBlock4Tag94FCode());
-        assertEquals("BICF", block4Tag94CF.getBlock4Tag94FBic());
-    }
+	public String getBlock4Tag94HBic() {
+		return block4Tag94HBic;
+	}
+
+	public void setBlock4Tag94HBic(String block4Tag94HBic) {
+		this.block4Tag94HBic = block4Tag94HBic;
+	}
 }
