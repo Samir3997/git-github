@@ -1,23 +1,98 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag77Test {
+@Embeddable
+public class Block4Tag90 {
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag77 block4Tag77 = new Block4Tag77();
+	@Column(name = "V_BLOCK4_TAG_90A_QUALIFIER") 
+	private String block4Tag90AQualifier; 
 
-        // Set properties
-        block4Tag77.setBlock4Tag77bCode("Code123");
-        block4Tag77.setBlock4Tag77bCountryCode("US");
-        block4Tag77.setBlock4Tag77bNarrative("This is a narrative.");
+	@Column(name = "V_BLOCK4_TAG_90A_PERC_CODE") 
+	private String block4Tag90APercCode; 
 
-        // Assert properties
-        assertEquals("Code123", block4Tag77.getBlock4Tag77bCode());
-        assertEquals("US", block4Tag77.getBlock4Tag77bCountryCode());
-        assertEquals("This is a narrative.", block4Tag77.getBlock4Tag77bNarrative());
-    }
+	@Column(name = "V_BLOCK4_TAG_90A_SIGN") 
+	private String block4Tag90ASign; 
+
+	@Column(name = "N_BLOCK4_TAG_90A_PRICE") 
+	private BigDecimal block4Tag90APrice; 
+
+	@Column(name = "V_BLOCK4_TAG_90B_QUALIFIER") 
+	private String block4Tag90BQualifier; 
+
+	@Column(name = "V_BLOCK4_TAG_90B_AMNT_CODE") 
+	private String block4Tag90BAmntCode; 
+
+	@Column(name = "V_BLOCK4_TAG_90B_CURRENCY") 
+	private String block4Tag90BCurrency; 
+
+	@Column(name = "N_BLOCK4_TAG_90B_PRICE") 
+	private BigDecimal block4Tag90BPrice;
+
+	public String getBlock4Tag90AQualifier() {
+		return block4Tag90AQualifier;
+	}
+
+	public void setBlock4Tag90AQualifier(String block4Tag90AQualifier) {
+		this.block4Tag90AQualifier = block4Tag90AQualifier;
+	}
+
+	public String getBlock4Tag90APercCode() {
+		return block4Tag90APercCode;
+	}
+
+	public void setBlock4Tag90APercCode(String block4Tag90APercCode) {
+		this.block4Tag90APercCode = block4Tag90APercCode;
+	}
+
+	public String getBlock4Tag90ASign() {
+		return block4Tag90ASign;
+	}
+
+	public void setBlock4Tag90ASign(String block4Tag90ASign) {
+		this.block4Tag90ASign = block4Tag90ASign;
+	}
+
+	public BigDecimal getBlock4Tag90APrice() {
+		return block4Tag90APrice;
+	}
+
+	public void setBlock4Tag90APrice(BigDecimal block4Tag90APrice) {
+		this.block4Tag90APrice = block4Tag90APrice;
+	}
+
+	public String getBlock4Tag90BQualifier() {
+		return block4Tag90BQualifier;
+	}
+
+	public void setBlock4Tag90BQualifier(String block4Tag90BQualifier) {
+		this.block4Tag90BQualifier = block4Tag90BQualifier;
+	}
+
+	public String getBlock4Tag90BAmntCode() {
+		return block4Tag90BAmntCode;
+	}
+
+	public void setBlock4Tag90BAmntCode(String block4Tag90BAmntCode) {
+		this.block4Tag90BAmntCode = block4Tag90BAmntCode;
+	}
+
+	public String getBlock4Tag90BCurrency() {
+		return block4Tag90BCurrency;
+	}
+
+	public void setBlock4Tag90BCurrency(String block4Tag90BCurrency) {
+		this.block4Tag90BCurrency = block4Tag90BCurrency;
+	}
+
+	public BigDecimal getBlock4Tag90BPrice() {
+		return block4Tag90BPrice;
+	}
+
+	public void setBlock4Tag90BPrice(BigDecimal block4Tag90BPrice) {
+		this.block4Tag90BPrice = block4Tag90BPrice;
+	} 
 }
