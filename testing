@@ -1,21 +1,28 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+public class Block4Tag70D {
 
-public class Block4Tag70CTest {
+	@Column(name = "V_BLOCK4_TAG_70D_QUALIFIER") 
+	private String block4Tag70DQualifier; 
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag70C block4Tag70C = new Block4Tag70C();
+	@Column(name = "V_BLOCK4_TAG_70D_NARRATIVE") 
+	private String block4Tag70DNarrative;
+	
+	public String getBlock4Tag70DQualifier() {
+		return block4Tag70DQualifier;
+	}
 
-        // Set properties
-        block4Tag70C.setBlock4Tag70CQualifier("QualifierValue");
-        block4Tag70C.setBlock4Tag70CNarrative("This is a narrative.");
+	public void setBlock4Tag70DQualifier(String block4Tag70DQualifier) {
+		this.block4Tag70DQualifier = block4Tag70DQualifier;
+	}
 
-        // Assert properties
-        assertEquals("QualifierValue", block4Tag70C.getBlock4Tag70CQualifier());
-        assertEquals("This is a narrative.", block4Tag70C.getBlock4Tag70CNarrative());
-    }
+	public String getBlock4Tag70DNarrative() {
+		return block4Tag70DNarrative;
+	}
+
+	public void setBlock4Tag70DNarrative(String block4Tag70DNarrative) {
+		this.block4Tag70DNarrative = block4Tag70DNarrative;
+	}
 }
