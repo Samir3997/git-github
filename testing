@@ -1,35 +1,43 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag90Test {
+@Embeddable
+public class Block4Tag92A {
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag90 block4Tag90 = new Block4Tag90();
+	@Column(name = "V_BLOCK4_TAG_92A_QUALIFIER") 
+	private String block4Tag92AQualifier; 
 
-        // Set properties
-        block4Tag90.setBlock4Tag90AQualifier("QualifierA");
-        block4Tag90.setBlock4Tag90APercCode("PERC001");
-        block4Tag90.setBlock4Tag90ASign("+");
-        block4Tag90.setBlock4Tag90APrice(BigDecimal.valueOf(100.50));
-        block4Tag90.setBlock4Tag90BQualifier("QualifierB");
-        block4Tag90.setBlock4Tag90BAmntCode("AMNT001");
-        block4Tag90.setBlock4Tag90BCurrency("USD");
-        block4Tag90.setBlock4Tag90BPrice(BigDecimal.valueOf(200.75));
+	@Column(name = "V_BLOCK4_TAG_92A_SIGN") 
+	private String block4Tag92ASign; 
 
-        // Assert properties
-        assertEquals("QualifierA", block4Tag90.getBlock4Tag90AQualifier());
-        assertEquals("PERC001", block4Tag90.getBlock4Tag90APercCode());
-        assertEquals("+", block4Tag90.getBlock4Tag90ASign());
-        assertEquals(BigDecimal.valueOf(100.50), block4Tag90.getBlock4Tag90APrice());
-        assertEquals("QualifierB", block4Tag90.getBlock4Tag90BQualifier());
-        assertEquals("AMNT001", block4Tag90.getBlock4Tag90BAmntCode());
-        assertEquals("USD", block4Tag90.getBlock4Tag90BCurrency());
-        assertEquals(BigDecimal.valueOf(200.75), block4Tag90.getBlock4Tag90BPrice());
-    }
+	@Column(name = "N_BLOCK4_TAG_92A_RATE_AMNT") 
+	private BigDecimal block4Tag92ARateAmnt;
+
+	public String getBlock4Tag92AQualifier() {
+		return block4Tag92AQualifier;
+	}
+
+	public void setBlock4Tag92AQualifier(String block4Tag92AQualifier) {
+		this.block4Tag92AQualifier = block4Tag92AQualifier;
+	}
+
+	public String getBlock4Tag92ASign() {
+		return block4Tag92ASign;
+	}
+
+	public void setBlock4Tag92ASign(String block4Tag92ASign) {
+		this.block4Tag92ASign = block4Tag92ASign;
+	}
+
+	public BigDecimal getBlock4Tag92ARateAmnt() {
+		return block4Tag92ARateAmnt;
+	}
+
+	public void setBlock4Tag92ARateAmnt(BigDecimal block4Tag92ARateAmnt) {
+		this.block4Tag92ARateAmnt = block4Tag92ARateAmnt;
+	}
 }
