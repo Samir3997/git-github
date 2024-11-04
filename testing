@@ -1,35 +1,22 @@
 package com.maybank.ilm.embeddable;
 
-import java.io.Serializable;
+import org.junit.jupiter.api.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class CommonPk implements Serializable{
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5381861090802333975L;
-	
-	@Column(name = "V_MT_TYPE") private String mtType;
-	@Column(name = "N_MT_SKEY") private Long mtSkey;
-	
-	public String getMtType() {
-		return mtType;
-	}
-	public void setMtType(String mtType) {
-		this.mtType = mtType;
-	}
-	public Long getMtSkey() {
-		return mtSkey;
-	}
-	public void setMtSkey(Long mtSkey) {
-		this.mtSkey = mtSkey;
-	}
-	
-	
-	
-	
+public class CommonPkTest {
+
+    @Test
+    public void testCommonPk() {
+        // Creating a new CommonPk object
+        CommonPk commonPk = new CommonPk();
+        
+        // Setting values
+        commonPk.setMtType("MT103");
+        commonPk.setMtSkey(123456789L);
+
+        // Asserting values
+        assertEquals("MT103", commonPk.getMtType());
+        assertEquals(Long.valueOf(123456789), commonPk.getMtSkey());
+    }
 }
