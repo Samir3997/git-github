@@ -1,29 +1,48 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.io.Serializable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag72Test {
+@Embeddable
+public class Block4Tag77 implements Serializable{
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag72 block4Tag72 = new Block4Tag72();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5116192888416483504L;
 
-        // Set properties
-        block4Tag72.setBlock4Tag72Nar1("Narrative 1");
-        block4Tag72.setBlock4Tag72Nar2("Narrative 2");
-        block4Tag72.setBlock4Tag72Nar3("Narrative 3");
-        block4Tag72.setBlock4Tag72Nar4("Narrative 4");
-        block4Tag72.setBlock4Tag72Nar5("Narrative 5");
-        block4Tag72.setBlock4Tag72Nar6("Narrative 6");
+	@Column(name = "V_BLOCK4_TAG_77B_CODE") 
+	private String block4Tag77bCode; 
 
-        // Assert properties
-        assertEquals("Narrative 1", block4Tag72.getBlock4Tag72Nar1());
-        assertEquals("Narrative 2", block4Tag72.getBlock4Tag72Nar2());
-        assertEquals("Narrative 3", block4Tag72.getBlock4Tag72Nar3());
-        assertEquals("Narrative 4", block4Tag72.getBlock4Tag72Nar4());
-        assertEquals("Narrative 5", block4Tag72.getBlock4Tag72Nar5());
-        assertEquals("Narrative 6", block4Tag72.getBlock4Tag72Nar6());
-    }
+	@Column(name = "V_BLOCK4_TAG_77B_COUNTRY_CODE") 
+	private String block4Tag77bCountryCode; 
+
+	@Column(name = "V_BLOCK4_TAG_77B_NARRATIVE") 
+	private String block4Tag77bNarrative; 
+	
+	public String getBlock4Tag77bCode() {
+		return block4Tag77bCode;
+	}
+
+	public void setBlock4Tag77bCode(String block4Tag77bCode) {
+		this.block4Tag77bCode = block4Tag77bCode;
+	}
+
+	public String getBlock4Tag77bCountryCode() {
+		return block4Tag77bCountryCode;
+	}
+
+	public void setBlock4Tag77bCountryCode(String block4Tag77bCountryCode) {
+		this.block4Tag77bCountryCode = block4Tag77bCountryCode;
+	}
+
+	public String getBlock4Tag77bNarrative() {
+		return block4Tag77bNarrative;
+	}
+
+	public void setBlock4Tag77bNarrative(String block4Tag77bNarrative) {
+		this.block4Tag77bNarrative = block4Tag77bNarrative;
+	}
 }
