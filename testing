@@ -1,398 +1,169 @@
-package com.maybank.ilm.controller;
+package com.maybank.ilm.embeddable;
 
-import java.io.OutputStream;
+import java.io.Serializable;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import com.maybank.ilm.core.service.ClosingBalanceService;
-import com.maybank.ilm.dto.ClosingBalanceDto;
-import com.maybank.ilm.dto.PaymentPosParamsDTO;
-import com.maybank.ilm.utility.cdto.CommonResponseEntity;
+@Embeddable
+public class Block4Tag50 implements Serializable{
 
-@Controller
-@RequestMapping("/")
-public class ClosingBalanceController {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6943730740979459546L;
 
-	private static final Logger LOGGER = LogManager.getLogger(ClosingBalanceController.class);
+	@Column(name = "V_BLOCK4_TAG_50A_ACCT") 
+	private String block4Tag50aAcct; 
 
-	@Autowired
-	ClosingBalanceService balanceService;
-	
-	String success = "success";
-	
-	@PostMapping(value="/closingbal")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<ClosingBalanceDto>> getClosingBalances(@RequestBody ClosingBalanceDto closingBalanceDto) {
-		LOGGER.info("Closing balance controller {} getClosingBalances"+closingBalanceDto.toString());
-		ClosingBalanceDto balanceDto = balanceService.getClosingBalance(closingBalanceDto);
-		return new ResponseEntity<>(new CommonResponseEntity<ClosingBalanceDto>(1l, success, "getClosingBalances", balanceDto),
-				HttpStatus.OK);
-	}
-	
-	@RequestMapping(value="/closingbalExcel", method=RequestMethod.POST,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public void getClosingBalanceExcel(@RequestBody ClosingBalanceDto closingBalanceDto,HttpServletResponse httpServletResponse) {
-		LOGGER.info("Closing balance controller {} closingbalExcel"+closingBalanceDto.toString());
-		XSSFWorkbook workbook=null;
-		try {
-			httpServletResponse.setContentType("application/vnd.ms-excel");
-			httpServletResponse.setHeader("Content-Disposition", "attachment; filename=Closing Balance Details ExcelSheet.xlsx");
-			workbook =balanceService.getClosingBalanceExcel(closingBalanceDto);
-			OutputStream out = httpServletResponse.getOutputStream();
-			workbook.write(out);
-			out.flush();
-			out.close();
-			workbook.close();
-		} catch(Exception exception) {
-			LOGGER.error("Error IN :closingbalExcel", exception);
-		}
+	@Column(name = "V_BLOCK4_TAG_50A_BIC") 
+	private String block4Tag50aBic; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_PARTY_ID") 
+	private String block4Tag50fPartyId; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NUMBER_1") 
+	private String block4Tag50fNumber1; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NAME_ADDR_1") 
+	private String block4Tag50fNameAddr1; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NUMBER_2") 
+	private String block4Tag50fNumber2; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NAME_ADDR_2") 
+	private String block4Tag50fNameAddr2; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NUMBER_3") 
+	private String block4Tag50fNumber3; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NAME_ADDR_3") 
+	private String block4Tag50fNameAddr3; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NUMBER_4") 
+	private String block4Tag50fNumber4; 
+
+	@Column(name = "V_BLOCK4_TAG_50F_NAME_ADDR_4") 
+	private String block4Tag50fNameAddr4; 
+
+	@Column(name = "V_BLOCK4_TAG_50K_ACCOUNT") 
+	private String block4Tag50kAccount; 
+
+	@Column(name = "V_BLOCK4_TAG_50K_NAME_ADDR") 
+	private String block4Tag50kNameAddr;
+
+	public String getBlock4Tag50aAcct() {
+		return block4Tag50aAcct;
 	}
 
-}
+	public void setBlock4Tag50aAcct(String block4Tag50aAcct) {
+		this.block4Tag50aAcct = block4Tag50aAcct;
+	}
 
+	public String getBlock4Tag50aBic() {
+		return block4Tag50aBic;
+	}
 
+	public void setBlock4Tag50aBic(String block4Tag50aBic) {
+		this.block4Tag50aBic = block4Tag50aBic;
+	}
 
-package com.maybank.ilm.core.service;
+	public String getBlock4Tag50fPartyId() {
+		return block4Tag50fPartyId;
+	}
 
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+	public void setBlock4Tag50fPartyId(String block4Tag50fPartyId) {
+		this.block4Tag50fPartyId = block4Tag50fPartyId;
+	}
 
-import com.maybank.ilm.dto.ClosingBalanceDto;
+	public String getBlock4Tag50fNumber1() {
+		return block4Tag50fNumber1;
+	}
 
-public interface ClosingBalanceService {
-	
-	public ClosingBalanceDto getClosingBalance(ClosingBalanceDto closingBalanceDto);
-	
-	XSSFWorkbook getClosingBalanceExcel(ClosingBalanceDto closingBalanceDto);
+	public void setBlock4Tag50fNumber1(String block4Tag50fNumber1) {
+		this.block4Tag50fNumber1 = block4Tag50fNumber1;
+	}
 
-}
+	public String getBlock4Tag50fNameAddr1() {
+		return block4Tag50fNameAddr1;
+	}
 
+	public void setBlock4Tag50fNameAddr1(String block4Tag50fNameAddr1) {
+		this.block4Tag50fNameAddr1 = block4Tag50fNameAddr1;
+	}
 
+	public String getBlock4Tag50fNumber2() {
+		return block4Tag50fNumber2;
+	}
 
-package com.maybank.ilm.core.service;
+	public void setBlock4Tag50fNumber2(String block4Tag50fNumber2) {
+		this.block4Tag50fNumber2 = block4Tag50fNumber2;
+	}
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+	public String getBlock4Tag50fNameAddr2() {
+		return block4Tag50fNameAddr2;
+	}
 
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+	public void setBlock4Tag50fNameAddr2(String block4Tag50fNameAddr2) {
+		this.block4Tag50fNameAddr2 = block4Tag50fNameAddr2;
+	}
 
-import com.maybank.ilm.anno.Find;
-import com.maybank.ilm.anno.FindNormEx;
-import com.maybank.ilm.core.dao.ClosingBalanceDao;
-import com.maybank.ilm.core.dao.DimCountryRepo;
-import com.maybank.ilm.core.dao.EntityAccountMappingRepo;
-import com.maybank.ilm.core.util.ILMCoreConstants;
-import com.maybank.ilm.dto.ClosingBalanceDto;
-import com.maybank.ilm.entity.EntityAccountMapDefinition;
+	public String getBlock4Tag50fNumber3() {
+		return block4Tag50fNumber3;
+	}
 
-@Service
-public class ClosingBalanceServiceImpl implements ClosingBalanceService {
-	
-	private static final Logger LOGGER = LogManager.getLogger(ClosingBalanceServiceImpl.class);
-	
-	@Autowired
-	EntityAccountMappingRepo eamRepo;
-	
-	@Autowired
-	DimCountryRepo dimCountryRepo;
-	
-	@Autowired
-	ClosingBalanceDao closingBalanceDao ;
+	public void setBlock4Tag50fNumber3(String block4Tag50fNumber3) {
+		this.block4Tag50fNumber3 = block4Tag50fNumber3;
+	}
+
+	public String getBlock4Tag50fNameAddr3() {
+		return block4Tag50fNameAddr3;
+	}
+
+	public void setBlock4Tag50fNameAddr3(String block4Tag50fNameAddr3) {
+		this.block4Tag50fNameAddr3 = block4Tag50fNameAddr3;
+	}
+
+	public String getBlock4Tag50fNumber4() {
+		return block4Tag50fNumber4;
+	}
+
+	public void setBlock4Tag50fNumber4(String block4Tag50fNumber4) {
+		this.block4Tag50fNumber4 = block4Tag50fNumber4;
+	}
+
+	public String getBlock4Tag50fNameAddr4() {
+		return block4Tag50fNameAddr4;
+	}
+
+	public void setBlock4Tag50fNameAddr4(String block4Tag50fNameAddr4) {
+		this.block4Tag50fNameAddr4 = block4Tag50fNameAddr4;
+	}
+
+	public String getBlock4Tag50kAccount() {
+		return block4Tag50kAccount;
+	}
+
+	public void setBlock4Tag50kAccount(String block4Tag50kAccount) {
+		this.block4Tag50kAccount = block4Tag50kAccount;
+	}
+
+	public String getBlock4Tag50kNameAddr() {
+		return block4Tag50kNameAddr;
+	}
+
+	public void setBlock4Tag50kNameAddr(String block4Tag50kNameAddr) {
+		this.block4Tag50kNameAddr = block4Tag50kNameAddr;
+	}
 
 	@Override
-	@Find(arguments = { "RequestAnalyticsDTO" }, returnType = "ClosingBalanceDto", type = "JSON")
-	@FindNormEx
-	public ClosingBalanceDto getClosingBalance(ClosingBalanceDto closingBalanceDto) {
-	    String country = dimCountryRepo.findByCountrySkey(closingBalanceDto.getCountrySkey()).getCountryCode();
-	    return "SG".equals(country) ? this.getClosingBalForSGD(closingBalanceDto) : this.getClosingBalForMYR(closingBalanceDto);
+	public String toString() {
+		return "MT103Block4Tag50a [block4Tag50aAcct=" + block4Tag50aAcct + ", block4Tag50aBic=" + block4Tag50aBic
+				+ ", block4Tag50fPartyId=" + block4Tag50fPartyId + ", block4Tag50fNumber1=" + block4Tag50fNumber1
+				+ ", block4Tag50fNameAddr1=" + block4Tag50fNameAddr1 + ", block4Tag50fNumber2=" + block4Tag50fNumber2
+				+ ", block4Tag50fNameAddr2=" + block4Tag50fNameAddr2 + ", block4Tag50fNumber3=" + block4Tag50fNumber3
+				+ ", block4Tag50fNameAddr3=" + block4Tag50fNameAddr3 + ", block4Tag50fNumber4=" + block4Tag50fNumber4
+				+ ", block4Tag50fNameAddr4=" + block4Tag50fNameAddr4 + ", block4Tag50kAccount=" + block4Tag50kAccount
+				+ ", block4Tag50kNameAddr=" + block4Tag50kNameAddr + "]";
 	}
-
-	
-	private ClosingBalanceDto getClosingBalForMYR(ClosingBalanceDto closingBalanceDto) {
-		ClosingBalanceDto balanceDto = new ClosingBalanceDto();
-		balanceDto.setCountry(ILMCoreConstants.MALAYSIA);
-		List<EntityAccountMapDefinition> entityDefn = eamRepo.findByEntitySkeyAndAccountType(closingBalanceDto.getEntitySkey(),
-				ILMCoreConstants.MAINACCOUNT);
-		List<EntityAccountMapDefinition> srrEamDefn = eamRepo.findByEntitySkeyAndAccountType(closingBalanceDto.getEntitySkey(),
-				ILMCoreConstants.SRRACCOUNT);
-		
-		List<EntityAccountMapDefinition> nostroDefn = new ArrayList<>();
-		if(closingBalanceDto.getNostroAgentSkey() != null) {
-			nostroDefn = eamRepo.findByEntityAcctMapSkey(closingBalanceDto.getNostroAgentSkey());
-			entityDefn = null;
-			srrEamDefn = null;
-		}
-		BigDecimal mainMinBal = BigDecimal.ZERO;
-		BigDecimal mainMaxBal = BigDecimal.ZERO;
-		BigDecimal mainAvgBal = BigDecimal.ZERO;
-		BigDecimal srrMinBal = BigDecimal.ZERO;
-		BigDecimal srrMaxBal = BigDecimal.ZERO;
-		BigDecimal srrAvgBal = BigDecimal.ZERO;
-		if(CollectionUtils.isNotEmpty(entityDefn) && CollectionUtils.isNotEmpty(srrEamDefn)) {
-			Long eamMainSkey = entityDefn.get(0).getEntityAcctMapSkey();//NOSONAR
-			Long eamSRRSkey = srrEamDefn.get(0).getEntityAcctMapSkey();
-			LocalDate fromDate = closingBalanceDto.getFromDate();
-			LocalDate toDate = closingBalanceDto.getToDate();
-			balanceDto = closingBalanceDao.getClosingBalance(eamMainSkey, eamSRRSkey, fromDate , toDate );
-			
-			LinkedHashMap<String, ArrayList<BigDecimal>> closingBalances = balanceDto.getDatedAmounts();
-			LinkedHashMap<String, BigDecimal> mainClosingBalances = new LinkedHashMap<>();
-			LinkedHashMap<String, BigDecimal> srrClosingBalances = new LinkedHashMap<>();
-			if(!closingBalances.isEmpty()) {
-				for(Map.Entry<String, ArrayList<BigDecimal>> entry : closingBalances.entrySet()) {
-					mainClosingBalances.put(entry.getKey(), entry.getValue().get(0));
-					srrClosingBalances.put(entry.getKey(), entry.getValue().get(1));
-				}
-			}
-			if(!mainClosingBalances.isEmpty()) {
-				mainMaxBal = Collections.max(mainClosingBalances.values());
-				mainMinBal = Collections.min(mainClosingBalances.values());
-				BigDecimal mainSum = BigDecimal.valueOf(mainClosingBalances.values().stream().mapToDouble(BigDecimal::doubleValue).sum());
-				mainAvgBal = mainSum.divide(BigDecimal.valueOf(mainClosingBalances.size()), 2 , RoundingMode.HALF_UP);
-			}
-			if(!srrClosingBalances.isEmpty()) {
-				srrMaxBal = Collections.max(srrClosingBalances.values());
-				srrMinBal = Collections.min(srrClosingBalances.values());
-				BigDecimal srrSum = BigDecimal.valueOf(srrClosingBalances.values().stream().mapToDouble(BigDecimal::doubleValue).sum());
-				srrAvgBal = srrSum.divide(BigDecimal.valueOf(srrClosingBalances.size()), 2 , RoundingMode.HALF_UP);
-			}
-			
-			balanceDto.setMainCashMaxClosingBal(mainMaxBal);
-			balanceDto.setMainCashMinClosingBal(mainMinBal);
-			balanceDto.setMainCashAvgClosingBal(mainAvgBal);
-			balanceDto.setSrrCashMaxClosingBal(srrMaxBal);
-			balanceDto.setSrrCashMinClosingBal(srrMinBal);
-			balanceDto.setSrrCashAvgClosingBal(srrAvgBal);
-		
-		} else {
-			Long eamMainSkey = CollectionUtils.isNotEmpty(nostroDefn)? 
-					nostroDefn.get(0).getEntityAcctMapSkey() : CollectionUtils.isNotEmpty(entityDefn)? entityDefn.get(0).getEntityAcctMapSkey(): null;//NOSONAR
-			LocalDate fromDate = closingBalanceDto.getFromDate();
-			LocalDate toDate = closingBalanceDto.getToDate();
-			balanceDto = closingBalanceDao.getClosingBalanceforInvestmentIslamic(eamMainSkey, fromDate , toDate );
-			LinkedHashMap<String, ArrayList<BigDecimal>> closingBalances = balanceDto.getDatedAmounts();
-			LinkedHashMap<String, BigDecimal> mainClosingBalances = new LinkedHashMap<>();
-			if(!closingBalances.isEmpty()) {
-				for(Map.Entry<String, ArrayList<BigDecimal>> entry : closingBalances.entrySet()) {
-					mainClosingBalances.put(entry.getKey(), entry.getValue().get(0));
-				}
-			}
-			if(!mainClosingBalances.isEmpty()) {
-				mainMaxBal = Collections.max(mainClosingBalances.values());
-				mainMinBal = Collections.min(mainClosingBalances.values());
-				BigDecimal mainSum = BigDecimal.valueOf(mainClosingBalances.values().stream().mapToDouble(BigDecimal::doubleValue).sum());
-				mainAvgBal = mainSum.divide(BigDecimal.valueOf(mainClosingBalances.size()), 2 , RoundingMode.HALF_UP);
-			}
-			balanceDto.setMainCashMaxClosingBal(mainMaxBal);
-			balanceDto.setMainCashMinClosingBal(mainMinBal);
-			balanceDto.setMainCashAvgClosingBal(mainAvgBal);
-		}
-			
-		return balanceDto ;
-	}
-	
-	private ClosingBalanceDto getClosingBalForSGD(ClosingBalanceDto closingBalanceDto) {
-	    ClosingBalanceDto balanceDto = new ClosingBalanceDto();
-	    
-	    List<EntityAccountMapDefinition> entityDefn = eamRepo.findByEntitySkeyAndAccountType(closingBalanceDto.getEntitySkey(),
-				ILMCoreConstants.RTGSAccount);
-	    
-	    BigDecimal RTGSMinBal = BigDecimal.ZERO;
-	    BigDecimal RTGSMaxBal = BigDecimal.ZERO;
-	    BigDecimal RTGSAvgBal = BigDecimal.ZERO;
-	    
-	    if (!entityDefn.isEmpty()) {
-	        Long eamMainSkey = entityDefn.get(0).getEntityAcctMapSkey();
-	        LocalDate fromDate = closingBalanceDto.getFromDate();
-			LocalDate toDate = closingBalanceDto.getToDate();
-	        
-	        balanceDto = Optional.ofNullable(closingBalanceDao.getClosingBalanceForSingapore(eamMainSkey, fromDate, toDate))
-	                .orElse(new ClosingBalanceDto());
-	        
-	        LinkedHashMap<String, ArrayList<BigDecimal>> closingBalances = Optional.ofNullable(balanceDto.getDatedAmounts()).orElse(new LinkedHashMap<>());
-	        LinkedHashMap<String, BigDecimal> RTGSClosingBalances = new LinkedHashMap<>();
-	        
-	        if (!closingBalances.isEmpty()) {
-	            closingBalances.forEach((key, value) -> RTGSClosingBalances.put(key, value.get(0)));
-	        }
-	        
-	        if (!RTGSClosingBalances.isEmpty()) {
-	            RTGSMaxBal = Collections.max(RTGSClosingBalances.values());
-	            RTGSMinBal = Collections.min(RTGSClosingBalances.values());
-	            BigDecimal RTGSSum = BigDecimal.valueOf(RTGSClosingBalances.values().stream()
-	                    .mapToDouble(BigDecimal::doubleValue)
-	                    .sum());
-	            RTGSAvgBal = RTGSSum.divide(BigDecimal.valueOf(RTGSClosingBalances.size()), 2, RoundingMode.HALF_UP);
-	        }
-	        balanceDto.setRtgsMinClosingBal(RTGSMinBal);
-	        balanceDto.setRtgsMaxClosingBal(RTGSMaxBal);
-	        balanceDto.setRtgsAvgClosingBal(RTGSAvgBal);
-	    }
-	    balanceDto.setCountry(ILMCoreConstants.SINGAPORE);
-	    return balanceDto;
-	}
-
-	
-	
-	@Override
-	public XSSFWorkbook getClosingBalanceExcel(ClosingBalanceDto closingBalanceDto) {
-		ClosingBalanceDto balanceDto = getClosingBalance(closingBalanceDto);
-		XSSFWorkbook workBook = new XSSFWorkbook();
-		int rowNum = 0;
-		int colNum = 0;
-		Font font = workBook.createFont();
-		font.setBold(true);
-		font.setFontHeightInPoints((short) 24);
-		font.setFontName("Courier New");
-		CellStyle style = workBook.createCellStyle();
-		style.setFont(font);
-		XSSFSheet sheet = workBook.createSheet("Closing Balance Details");
-		if (ILMCoreConstants.SINGAPORE.equals(balanceDto.getCountry())) {
-			Row row = sheet.createRow(rowNum++);
-			row.createCell(colNum++).setCellValue("Date");
-			row.createCell(colNum++).setCellValue("RTGS Account Closing Balance");
-			row.setRowStyle(style);
-			LinkedHashMap<String, ArrayList<BigDecimal>> amounts = balanceDto.getDatedAmounts();
-			for (Map.Entry<String, ArrayList<BigDecimal>> entry : amounts.entrySet()) {
-				Row row1 = sheet.createRow(rowNum++);
-				colNum = 0;
-				SimpleDateFormat inputFromat = new SimpleDateFormat("yyyy-MM-dd");
-				SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-				try {
-					String date = sm.format(inputFromat.parse(entry.getKey().substring(0, 10)));
-					row1.createCell(colNum++).setCellValue(date);
-					row1.createCell(colNum++).setCellValue(entry.getValue().get(0).doubleValue());
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					LOGGER.info("context : ", e);
-				}
-			}
-			rowNum = rowNum + 2;
-			Row row2 = sheet.createRow(rowNum++);
-			colNum = 0;
-			row2.createCell(colNum++).setCellValue("Average Closing Balance");
-			row2.createCell(colNum++).setCellValue(balanceDto.getRtgsAvgClosingBal().doubleValue());
-			Row row3 = sheet.createRow(rowNum++);
-			colNum = 0;
-			row3.createCell(colNum++).setCellValue("Minimum Closing Balance");
-			row3.createCell(colNum++).setCellValue(balanceDto.getRtgsMaxClosingBal().doubleValue());
-			Row row4 = sheet.createRow(rowNum++);
-			colNum = 0;
-			row4.createCell(colNum++).setCellValue("Maximum Closing Balance");
-			row4.createCell(colNum++).setCellValue(balanceDto.getRtgsMinClosingBal().doubleValue());
-		} else {
-
-			if (balanceDto.getSrrCashAvgClosingBal() != null) {
-				Row row = sheet.createRow(rowNum++);
-				row.createCell(colNum++).setCellValue("Date");
-				row.createCell(colNum++).setCellValue("Main Account Closing Balance");
-				row.createCell(colNum++).setCellValue("SRR Cash Closing Balance");
-				row.setRowStyle(style);
-				LinkedHashMap<String, ArrayList<BigDecimal>> amounts = balanceDto.getDatedAmounts();
-				for (Map.Entry<String, ArrayList<BigDecimal>> entry : amounts.entrySet()) {
-					Row row1 = sheet.createRow(rowNum++);
-					colNum = 0;
-					SimpleDateFormat inputFromat = new SimpleDateFormat("yyyy-MM-dd");
-					SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-					try {
-						String date = sm.format(inputFromat.parse(entry.getKey().substring(0, 10)));
-						row1.createCell(colNum++).setCellValue(date);
-						row1.createCell(colNum++).setCellValue(entry.getValue().get(0).doubleValue());
-						row1.createCell(colNum++).setCellValue(entry.getValue().get(1).doubleValue());
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						LOGGER.info("context : ", e);
-					}
-				}
-				rowNum = rowNum + 2;
-				Row row2 = sheet.createRow(rowNum++);
-				colNum = 0;
-				row2.createCell(colNum++).setCellValue("Average Closing Balance");
-				row2.createCell(colNum++).setCellValue(balanceDto.getMainCashAvgClosingBal().doubleValue());
-				row2.createCell(colNum++).setCellValue(balanceDto.getSrrCashAvgClosingBal().doubleValue());
-				Row row3 = sheet.createRow(rowNum++);
-				colNum = 0;
-				row3.createCell(colNum++).setCellValue("Minimum Closing Balance");
-				row3.createCell(colNum++).setCellValue(balanceDto.getMainCashMinClosingBal().doubleValue());
-				row3.createCell(colNum++).setCellValue(balanceDto.getSrrCashMinClosingBal().doubleValue());
-				Row row4 = sheet.createRow(rowNum++);
-				colNum = 0;
-				row4.createCell(colNum++).setCellValue("Maximum Closing Balance");
-				row4.createCell(colNum++).setCellValue(balanceDto.getMainCashMaxClosingBal().doubleValue());
-				row4.createCell(colNum++).setCellValue(balanceDto.getSrrCashMaxClosingBal().doubleValue());
-			} else {
-				Row row = sheet.createRow(rowNum++);
-				row.createCell(colNum++).setCellValue("Date");
-				row.createCell(colNum++).setCellValue("Main Account Closing Balance");
-				row.setRowStyle(style);
-				LinkedHashMap<String, ArrayList<BigDecimal>> amounts = balanceDto.getDatedAmounts();
-				for (Map.Entry<String, ArrayList<BigDecimal>> entry : amounts.entrySet()) {
-					Row row1 = sheet.createRow(rowNum++);
-					colNum = 0;
-					SimpleDateFormat inputFromat = new SimpleDateFormat("yyyy-MM-dd");
-					SimpleDateFormat sm = new SimpleDateFormat("dd-MM-yyyy");
-					try {
-						String date = sm.format(inputFromat.parse(entry.getKey().substring(0, 10)));
-						row1.createCell(colNum++).setCellValue(date);
-						row1.createCell(colNum++).setCellValue(entry.getValue().get(0).doubleValue());
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						LOGGER.info("context : ", e);
-					}
-				}
-				rowNum = rowNum + 2;
-				Row row2 = sheet.createRow(rowNum++);
-				colNum = 0;
-				row2.createCell(colNum++).setCellValue("Average Closing Balance");
-				row2.createCell(colNum++).setCellValue(balanceDto.getMainCashAvgClosingBal().doubleValue());
-				Row row3 = sheet.createRow(rowNum++);
-				colNum = 0;
-				row3.createCell(colNum++).setCellValue("Minimum Closing Balance");
-				row3.createCell(colNum++).setCellValue(balanceDto.getMainCashMinClosingBal().doubleValue());
-				Row row4 = sheet.createRow(rowNum++);
-				colNum = 0;
-				row4.createCell(colNum++).setCellValue("Maximum Closing Balance");
-				row4.createCell(colNum++).setCellValue(balanceDto.getMainCashMaxClosingBal().doubleValue());
-			}
-		}
-
-		return workBook;
-
-	}
-
 }
-
-
-
