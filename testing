@@ -1,34 +1,81 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.Serializable;
 
-public class Block4Tag57Test {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag57 block4Tag57 = new Block4Tag57();
+@Embeddable
+public class Block4Tag58 implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2375119267062825160L;
 
-        // Set properties
-        block4Tag57.setBlock4Tag57aDcmark("DCMarkA");
-        block4Tag57.setBlock4Tag57aAcct("accountA");
-        block4Tag57.setBlock4Tag57aBic("BIC_A");
-        block4Tag57.setBlock4Tag57bDcmark("DCMarkB");
-        block4Tag57.setBlock4Tag57bAcct("accountB");
-        block4Tag57.setBlock4Tag57bLocation("Location B");
-        block4Tag57.setBlock4Tag57dDcmark("DCMarkD");
-        block4Tag57.setBlock4Tag57dAcct("accountD");
-        block4Tag57.setBlock4Tag57dNameAddr("Name Address D");
+	@Column(name = "V_BLOCK4_TAG_58A_DCMARK") 
+	private String block4Tag58aDcmark; 
 
-        // Assert properties
-        assertEquals("DCMarkA", block4Tag57.getBlock4Tag57aDcmark());
-        assertEquals("accountA", block4Tag57.getBlock4Tag57aAcct());
-        assertEquals("BIC_A", block4Tag57.getBlock4Tag57aBic());
-        assertEquals("DCMarkB", block4Tag57.getBlock4Tag57bDcmark());
-        assertEquals("accountB", block4Tag57.getBlock4Tag57bAcct());
-        assertEquals("Location B", block4Tag57.getBlock4Tag57bLocation());
-        assertEquals("DCMarkD", block4Tag57.getBlock4Tag57dDcmark());
-        assertEquals("accountD", block4Tag57.getBlock4Tag57dAcct());
-        assertEquals("Name Address D", block4Tag57.getBlock4Tag57dNameAddr());
-    }
+	@Column(name = "V_BLOCK4_TAG_58A_ACCT") 
+	private String block4Tag58aAcct; 
+
+	@Column(name = "V_BLOCK4_TAG_58A_BIC") 
+	private String block4Tag58aBic;
+	
+	@Column(name = "V_BLOCK4_TAG_58D_DCMARK") 
+	private String block4Tag58DDcmark; 
+
+	@Column(name = "V_BLOCK4_TAG_58D_ACCT") 
+	private String block4Tag58DAcct; 
+
+	@Column(name = "V_BLOCK4_TAG_58D_NAME_ADDR") 
+	private String block4Tag58DNameAddr;
+	
+	public String getBlock4Tag58aDcmark() {
+		return block4Tag58aDcmark;
+	}
+
+	public void setBlock4Tag58aDcmark(String block4Tag58aDcmark) {
+		this.block4Tag58aDcmark = block4Tag58aDcmark;
+	}
+
+	public String getBlock4Tag58aAcct() {
+		return block4Tag58aAcct;
+	}
+
+	public void setBlock4Tag58aAcct(String block4Tag58aAcct) {
+		this.block4Tag58aAcct = block4Tag58aAcct;
+	}
+
+	public String getBlock4Tag58aBic() {
+		return block4Tag58aBic;
+	}
+
+	public void setBlock4Tag58aBic(String block4Tag58aBic) {
+		this.block4Tag58aBic = block4Tag58aBic;
+	}
+
+	public String getBlock4Tag58DDcmark() {
+		return block4Tag58DDcmark;
+	}
+
+	public void setBlock4Tag58DDcmark(String block4Tag58DDcmark) {
+		this.block4Tag58DDcmark = block4Tag58DDcmark;
+	}
+
+	public String getBlock4Tag58DAcct() {
+		return block4Tag58DAcct;
+	}
+
+	public void setBlock4Tag58DAcct(String block4Tag58DAcct) {
+		this.block4Tag58DAcct = block4Tag58DAcct;
+	}
+
+	public String getBlock4Tag58DNameAddr() {
+		return block4Tag58DNameAddr;
+	}
+
+	public void setBlock4Tag58DNameAddr(String block4Tag58DNameAddr) {
+		this.block4Tag58DNameAddr = block4Tag58DNameAddr;
+	}
 }
