@@ -1,32 +1,30 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+@Embeddable
+public class Block4Tag97A {
 
-public class Block4Tag95QSTest {
+	@Column(name = "V_BLOCK4_TAG_97A_QUALIFIER") 
+	private String block4Tag97AQualifier; 
 
-    @Test
-    public void testBlock4Tag95QS() {
-        // Creating a new Block4Tag95QS object
-        Block4Tag95QS block4Tag95QS = new Block4Tag95QS();
-        
-        // Setting values
-        block4Tag95QS.setBlock4Tag95QQualifier("QualifierQ");
-        block4Tag95QS.setBlock4Tag95QNameAddr("Name Address");
-        block4Tag95QS.setBlock4Tag95SQualifier("QualifierS");
-        block4Tag95QS.setBlock4Tag95SDataSrc("DataSource");
-        block4Tag95QS.setBlock4Tag95STypeOfId("TypeOfID");
-        block4Tag95QS.setBlock4Tag95SCountryCode("US");
-        block4Tag95QS.setBlock4Tag95SAlternateId("AlternateID");
+	@Column(name = "V_BLOCK4_TAG_97A_ACCOUNT") 
+	private String block4Tag97AAccount;
 
-        // Asserting values
-        assertEquals("QualifierQ", block4Tag95QS.getBlock4Tag95QQualifier());
-        assertEquals("Name Address", block4Tag95QS.getBlock4Tag95QNameAddr());
-        assertEquals("QualifierS", block4Tag95QS.getBlock4Tag95SQualifier());
-        assertEquals("DataSource", block4Tag95QS.getBlock4Tag95SDataSrc());
-        assertEquals("TypeOfID", block4Tag95QS.getBlock4Tag95STypeOfId());
-        assertEquals("US", block4Tag95QS.getBlock4Tag95SCountryCode());
-        assertEquals("AlternateID", block4Tag95QS.getBlock4Tag95SAlternateId());
-    }
+	public String getBlock4Tag97AQualifier() {
+		return block4Tag97AQualifier;
+	}
+
+	public void setBlock4Tag97AQualifier(String block4Tag97AQualifier) {
+		this.block4Tag97AQualifier = block4Tag97AQualifier;
+	}
+
+	public String getBlock4Tag97AAccount() {
+		return block4Tag97AAccount;
+	}
+
+	public void setBlock4Tag97AAccount(String block4Tag97AAccount) {
+		this.block4Tag97AAccount = block4Tag97AAccount;
+	} 
 }
