@@ -1,30 +1,21 @@
 package com.maybank.ilm.embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag94H {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	@Column(name = "V_BLOCK4_TAG_94H_QUALIFIER") 
-	private String block4Tag94HQualifier; 
+public class Block4Tag94HTest {
 
-	@Column(name = "V_BLOCK4_TAG_94H_BIC") 
-	private String block4Tag94HBic;
-	
-	public String getBlock4Tag94HQualifier() {
-		return block4Tag94HQualifier;
-	}
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag94H block4Tag94H = new Block4Tag94H();
 
-	public void setBlock4Tag94HQualifier(String block4Tag94HQualifier) {
-		this.block4Tag94HQualifier = block4Tag94HQualifier;
-	}
+        // Set properties
+        block4Tag94H.setBlock4Tag94HQualifier("QualifierH");
+        block4Tag94H.setBlock4Tag94HBic("BIC123");
 
-	public String getBlock4Tag94HBic() {
-		return block4Tag94HBic;
-	}
-
-	public void setBlock4Tag94HBic(String block4Tag94HBic) {
-		this.block4Tag94HBic = block4Tag94HBic;
-	}
+        // Assert properties
+        assertEquals("QualifierH", block4Tag94H.getBlock4Tag94HQualifier());
+        assertEquals("BIC123", block4Tag94H.getBlock4Tag94HBic());
+    }
 }
