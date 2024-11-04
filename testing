@@ -1,32 +1,43 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag98ETest {
+@Embeddable
+public class Block4Tag99A {
 
-    @Test
-    public void testBlock4Tag98E() {
-        // Creating a new Block4Tag98E object
-        Block4Tag98E block4Tag98E = new Block4Tag98E();
-        
-        // Setting values
-        block4Tag98E.setBlock4Tag98EQualifier("QualifierE");
-        block4Tag98E.setBlock4Tag98EDate("2023-11-01");
-        block4Tag98E.setBlock4Tag98ETime("12:30:00");
-        block4Tag98E.setBlock4Tag98EDecimals(new BigDecimal("123.45"));
-        block4Tag98E.setBlock4Tag98ESign("+");
-        block4Tag98E.setBlock4Tag98EUtcInd("Y");
+	@Column(name = "V_BLOCK4_TAG_99A_QUALIFIER") 
+	private String block4Tag99AQualifier; 
 
-        // Asserting values
-        assertEquals("QualifierE", block4Tag98E.getBlock4Tag98EQualifier());
-        assertEquals("2023-11-01", block4Tag98E.getBlock4Tag98EDate());
-        assertEquals("12:30:00", block4Tag98E.getBlock4Tag98ETime());
-        assertEquals(new BigDecimal("123.45"), block4Tag98E.getBlock4Tag98EDecimals());
-        assertEquals("+", block4Tag98E.getBlock4Tag98ESign());
-        assertEquals("Y", block4Tag98E.getBlock4Tag98EUtcInd());
-    }
+	@Column(name = "V_BLOCK4_TAG_99A_SIGN") 
+	private String block4Tag99ASign; 
+
+	@Column(name = "N_BLOCK4_TAG_99A_AMOUNT") 
+	private BigDecimal block4Tag99AAmount;
+
+	public String getBlock4Tag99AQualifier() {
+		return block4Tag99AQualifier;
+	}
+
+	public void setBlock4Tag99AQualifier(String block4Tag99AQualifier) {
+		this.block4Tag99AQualifier = block4Tag99AQualifier;
+	}
+
+	public String getBlock4Tag99ASign() {
+		return block4Tag99ASign;
+	}
+
+	public void setBlock4Tag99ASign(String block4Tag99ASign) {
+		this.block4Tag99ASign = block4Tag99ASign;
+	}
+
+	public BigDecimal getBlock4Tag99AAmount() {
+		return block4Tag99AAmount;
+	}
+
+	public void setBlock4Tag99AAmount(BigDecimal block4Tag99AAmount) {
+		this.block4Tag99AAmount = block4Tag99AAmount;
+	}
 }
