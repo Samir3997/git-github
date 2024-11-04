@@ -1,49 +1,170 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.io.Serializable;
+import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class MT019Block4Test {
+@Embeddable
+public class MT103Block4 implements Serializable{
 
-    @Test
-    public void testMT019Block4() {
-        // Creating a new MT019Block4 object
-        MT019Block4 mt019Block4 = new MT019Block4();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2074133380190916074L;
 
-        // Setting values
-        mt019Block4.setBlock4175InputTime("10:30");
-        mt019Block4.setBlock4106Mir("123456");
-        mt019Block4.setBlock4108Mur("ABC123");
-        mt019Block4.setBlock4102SwiftAddress("SWIFT123");
-        mt019Block4.setBlock4107Mor("MORValue");
-        mt019Block4.setBlock4432AbortReason("AbortReason");
-        mt019Block4.setBlock4619VasCode("VASCode");
+	@Column(name = "V_BLOCK4_TAG_20") 
+	private String block4Tag20; 
 
-        // Asserting values
-        assertEquals("10:30", mt019Block4.getBlock4175InputTime());
-        assertEquals("123456", mt019Block4.getBlock4106Mir());
-        assertEquals("ABC123", mt019Block4.getBlock4108Mur());
-        assertEquals("SWIFT123", mt019Block4.getBlock4102SwiftAddress());
-        assertEquals("MORValue", mt019Block4.getBlock4107Mor());
-        assertEquals("AbortReason", mt019Block4.getBlock4432AbortReason());
-        assertEquals("VASCode", mt019Block4.getBlock4619VasCode());
-    }
+	@Column(name = "V_BLOCK4_TAG_23B") 
+	private String block4Tag23b; 
 
-    @Test
-    public void testToString() {
-        // Creating a new MT019Block4 object
-        MT019Block4 mt019Block4 = new MT019Block4();
-        mt019Block4.setBlock4175InputTime("10:30");
-        mt019Block4.setBlock4106Mir("123456");
-        mt019Block4.setBlock4108Mur("ABC123");
-        mt019Block4.setBlock4102SwiftAddress("SWIFT123");
-        mt019Block4.setBlock4107Mor("MORValue");
-        mt019Block4.setBlock4432AbortReason("AbortReason");
-        mt019Block4.setBlock4619VasCode("VASCode");
+	@Column(name = "V_BLOCK4_TAG_26T") 
+	private String block4Tag26t; 
 
-        // Asserting the toString output
-        String expectedString = "MT019Block4 [block4175InputTime=10:30, block4106Mir=123456, block4108Mur=ABC123, block4102SwiftAddress=SWIFT123, block4107Mor=MORValue, block4432AbortReason=AbortReason, block4619VasCode=VASCode]";
-        assertEquals(expectedString, mt019Block4.toString());
-    }
+	@Column(name = "V_BLOCK4_TAG_32A_DATE") 
+	private String block4Tag32aDate; 
+
+	@Column(name = "V_BLOCK4_TAG_32A_CURRENCY") 
+	private String block4Tag32aCurrency; 
+
+	@Column(name = "N_BLOCK4_TAG_32A_SETTLED_AMNT") 
+	private BigDecimal block4Tag32aSettledAmnt; 
+
+	@Column(name = "V_BLOCK4_TAG_33B_CURRENCY") 
+	private String block4Tag33bCurrency; 
+
+	@Column(name = "N_BLOCK4_TAG_33B_INSTRUC_AMNT") 
+	private BigDecimal block4Tag33bInstrucAmnt;
+
+	@Column(name = "V_BLOCK4_TAG_36") 
+	private String block4Tag36;
+	
+	@Column(name = "V_BLOCK4_TAG_51A_DCMARK") 
+	private String block4Tag51aDcmark; 
+
+	@Column(name = "V_BLOCK4_TAG_51A_ACCT") 
+	private String block4Tag51aAcct; 
+
+	@Column(name = "V_BLOCK4_TAG_51A_BIC") 
+	private String block4Tag51aBic; 
+	
+	@Column(name = "V_BLOCK4_TAG_56C") 
+	private String block4Tag56c; 
+	
+	@Column(name = "V_BLOCK4_TAG_57C") 
+	private String block4Tag57c; 
+	
+	public String getBlock4Tag20() {
+		return block4Tag20;
+	}
+
+	public void setBlock4Tag20(String block4Tag20) {
+		this.block4Tag20 = block4Tag20;
+	}
+
+	public String getBlock4Tag23b() {
+		return block4Tag23b;
+	}
+
+	public void setBlock4Tag23b(String block4Tag23b) {
+		this.block4Tag23b = block4Tag23b;
+	}
+
+	public String getBlock4Tag26t() {
+		return block4Tag26t;
+	}
+
+	public void setBlock4Tag26t(String block4Tag26t) {
+		this.block4Tag26t = block4Tag26t;
+	}
+
+	public String getBlock4Tag32aDate() {
+		return block4Tag32aDate;
+	}
+
+	public void setBlock4Tag32aDate(String block4Tag32aDate) {
+		this.block4Tag32aDate = block4Tag32aDate;
+	}
+
+	public String getBlock4Tag32aCurrency() {
+		return block4Tag32aCurrency;
+	}
+
+	public void setBlock4Tag32aCurrency(String block4Tag32aCurrency) {
+		this.block4Tag32aCurrency = block4Tag32aCurrency;
+	}
+
+	public BigDecimal getBlock4Tag32aSettledAmnt() {
+		return block4Tag32aSettledAmnt;
+	}
+
+	public void setBlock4Tag32aSettledAmnt(BigDecimal block4Tag32aSettledAmnt) {
+		this.block4Tag32aSettledAmnt = block4Tag32aSettledAmnt;
+	}
+
+	public String getBlock4Tag33bCurrency() {
+		return block4Tag33bCurrency;
+	}
+
+	public void setBlock4Tag33bCurrency(String block4Tag33bCurrency) {
+		this.block4Tag33bCurrency = block4Tag33bCurrency;
+	}
+
+	public BigDecimal getBlock4Tag33bInstrucAmnt() {
+		return block4Tag33bInstrucAmnt;
+	}
+
+	public void setBlock4Tag33bInstrucAmnt(BigDecimal block4Tag33bInstrucAmnt) {
+		this.block4Tag33bInstrucAmnt = block4Tag33bInstrucAmnt;
+	}
+
+	public String getBlock4Tag36() {
+		return block4Tag36;
+	}
+
+	public void setBlock4Tag36(String block4Tag36) {
+		this.block4Tag36 = block4Tag36;
+	}
+
+	public String getBlock4Tag51aDcmark() {
+		return block4Tag51aDcmark;
+	}
+
+	public void setBlock4Tag51aDcmark(String block4Tag51aDcmark) {
+		this.block4Tag51aDcmark = block4Tag51aDcmark;
+	}
+
+	public String getBlock4Tag51aAcct() {
+		return block4Tag51aAcct;
+	}
+
+	public void setBlock4Tag51aAcct(String block4Tag51aAcct) {
+		this.block4Tag51aAcct = block4Tag51aAcct;
+	}
+
+	public String getBlock4Tag51aBic() {
+		return block4Tag51aBic;
+	}
+
+	public void setBlock4Tag51aBic(String block4Tag51aBic) {
+		this.block4Tag51aBic = block4Tag51aBic;
+	}
+
+	public String getBlock4Tag56c() {
+		return block4Tag56c;
+	}
+
+	public void setBlock4Tag56c(String block4Tag56c) {
+		this.block4Tag56c = block4Tag56c;
+	}
+	
+	public String getBlock4Tag57c() {
+		return block4Tag57c;
+	}
+
+	public void setBlock4Tag57c(String block4Tag57c) {
+		this.block4Tag57c = block4Tag57c;
+	}
 }
