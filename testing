@@ -1,26 +1,164 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.time.LocalDateTime;
 
-public class MTBlock1Test {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-    @Test
-    public void testMTBlock1() {
-        // Create an instance of MTBlock1
-        MTBlock1 block1 = new MTBlock1();
+@Embeddable
+public class MTBlock2 {
 
-        // Set values
-        block1.setBlock1ApplicationId("AppIDValue");
-        block1.setBlock1ServiceId("ServiceIDValue");
-        block1.setBlock1LogicalTerminal("LogicalTerminalValue");
-        block1.setBlock1SessionNumber("SessionNumberValue");
-        block1.setBlock1SequenceNumber("SequenceNumberValue");
+	@Column(name = "V_BLOCK2_IN_OUT_IND")
+	private String block2InOutInd;
+	
+	@Column(name = "V_BLOCK2_SENDER_IN_TIME")
+	private String block2SenderInTime;
+	
+	@Column(name = "V_BLOCK2_MIR_DATE")
+	private String block2MIRDate;
+	
+	@Column(name = "V_BLOCK2_MIR_LOGICAL_TERMINAL")
+	private String block2MIRLogicalTerminal;
+	
+	@Column(name = "V_BLOCK2_MIR_SESSION_NUMBER")
+	private String block2MIRSessNum;
+	
+	@Column(name = "V_BLOCK2_MIR_SEQ_NUMBER")
+	private String block2MIRSeqNum;
+	
+	@Column(name = "V_BLOCK2_RECEIVER_OUT_DATE")
+	private String block2ReceiverOutDate;
+	
+	@Column(name = "V_BLOCK2_RECEIVER_OUT_TIME")
+	private String block2ReceiverOutTime;
+	
+	@Column(name = "V_BLOCK2_MESSAGE_PRIORITY")
+	private String block2MessagePriority;
+	
+	@Column(name = "V_BLOCK2_RECEIVER_ADDRESS")
+	private String block2ReceiverAddr;
+	
+	@Column(name = "V_BLOCK2_DELIVERY_MONITOR")
+	private String block2DeliveryMonitor;
+	
+	@Column(name = "V_BLOCK2_OBS_PERIOD")
+	private String block2OBSPeriod;
+	
+	@Column(name = "D_SENDER_TIMESTAMP")
+	private LocalDateTime senderTimeStamp;
+	
+	@Column(name = "D_RECEIVER_TIMESTAMP")
+	private LocalDateTime receiverTimeStamp;
 
-        // Assert values
-        assertEquals("AppIDValue", block1.getBlock1ApplicationId());
-        assertEquals("ServiceIDValue", block1.getBlock1ServiceId());
-        assertEquals("LogicalTerminalValue", block1.getBlock1LogicalTerminal());
-        assertEquals("SessionNumberValue", block1.getBlock1SessionNumber());
-        assertEquals("SequenceNumberValue", block1.getBlock1SequenceNumber());
-    }
+	public String getBlock2InOutInd() {
+		return block2InOutInd;
+	}
+
+	public void setBlock2InOutInd(String block2InOutInd) {
+		this.block2InOutInd = block2InOutInd;
+	}
+
+	public String getBlock2SenderInTime() {
+		return block2SenderInTime;
+	}
+
+	public void setBlock2SenderInTime(String block2SenderInTime) {
+		this.block2SenderInTime = block2SenderInTime;
+	}
+
+	public String getBlock2MIRDate() {
+		return block2MIRDate;
+	}
+
+	public void setBlock2MIRDate(String block2mirDate) {
+		block2MIRDate = block2mirDate;
+	}
+
+	public String getBlock2MIRLogicalTerminal() {
+		return block2MIRLogicalTerminal;
+	}
+
+	public void setBlock2MIRLogicalTerminal(String block2mirLogicalTerminal) {
+		block2MIRLogicalTerminal = block2mirLogicalTerminal;
+	}
+
+	public String getBlock2MIRSessNum() {
+		return block2MIRSessNum;
+	}
+
+	public void setBlock2MIRSessNum(String block2mirSessNum) {
+		block2MIRSessNum = block2mirSessNum;
+	}
+
+	public String getBlock2MIRSeqNum() {
+		return block2MIRSeqNum;
+	}
+
+	public void setBlock2MIRSeqNum(String block2mirSeqNum) {
+		block2MIRSeqNum = block2mirSeqNum;
+	}
+
+	public String getBlock2ReceiverOutDate() {
+		return block2ReceiverOutDate;
+	}
+
+	public void setBlock2ReceiverOutDate(String block2ReceiverOutDate) {
+		this.block2ReceiverOutDate = block2ReceiverOutDate;
+	}
+
+	public String getBlock2ReceiverOutTime() {
+		return block2ReceiverOutTime;
+	}
+
+	public void setBlock2ReceiverOutTime(String block2ReceiverOutTime) {
+		this.block2ReceiverOutTime = block2ReceiverOutTime;
+	}
+
+	public String getBlock2MessagePriority() {
+		return block2MessagePriority;
+	}
+
+	public void setBlock2MessagePriority(String block2MessagePriority) {
+		this.block2MessagePriority = block2MessagePriority;
+	}
+
+	public String getBlock2ReceiverAddr() {
+		return block2ReceiverAddr;
+	}
+
+	public void setBlock2ReceiverAddr(String block2ReceiverAddr) {
+		this.block2ReceiverAddr = block2ReceiverAddr;
+	}
+
+	public String getBlock2DeliveryMonitor() {
+		return block2DeliveryMonitor;
+	}
+
+	public void setBlock2DeliveryMonitor(String block2DeliveryMonitor) {
+		this.block2DeliveryMonitor = block2DeliveryMonitor;
+	}
+
+	public String getBlock2OBSPeriod() {
+		return block2OBSPeriod;
+	}
+
+	public void setBlock2OBSPeriod(String block2obsPeriod) {
+		block2OBSPeriod = block2obsPeriod;
+	}
+
+	public LocalDateTime getSenderTimeStamp() {
+		return senderTimeStamp;
+	}
+
+	public void setSenderTimeStamp(LocalDateTime senderTimeStamp) {
+		this.senderTimeStamp = senderTimeStamp;
+	}
+
+	public LocalDateTime getReceiverTimeStamp() {
+		return receiverTimeStamp;
+	}
+
+	public void setReceiverTimeStamp(LocalDateTime receiverTimeStamp) {
+		this.receiverTimeStamp = receiverTimeStamp;
+	}	
 }
