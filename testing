@@ -1,28 +1,169 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.Serializable;
 
-public class Block4Tag58Test {
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag58 block4Tag58 = new Block4Tag58();
+@Embeddable
+public class Block4Tag59 implements Serializable{
 
-        // Set properties
-        block4Tag58.setBlock4Tag58aDcmark("DCMarkA");
-        block4Tag58.setBlock4Tag58aAcct("accountA");
-        block4Tag58.setBlock4Tag58aBic("BIC_A");
-        block4Tag58.setBlock4Tag58DDcmark("DCMarkD");
-        block4Tag58.setBlock4Tag58DAcct("accountD");
-        block4Tag58.setBlock4Tag58DNameAddr("Name Address D");
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5414389517996089244L;
 
-        // Assert properties
-        assertEquals("DCMarkA", block4Tag58.getBlock4Tag58aDcmark());
-        assertEquals("accountA", block4Tag58.getBlock4Tag58aAcct());
-        assertEquals("BIC_A", block4Tag58.getBlock4Tag58aBic());
-        assertEquals("DCMarkD", block4Tag58.getBlock4Tag58DDcmark());
-        assertEquals("accountD", block4Tag58.getBlock4Tag58DAcct());
-        assertEquals("Name Address D", block4Tag58.getBlock4Tag58DNameAddr());
-    }
+	@Column(name = "V_BLOCK4_TAG_59_ACCT") 
+	private String block4Tag59Acct; 
+
+	@Column(name = "V_BLOCK4_TAG_59_NAME_ADDR") 
+	private String block4Tag59NameAddr; 
+
+	@Column(name = "V_BLOCK4_TAG_59A_ACCT") 
+	private String block4Tag59aAcct; 
+
+	@Column(name = "V_BLOCK4_TAG_59A_BIC") 
+	private String block4Tag59aBic; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_ACCT") 
+	private String block4Tag59fAcct; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NUMBER_1") 
+	private String block4Tag59fNumber1; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NAME_ADDR_1") 
+	private String block4Tag59fNameAddr1; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NUMBER_2") 
+	private String block4Tag59fNumber2; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NAME_ADDR_2") 
+	private String block4Tag59fNameAddr2; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NUMBER_3") 
+	private String block4Tag59fNumber3; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NAME_ADDR_3") 
+	private String block4Tag59fNameAddr3; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NUMBER_4") 
+	private String block4Tag59fNumber4; 
+
+	@Column(name = "V_BLOCK4_TAG_59F_NAME_ADDR_4") 
+	private String block4Tag59fNameAddr4;
+
+	public String getBlock4Tag59Acct() {
+		return block4Tag59Acct;
+	}
+
+	public void setBlock4Tag59Acct(String block4Tag59Acct) {
+		this.block4Tag59Acct = block4Tag59Acct;
+	}
+
+	public String getBlock4Tag59NameAddr() {
+		return block4Tag59NameAddr;
+	}
+
+	public void setBlock4Tag59NameAddr(String block4Tag59NameAddr) {
+		this.block4Tag59NameAddr = block4Tag59NameAddr;
+	}
+
+	public String getBlock4Tag59aAcct() {
+		return block4Tag59aAcct;
+	}
+
+	public void setBlock4Tag59aAcct(String block4Tag59aAcct) {
+		this.block4Tag59aAcct = block4Tag59aAcct;
+	}
+
+	public String getBlock4Tag59aBic() {
+		return block4Tag59aBic;
+	}
+
+	public void setBlock4Tag59aBic(String block4Tag59aBic) {
+		this.block4Tag59aBic = block4Tag59aBic;
+	}
+
+	public String getBlock4Tag59fAcct() {
+		return block4Tag59fAcct;
+	}
+
+	public void setBlock4Tag59fAcct(String block4Tag59fAcct) {
+		this.block4Tag59fAcct = block4Tag59fAcct;
+	}
+
+	public String getBlock4Tag59fNumber1() {
+		return block4Tag59fNumber1;
+	}
+
+	public void setBlock4Tag59fNumber1(String block4Tag59fNumber1) {
+		this.block4Tag59fNumber1 = block4Tag59fNumber1;
+	}
+
+	public String getBlock4Tag59fNameAddr1() {
+		return block4Tag59fNameAddr1;
+	}
+
+	public void setBlock4Tag59fNameAddr1(String block4Tag59fNameAddr1) {
+		this.block4Tag59fNameAddr1 = block4Tag59fNameAddr1;
+	}
+
+	public String getBlock4Tag59fNumber2() {
+		return block4Tag59fNumber2;
+	}
+
+	public void setBlock4Tag59fNumber2(String block4Tag59fNumber2) {
+		this.block4Tag59fNumber2 = block4Tag59fNumber2;
+	}
+
+	public String getBlock4Tag59fNameAddr2() {
+		return block4Tag59fNameAddr2;
+	}
+
+	public void setBlock4Tag59fNameAddr2(String block4Tag59fNameAddr2) {
+		this.block4Tag59fNameAddr2 = block4Tag59fNameAddr2;
+	}
+
+	public String getBlock4Tag59fNumber3() {
+		return block4Tag59fNumber3;
+	}
+
+	public void setBlock4Tag59fNumber3(String block4Tag59fNumber3) {
+		this.block4Tag59fNumber3 = block4Tag59fNumber3;
+	}
+
+	public String getBlock4Tag59fNameAddr3() {
+		return block4Tag59fNameAddr3;
+	}
+
+	public void setBlock4Tag59fNameAddr3(String block4Tag59fNameAddr3) {
+		this.block4Tag59fNameAddr3 = block4Tag59fNameAddr3;
+	}
+
+	public String getBlock4Tag59fNumber4() {
+		return block4Tag59fNumber4;
+	}
+
+	public void setBlock4Tag59fNumber4(String block4Tag59fNumber4) {
+		this.block4Tag59fNumber4 = block4Tag59fNumber4;
+	}
+
+	public String getBlock4Tag59fNameAddr4() {
+		return block4Tag59fNameAddr4;
+	}
+
+	public void setBlock4Tag59fNameAddr4(String block4Tag59fNameAddr4) {
+		this.block4Tag59fNameAddr4 = block4Tag59fNameAddr4;
+	}
+
+	@Override
+	public String toString() {
+		return "MT103Block4Tag59 [block4Tag59Acct=" + block4Tag59Acct + ", block4Tag59NameAddr=" + block4Tag59NameAddr
+				+ ", block4Tag59aAcct=" + block4Tag59aAcct + ", block4Tag59aBic=" + block4Tag59aBic
+				+ ", block4Tag59fAcct=" + block4Tag59fAcct + ", block4Tag59fNumber1=" + block4Tag59fNumber1
+				+ ", block4Tag59fNameAddr1=" + block4Tag59fNameAddr1 + ", block4Tag59fNumber2=" + block4Tag59fNumber2
+				+ ", block4Tag59fNameAddr2=" + block4Tag59fNameAddr2 + ", block4Tag59fNumber3=" + block4Tag59fNumber3
+				+ ", block4Tag59fNameAddr3=" + block4Tag59fNameAddr3 + ", block4Tag59fNumber4=" + block4Tag59fNumber4
+				+ ", block4Tag59fNameAddr4=" + block4Tag59fNameAddr4 + "]";
+	} 
 }
