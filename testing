@@ -1,35 +1,98 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag60Test {
+@Embeddable
+public class Block4Tag62 {
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag60 block4Tag60 = new Block4Tag60();
+	@Column(name = "V_BLOCK4_TAG_62F_DCMARK")
+	private String block4Tag62FdCMark;
+	
+	@Column(name = "V_BLOCK4_TAG_62F_DATE")
+	private String block4Tag62FDate;
+	
+	@Column(name = "V_BLOCK4_TAG_62F_CURRENCY")
+	private String block4Tag62FCurrency;
+	
+	@Column(name = "N_BLOCK4_TAG_62F_CLOSE_BK_BAL")
+	private BigDecimal block4Tag62FAmnt;
+	
+	@Column(name = "V_BLOCK4_TAG_62M_DCMARK")
+	private String block4Tag62MdCMark;
+	
+	@Column(name = "V_BLOCK4_TAG_62M_DATE")
+	private String block4Tag62MDate;
+	
+	@Column(name = "V_BLOCK4_TAG_62M_CURRENCY")
+	private String block4Tag62MCurrency;
+	
+	@Column(name = "N_BLOCK4_TAG_62M_CLOSE_BK_BAL")
+	private BigDecimal block4Tag62MAmnt;
 
-        // Set properties
-        block4Tag60.setBlock4Tag60FdCMark("DCMarkF");
-        block4Tag60.setBlock4Tag60FDate("2024-01-01");
-        block4Tag60.setBlock4Tag60FCurrency("USD");
-        block4Tag60.setBlock4Tag60FAmnt(new BigDecimal("1000.00"));
-        block4Tag60.setBlock4Tag60MdCMark("DCMarkM");
-        block4Tag60.setBlock4Tag60MDate("2024-01-02");
-        block4Tag60.setBlock4Tag60MCurrency("EUR");
-        block4Tag60.setBlock4Tag60MAmnt(new BigDecimal("2000.00"));
+	public String getBlock4Tag62FdCMark() {
+		return block4Tag62FdCMark;
+	}
 
-        // Assert properties
-        assertEquals("DCMarkF", block4Tag60.getBlock4Tag60FdCMark());
-        assertEquals("2024-01-01", block4Tag60.getBlock4Tag60FDate());
-        assertEquals("USD", block4Tag60.getBlock4Tag60FCurrency());
-        assertEquals(new BigDecimal("1000.00"), block4Tag60.getBlock4Tag60FAmnt());
-        assertEquals("DCMarkM", block4Tag60.getBlock4Tag60MdCMark());
-        assertEquals("2024-01-02", block4Tag60.getBlock4Tag60MDate());
-        assertEquals("EUR", block4Tag60.getBlock4Tag60MCurrency());
-        assertEquals(new BigDecimal("2000.00"), block4Tag60.getBlock4Tag60MAmnt());
-    }
+	public void setBlock4Tag62FdCMark(String block4Tag62FdCMark) {
+		this.block4Tag62FdCMark = block4Tag62FdCMark;
+	}
+
+	public String getBlock4Tag62FDate() {
+		return block4Tag62FDate;
+	}
+
+	public void setBlock4Tag62FDate(String block4Tag62FDate) {
+		this.block4Tag62FDate = block4Tag62FDate;
+	}
+
+	public String getBlock4Tag62FCurrency() {
+		return block4Tag62FCurrency;
+	}
+
+	public void setBlock4Tag62FCurrency(String block4Tag62FCurrency) {
+		this.block4Tag62FCurrency = block4Tag62FCurrency;
+	}
+
+	public BigDecimal getBlock4Tag62FAmnt() {
+		return block4Tag62FAmnt;
+	}
+
+	public void setBlock4Tag62FAmnt(BigDecimal block4Tag62FAmnt) {
+		this.block4Tag62FAmnt = block4Tag62FAmnt;
+	}
+
+	public String getBlock4Tag62MdCMark() {
+		return block4Tag62MdCMark;
+	}
+
+	public void setBlock4Tag62MdCMark(String block4Tag62MdCMark) {
+		this.block4Tag62MdCMark = block4Tag62MdCMark;
+	}
+
+	public String getBlock4Tag62MDate() {
+		return block4Tag62MDate;
+	}
+
+	public void setBlock4Tag62MDate(String block4Tag62MDate) {
+		this.block4Tag62MDate = block4Tag62MDate;
+	}
+
+	public String getBlock4Tag62MCurrency() {
+		return block4Tag62MCurrency;
+	}
+
+	public void setBlock4Tag62MCurrency(String block4Tag62MCurrency) {
+		this.block4Tag62MCurrency = block4Tag62MCurrency;
+	}
+
+	public BigDecimal getBlock4Tag62MAmnt() {
+		return block4Tag62MAmnt;
+	}
+
+	public void setBlock4Tag62MAmnt(BigDecimal block4Tag62MAmnt) {
+		this.block4Tag62MAmnt = block4Tag62MAmnt;
+	}
 }
