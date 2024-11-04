@@ -1,164 +1,46 @@
-package com.maybank.ilm.embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class MTBlock2 {
+public class MTBlock2Test {
 
-	@Column(name = "V_BLOCK2_IN_OUT_IND")
-	private String block2InOutInd;
-	
-	@Column(name = "V_BLOCK2_SENDER_IN_TIME")
-	private String block2SenderInTime;
-	
-	@Column(name = "V_BLOCK2_MIR_DATE")
-	private String block2MIRDate;
-	
-	@Column(name = "V_BLOCK2_MIR_LOGICAL_TERMINAL")
-	private String block2MIRLogicalTerminal;
-	
-	@Column(name = "V_BLOCK2_MIR_SESSION_NUMBER")
-	private String block2MIRSessNum;
-	
-	@Column(name = "V_BLOCK2_MIR_SEQ_NUMBER")
-	private String block2MIRSeqNum;
-	
-	@Column(name = "V_BLOCK2_RECEIVER_OUT_DATE")
-	private String block2ReceiverOutDate;
-	
-	@Column(name = "V_BLOCK2_RECEIVER_OUT_TIME")
-	private String block2ReceiverOutTime;
-	
-	@Column(name = "V_BLOCK2_MESSAGE_PRIORITY")
-	private String block2MessagePriority;
-	
-	@Column(name = "V_BLOCK2_RECEIVER_ADDRESS")
-	private String block2ReceiverAddr;
-	
-	@Column(name = "V_BLOCK2_DELIVERY_MONITOR")
-	private String block2DeliveryMonitor;
-	
-	@Column(name = "V_BLOCK2_OBS_PERIOD")
-	private String block2OBSPeriod;
-	
-	@Column(name = "D_SENDER_TIMESTAMP")
-	private LocalDateTime senderTimeStamp;
-	
-	@Column(name = "D_RECEIVER_TIMESTAMP")
-	private LocalDateTime receiverTimeStamp;
+    @Test
+    public void testMTBlock2() {
+        // Create an instance of MTBlock2
+        MTBlock2 block2 = new MTBlock2();
 
-	public String getBlock2InOutInd() {
-		return block2InOutInd;
-	}
+        // Set values
+        block2.setBlock2InOutInd("In");
+        block2.setBlock2SenderInTime("12:00:00");
+        block2.setBlock2MIRDate("2024-11-01");
+        block2.setBlock2MIRLogicalTerminal("Terminal123");
+        block2.setBlock2MIRSessNum("Session1");
+        block2.setBlock2MIRSeqNum("Seq1");
+        block2.setBlock2ReceiverOutDate("2024-11-02");
+        block2.setBlock2ReceiverOutTime("12:30:00");
+        block2.setBlock2MessagePriority("High");
+        block2.setBlock2ReceiverAddr("ReceiverAddress");
+        block2.setBlock2DeliveryMonitor("Monitor1");
+        block2.setBlock2OBSPeriod("Period1");
+        block2.setSenderTimeStamp(LocalDateTime.of(2024, 11, 1, 12, 0));
+        block2.setReceiverTimeStamp(LocalDateTime.of(2024, 11, 2, 12, 30));
 
-	public void setBlock2InOutInd(String block2InOutInd) {
-		this.block2InOutInd = block2InOutInd;
-	}
-
-	public String getBlock2SenderInTime() {
-		return block2SenderInTime;
-	}
-
-	public void setBlock2SenderInTime(String block2SenderInTime) {
-		this.block2SenderInTime = block2SenderInTime;
-	}
-
-	public String getBlock2MIRDate() {
-		return block2MIRDate;
-	}
-
-	public void setBlock2MIRDate(String block2mirDate) {
-		block2MIRDate = block2mirDate;
-	}
-
-	public String getBlock2MIRLogicalTerminal() {
-		return block2MIRLogicalTerminal;
-	}
-
-	public void setBlock2MIRLogicalTerminal(String block2mirLogicalTerminal) {
-		block2MIRLogicalTerminal = block2mirLogicalTerminal;
-	}
-
-	public String getBlock2MIRSessNum() {
-		return block2MIRSessNum;
-	}
-
-	public void setBlock2MIRSessNum(String block2mirSessNum) {
-		block2MIRSessNum = block2mirSessNum;
-	}
-
-	public String getBlock2MIRSeqNum() {
-		return block2MIRSeqNum;
-	}
-
-	public void setBlock2MIRSeqNum(String block2mirSeqNum) {
-		block2MIRSeqNum = block2mirSeqNum;
-	}
-
-	public String getBlock2ReceiverOutDate() {
-		return block2ReceiverOutDate;
-	}
-
-	public void setBlock2ReceiverOutDate(String block2ReceiverOutDate) {
-		this.block2ReceiverOutDate = block2ReceiverOutDate;
-	}
-
-	public String getBlock2ReceiverOutTime() {
-		return block2ReceiverOutTime;
-	}
-
-	public void setBlock2ReceiverOutTime(String block2ReceiverOutTime) {
-		this.block2ReceiverOutTime = block2ReceiverOutTime;
-	}
-
-	public String getBlock2MessagePriority() {
-		return block2MessagePriority;
-	}
-
-	public void setBlock2MessagePriority(String block2MessagePriority) {
-		this.block2MessagePriority = block2MessagePriority;
-	}
-
-	public String getBlock2ReceiverAddr() {
-		return block2ReceiverAddr;
-	}
-
-	public void setBlock2ReceiverAddr(String block2ReceiverAddr) {
-		this.block2ReceiverAddr = block2ReceiverAddr;
-	}
-
-	public String getBlock2DeliveryMonitor() {
-		return block2DeliveryMonitor;
-	}
-
-	public void setBlock2DeliveryMonitor(String block2DeliveryMonitor) {
-		this.block2DeliveryMonitor = block2DeliveryMonitor;
-	}
-
-	public String getBlock2OBSPeriod() {
-		return block2OBSPeriod;
-	}
-
-	public void setBlock2OBSPeriod(String block2obsPeriod) {
-		block2OBSPeriod = block2obsPeriod;
-	}
-
-	public LocalDateTime getSenderTimeStamp() {
-		return senderTimeStamp;
-	}
-
-	public void setSenderTimeStamp(LocalDateTime senderTimeStamp) {
-		this.senderTimeStamp = senderTimeStamp;
-	}
-
-	public LocalDateTime getReceiverTimeStamp() {
-		return receiverTimeStamp;
-	}
-
-	public void setReceiverTimeStamp(LocalDateTime receiverTimeStamp) {
-		this.receiverTimeStamp = receiverTimeStamp;
-	}	
+        // Assert values
+        assertEquals("In", block2.getBlock2InOutInd());
+        assertEquals("12:00:00", block2.getBlock2SenderInTime());
+        assertEquals("2024-11-01", block2.getBlock2MIRDate());
+        assertEquals("Terminal123", block2.getBlock2MIRLogicalTerminal());
+        assertEquals("Session1", block2.getBlock2MIRSessNum());
+        assertEquals("Seq1", block2.getBlock2MIRSeqNum());
+        assertEquals("2024-11-02", block2.getBlock2ReceiverOutDate());
+        assertEquals("12:30:00", block2.getBlock2ReceiverOutTime());
+        assertEquals("High", block2.getBlock2MessagePriority());
+        assertEquals("ReceiverAddress", block2.getBlock2ReceiverAddr());
+        assertEquals("Monitor1", block2.getBlock2DeliveryMonitor());
+        assertEquals("Period1", block2.getBlock2OBSPeriod());
+        assertEquals(LocalDateTime.of(2024, 11, 1, 12, 0), block2.getSenderTimeStamp());
+        assertEquals(LocalDateTime.of(2024, 11, 2, 12, 30), block2.getReceiverTimeStamp());
+    }
 }
