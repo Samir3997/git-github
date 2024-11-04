@@ -1,46 +1,74 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package com.maybank.ilm.embeddable;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
+import java.math.BigDecimal;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
 
-public class MTBlock2Test {
+public class MT200Block4 implements Serializable{
 
-    @Test
-    public void testMTBlock2() {
-        // Create an instance of MTBlock2
-        MTBlock2 block2 = new MTBlock2();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3402887972982015083L;
+	
+	@Column(name = "V_BLOCK4_TAG_20") 
+	private String block4Tag20; 
+	
+	@Column(name = "V_BLOCK4_TAG_32A_DATE") 
+	private String block4Tag32ADate;
+	
+	@Column(name = "V_BLOCK4_TAG_32A_CURR") 
+	private String block4Tag32ACurr;
+	
+	@Column(name = "N_BLOCK4_TAG_32A_AMNT") 
+	private BigDecimal block4Tag32AAmnt;
 
-        // Set values
-        block2.setBlock2InOutInd("In");
-        block2.setBlock2SenderInTime("12:00:00");
-        block2.setBlock2MIRDate("2024-11-01");
-        block2.setBlock2MIRLogicalTerminal("Terminal123");
-        block2.setBlock2MIRSessNum("Session1");
-        block2.setBlock2MIRSeqNum("Seq1");
-        block2.setBlock2ReceiverOutDate("2024-11-02");
-        block2.setBlock2ReceiverOutTime("12:30:00");
-        block2.setBlock2MessagePriority("High");
-        block2.setBlock2ReceiverAddr("ReceiverAddress");
-        block2.setBlock2DeliveryMonitor("Monitor1");
-        block2.setBlock2OBSPeriod("Period1");
-        block2.setSenderTimeStamp(LocalDateTime.of(2024, 11, 1, 12, 0));
-        block2.setReceiverTimeStamp(LocalDateTime.of(2024, 11, 2, 12, 30));
+	public String getBlock4Tag32ADate() {
+		return block4Tag32ADate;
+	}
 
-        // Assert values
-        assertEquals("In", block2.getBlock2InOutInd());
-        assertEquals("12:00:00", block2.getBlock2SenderInTime());
-        assertEquals("2024-11-01", block2.getBlock2MIRDate());
-        assertEquals("Terminal123", block2.getBlock2MIRLogicalTerminal());
-        assertEquals("Session1", block2.getBlock2MIRSessNum());
-        assertEquals("Seq1", block2.getBlock2MIRSeqNum());
-        assertEquals("2024-11-02", block2.getBlock2ReceiverOutDate());
-        assertEquals("12:30:00", block2.getBlock2ReceiverOutTime());
-        assertEquals("High", block2.getBlock2MessagePriority());
-        assertEquals("ReceiverAddress", block2.getBlock2ReceiverAddr());
-        assertEquals("Monitor1", block2.getBlock2DeliveryMonitor());
-        assertEquals("Period1", block2.getBlock2OBSPeriod());
-        assertEquals(LocalDateTime.of(2024, 11, 1, 12, 0), block2.getSenderTimeStamp());
-        assertEquals(LocalDateTime.of(2024, 11, 2, 12, 30), block2.getReceiverTimeStamp());
-    }
+	public void setBlock4Tag32ADate(String block4Tag32ADate) {
+		this.block4Tag32ADate = block4Tag32ADate;
+	}
+
+	public String getBlock4Tag32ACurr() {
+		return block4Tag32ACurr;
+	}
+
+	public void setBlock4Tag32ACurr(String block4Tag32ACurr) {
+		this.block4Tag32ACurr = block4Tag32ACurr;
+	}
+
+	public BigDecimal getBlock4Tag32AAmnt() {
+		return block4Tag32AAmnt;
+	}
+
+	public void setBlock4Tag32AAmnt(BigDecimal block4Tag32AAmnt) {
+		this.block4Tag32AAmnt = block4Tag32AAmnt;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+	
+	
+
+	public String getBlock4Tag20() {
+		return block4Tag20;
+	}
+
+	public void setBlock4Tag20(String block4Tag20) {
+		this.block4Tag20 = block4Tag20;
+	}
+
+	@Override
+	public String toString() {
+		return "MT200Block4 [block4Tag20=" + block4Tag20 + ", block4Tag32ADate=" + block4Tag32ADate
+				+ ", block4Tag32ACurr=" + block4Tag32ACurr + ", block4Tag32AAmnt=" + block4Tag32AAmnt + "]";
+	}
+
+	
+	
+	
 }
