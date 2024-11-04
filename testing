@@ -1,97 +1,49 @@
 package com.maybank.ilm.embeddable;
 
-import java.io.Serializable;
+import org.junit.jupiter.api.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class MT019Block4 implements Serializable {
+public class MT019Block4Test {
 
-	private static final long serialVersionUID = 2074133380190916074L;
+    @Test
+    public void testMT019Block4() {
+        // Creating a new MT019Block4 object
+        MT019Block4 mt019Block4 = new MT019Block4();
 
-	@Column(name = "V_BLOCK4_175_INPUT_TIME")
-	private String block4175InputTime; 
+        // Setting values
+        mt019Block4.setBlock4175InputTime("10:30");
+        mt019Block4.setBlock4106Mir("123456");
+        mt019Block4.setBlock4108Mur("ABC123");
+        mt019Block4.setBlock4102SwiftAddress("SWIFT123");
+        mt019Block4.setBlock4107Mor("MORValue");
+        mt019Block4.setBlock4432AbortReason("AbortReason");
+        mt019Block4.setBlock4619VasCode("VASCode");
 
-	@Column(name = "V_BLOCK4_106_MIR") 
-	private String block4106Mir; 
+        // Asserting values
+        assertEquals("10:30", mt019Block4.getBlock4175InputTime());
+        assertEquals("123456", mt019Block4.getBlock4106Mir());
+        assertEquals("ABC123", mt019Block4.getBlock4108Mur());
+        assertEquals("SWIFT123", mt019Block4.getBlock4102SwiftAddress());
+        assertEquals("MORValue", mt019Block4.getBlock4107Mor());
+        assertEquals("AbortReason", mt019Block4.getBlock4432AbortReason());
+        assertEquals("VASCode", mt019Block4.getBlock4619VasCode());
+    }
 
-	@Column(name = "V_BLOCK4_108_MUR") 
-	private String block4108Mur; 
+    @Test
+    public void testToString() {
+        // Creating a new MT019Block4 object
+        MT019Block4 mt019Block4 = new MT019Block4();
+        mt019Block4.setBlock4175InputTime("10:30");
+        mt019Block4.setBlock4106Mir("123456");
+        mt019Block4.setBlock4108Mur("ABC123");
+        mt019Block4.setBlock4102SwiftAddress("SWIFT123");
+        mt019Block4.setBlock4107Mor("MORValue");
+        mt019Block4.setBlock4432AbortReason("AbortReason");
+        mt019Block4.setBlock4619VasCode("VASCode");
 
-	@Column(name = "V_BLOCK4_102_SWIFT_ADDRESS") 
-	private String block4102SwiftAddress; 
-
-	@Column(name = "V_BLOCK4_107_MOR") 
-	private String block4107Mor; 
-
-	@Column(name = "V_BLOCK4_432_ABORT_REASON") 
-	private String block4432AbortReason;
-
-	@Column(name = "V_BLOCK4_619_VAS_CODE") 
-	private String block4619VasCode;
-
-	public String getBlock4175InputTime() {
-		return block4175InputTime;
-	}
-
-	public void setBlock4175InputTime(String block4175InputTime) {
-		this.block4175InputTime = block4175InputTime;
-	}
-
-	public String getBlock4106Mir() {
-		return block4106Mir;
-	}
-
-	public void setBlock4106Mir(String block4106Mir) {
-		this.block4106Mir = block4106Mir;
-	}
-
-	public String getBlock4108Mur() {
-		return block4108Mur;
-	}
-
-	public void setBlock4108Mur(String block4108Mur) {
-		this.block4108Mur = block4108Mur;
-	}
-
-	public String getBlock4102SwiftAddress() {
-		return block4102SwiftAddress;
-	}
-
-	public void setBlock4102SwiftAddress(String block4102SwiftAddress) {
-		this.block4102SwiftAddress = block4102SwiftAddress;
-	}
-
-	public String getBlock4107Mor() {
-		return block4107Mor;
-	}
-
-	public void setBlock4107Mor(String block4107Mor) {
-		this.block4107Mor = block4107Mor;
-	}
-
-	public String getBlock4432AbortReason() {
-		return block4432AbortReason;
-	}
-
-	public void setBlock4432AbortReason(String block4432AbortReason) {
-		this.block4432AbortReason = block4432AbortReason;
-	}
-
-	public String getBlock4619VasCode() {
-		return block4619VasCode;
-	}
-
-	public void setBlock4619VasCode(String block4619VasCode) {
-		this.block4619VasCode = block4619VasCode;
-	}
-
-	@Override
-	public String toString() {
-		return "MT019Block4 [block4175InputTime=" + block4175InputTime + ", block4106Mir=" + block4106Mir
-				+ ", block4108Mur=" + block4108Mur + ", block4102SwiftAddress=" + block4102SwiftAddress
-				+ ", block4107Mor=" + block4107Mor + ", block4432AbortReason=" + block4432AbortReason
-				+ ", block4619VasCode=" + block4619VasCode + "]";
-	}
+        // Asserting the toString output
+        String expectedString = "MT019Block4 [block4175InputTime=10:30, block4106Mir=123456, block4108Mur=ABC123, block4102SwiftAddress=SWIFT123, block4107Mor=MORValue, block4432AbortReason=AbortReason, block4619VasCode=VASCode]";
+        assertEquals(expectedString, mt019Block4.toString());
+    }
 }
