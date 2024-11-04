@@ -1,5 +1,36 @@
- Block4Tag95C block4Tag95C = new Block4Tag95C();
-	        block4Tag95C.setBlock4Tag95CQualifier("QualifierC");
-	        block4Tag95C.setBlock4Tag95CCountryCode("US");
-	        assertEquals("QualifierC", block4Tag95C.getBlock4Tag95CQualifier());
-	        assertEquals("US", block4Tag95C.getBlock4Tag95CCountryCode());
+package com.maybank.ilm.embeddable;
+
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class Block4Tag95LPRTest {
+
+    @Test
+    public void testBlock4Tag95LPR() {
+        // Creating a new Block4Tag95LPR object
+        Block4Tag95LPR block4Tag95LPR = new Block4Tag95LPR();
+        
+        // Setting values
+        block4Tag95LPR.setBlock4Tag95LQualifier("QualifierL");
+        block4Tag95LPR.setBlock4Tag95LLeIdCode("LEIDCode");
+        block4Tag95LPR.setBlock4Tag95LLeIdNumber(new BigDecimal("1234567890"));
+        block4Tag95LPR.setBlock4Tag95PQualifier("QualifierP");
+        block4Tag95LPR.setBlock4Tag95PBic("BICCode");
+        block4Tag95LPR.setBlock4Tag95RQualifier("QualifierR");
+        block4Tag95LPR.setBlock4Tag95RDataSrc("DataSource");
+        block4Tag95LPR.setBlock4Tag95RProprieCode("ProprieCode");
+
+        // Asserting values
+        assertEquals("QualifierL", block4Tag95LPR.getBlock4Tag95LQualifier());
+        assertEquals("LEIDCode", block4Tag95LPR.getBlock4Tag95LLeIdCode());
+        assertEquals(new BigDecimal("1234567890"), block4Tag95LPR.getBlock4Tag95LLeIdNumber());
+        assertEquals("QualifierP", block4Tag95LPR.getBlock4Tag95PQualifier());
+        assertEquals("BICCode", block4Tag95LPR.getBlock4Tag95PBic());
+        assertEquals("QualifierR", block4Tag95LPR.getBlock4Tag95RQualifier());
+        assertEquals("DataSource", block4Tag95LPR.getBlock4Tag95RDataSrc());
+        assertEquals("ProprieCode", block4Tag95LPR.getBlock4Tag95RProprieCode());
+    }
+}
