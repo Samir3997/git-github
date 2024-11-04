@@ -1,70 +1,26 @@
-package com.maybank.ilm.embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class MTBlock1 {
+public class MTBlock1Test {
 
-	@Column(name = "V_BLOCK1_APPL_ID")
-	private String block1ApplicationId;
-	
-	@Column(name = "V_BLOCK1_SERVICE_ID")
-	private String block1ServiceId;
-	
-	@Column(name = "V_BLOCK1_LOGICAL_TERMINAL")
-	private String block1LogicalTerminal;
-	
-	@Column(name = "V_BLOCK1_SESSION_NUMBER")
-	private String block1SessionNumber;
-	
-	@Column(name = "V_BLOCK1_SEQ_NUMBER")
-	private String block1SequenceNumber;
+    @Test
+    public void testMTBlock1() {
+        // Create an instance of MTBlock1
+        MTBlock1 block1 = new MTBlock1();
 
-	public String getBlock1ApplicationId() {
-		return block1ApplicationId;
-	}
+        // Set values
+        block1.setBlock1ApplicationId("AppIDValue");
+        block1.setBlock1ServiceId("ServiceIDValue");
+        block1.setBlock1LogicalTerminal("LogicalTerminalValue");
+        block1.setBlock1SessionNumber("SessionNumberValue");
+        block1.setBlock1SequenceNumber("SequenceNumberValue");
 
-	public void setBlock1ApplicationId(String block1ApplicationId) {
-		this.block1ApplicationId = block1ApplicationId;
-	}
-
-	public String getBlock1ServiceId() {
-		return block1ServiceId;
-	}
-
-	public void setBlock1ServiceId(String block1ServiceId) {
-		this.block1ServiceId = block1ServiceId;
-	}
-
-	public String getBlock1LogicalTerminal() {
-		return block1LogicalTerminal;
-	}
-
-	public void setBlock1LogicalTerminal(String block1LogicalTerminal) {
-		this.block1LogicalTerminal = block1LogicalTerminal;
-	}
-
-	public String getBlock1SessionNumber() {
-		return block1SessionNumber;
-	}
-
-	public void setBlock1SessionNumber(String block1SessionNumber) {
-		this.block1SessionNumber = block1SessionNumber;
-	}
-
-	public String getBlock1SequenceNumber() {
-		return block1SequenceNumber;
-	}
-
-	public void setBlock1SequenceNumber(String block1SequenceNumber) {
-		this.block1SequenceNumber = block1SequenceNumber;
-	}
-
-	@Override
-	public String toString() {
-		return "MTBlock1 [block1ApplicationId=" + block1ApplicationId + ", block1ServiceId=" + block1ServiceId
-				+ ", block1LogicalTerminal=" + block1LogicalTerminal + ", block1SessionNumber=" + block1SessionNumber
-				+ ", block1SequenceNumber=" + block1SequenceNumber + "]";
-	}
+        // Assert values
+        assertEquals("AppIDValue", block1.getBlock1ApplicationId());
+        assertEquals("ServiceIDValue", block1.getBlock1ServiceId());
+        assertEquals("LogicalTerminalValue", block1.getBlock1LogicalTerminal());
+        assertEquals("SessionNumberValue", block1.getBlock1SessionNumber());
+        assertEquals("SequenceNumberValue", block1.getBlock1SequenceNumber());
+    }
 }
