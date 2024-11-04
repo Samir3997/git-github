@@ -1,41 +1,21 @@
 package com.maybank.ilm.embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag98C {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	@Column(name = "V_BLOCK4_TAG_98C_QUALIFIER") 
-	private String block4Tag98CQualifier; 
+public class Block4Tag98CTest {
 
-	@Column(name = "V_BLOCK4_TAG_98C_DATE") 
-	private String block4Tag98CDate; 
+    @Test
+    public void testBlock4Tag98C() {
+        // Creating a new Block4Tag98C object
+        Block4Tag98C block4Tag98C = new Block4Tag98C();
+        
+        // Setting values
+        block4Tag98C.setBlock4Tag98CQualifier("QualifierC");
+        block4Tag98C.setBlock4Tag98CDate("2023-11-01");
+        block4Tag98C.setBlock4Tag98CTime("10:00:00");
 
-	@Column(name = "V_BLOCK4_TAG_98C_TIME") 
-	private String block4Tag98CTime;
-
-	public String getBlock4Tag98CQualifier() {
-		return block4Tag98CQualifier;
-	}
-
-	public void setBlock4Tag98CQualifier(String block4Tag98CQualifier) {
-		this.block4Tag98CQualifier = block4Tag98CQualifier;
-	}
-
-	public String getBlock4Tag98CDate() {
-		return block4Tag98CDate;
-	}
-
-	public void setBlock4Tag98CDate(String block4Tag98CDate) {
-		this.block4Tag98CDate = block4Tag98CDate;
-	}
-
-	public String getBlock4Tag98CTime() {
-		return block4Tag98CTime;
-	}
-
-	public void setBlock4Tag98CTime(String block4Tag98CTime) {
-		this.block4Tag98CTime = block4Tag98CTime;
-	} 
-}
+        // Asserting values
+        assertEquals("QualifierC", block4Tag98C.getBlock4Tag98CQualifier());
+        assertEquals("2023-11-01", block4Tag98C.getBl
