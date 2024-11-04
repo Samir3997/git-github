@@ -1,81 +1,29 @@
 package com.maybank.ilm.embeddable;
 
-import java.io.Serializable;
+import org.junit.jupiter.api.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class Block4Tag72 implements Serializable{
+public class Block4Tag72Test {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4327107879034525912L;
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag72 block4Tag72 = new Block4Tag72();
 
-	@Column(name = "V_BLOCK4_TAG_72_NAR_1") 
-	private String block4Tag72Nar1; 
+        // Set properties
+        block4Tag72.setBlock4Tag72Nar1("Narrative 1");
+        block4Tag72.setBlock4Tag72Nar2("Narrative 2");
+        block4Tag72.setBlock4Tag72Nar3("Narrative 3");
+        block4Tag72.setBlock4Tag72Nar4("Narrative 4");
+        block4Tag72.setBlock4Tag72Nar5("Narrative 5");
+        block4Tag72.setBlock4Tag72Nar6("Narrative 6");
 
-	@Column(name = "V_BLOCK4_TAG_72_NAR_2") 
-	private String block4Tag72Nar2; 
-
-	@Column(name = "V_BLOCK4_TAG_72_NAR_3") 
-	private String block4Tag72Nar3; 
-
-	@Column(name = "V_BLOCK4_TAG_72_NAR_4") 
-	private String block4Tag72Nar4; 
-
-	@Column(name = "V_BLOCK4_TAG_72_NAR_5") 
-	private String block4Tag72Nar5; 
-
-	@Column(name = "V_BLOCK4_TAG_72_NAR_6") 
-	private String block4Tag72Nar6; 
-	
-	public String getBlock4Tag72Nar1() {
-		return block4Tag72Nar1;
-	}
-
-	public void setBlock4Tag72Nar1(String block4Tag72Nar1) {
-		this.block4Tag72Nar1 = block4Tag72Nar1;
-	}
-
-	public String getBlock4Tag72Nar2() {
-		return block4Tag72Nar2;
-	}
-
-	public void setBlock4Tag72Nar2(String block4Tag72Nar2) {
-		this.block4Tag72Nar2 = block4Tag72Nar2;
-	}
-
-	public String getBlock4Tag72Nar3() {
-		return block4Tag72Nar3;
-	}
-
-	public void setBlock4Tag72Nar3(String block4Tag72Nar3) {
-		this.block4Tag72Nar3 = block4Tag72Nar3;
-	}
-
-	public String getBlock4Tag72Nar4() {
-		return block4Tag72Nar4;
-	}
-
-	public void setBlock4Tag72Nar4(String block4Tag72Nar4) {
-		this.block4Tag72Nar4 = block4Tag72Nar4;
-	}
-
-	public String getBlock4Tag72Nar5() {
-		return block4Tag72Nar5;
-	}
-
-	public void setBlock4Tag72Nar5(String block4Tag72Nar5) {
-		this.block4Tag72Nar5 = block4Tag72Nar5;
-	}
-
-	public String getBlock4Tag72Nar6() {
-		return block4Tag72Nar6;
-	}
-
-	public void setBlock4Tag72Nar6(String block4Tag72Nar6) {
-		this.block4Tag72Nar6 = block4Tag72Nar6;
-	}
+        // Assert properties
+        assertEquals("Narrative 1", block4Tag72.getBlock4Tag72Nar1());
+        assertEquals("Narrative 2", block4Tag72.getBlock4Tag72Nar2());
+        assertEquals("Narrative 3", block4Tag72.getBlock4Tag72Nar3());
+        assertEquals("Narrative 4", block4Tag72.getBlock4Tag72Nar4());
+        assertEquals("Narrative 5", block4Tag72.getBlock4Tag72Nar5());
+        assertEquals("Narrative 6", block4Tag72.getBlock4Tag72Nar6());
+    }
 }
