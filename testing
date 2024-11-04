@@ -1,21 +1,43 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag94HTest {
+@Embeddable
+public class Block4Tag94L {
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag94H block4Tag94H = new Block4Tag94H();
+	@Column(name = "V_BLOCK4_TAG_94L_QUALIFIER") 
+	private String block4Tag94LQualifier; 
 
-        // Set properties
-        block4Tag94H.setBlock4Tag94HQualifier("QualifierH");
-        block4Tag94H.setBlock4Tag94HBic("BIC123");
+	@Column(name = "V_BLOCK4_TAG_94L_LE_ID_CODE") 
+	private String block4Tag94LLeIdCode; 
 
-        // Assert properties
-        assertEquals("QualifierH", block4Tag94H.getBlock4Tag94HQualifier());
-        assertEquals("BIC123", block4Tag94H.getBlock4Tag94HBic());
-    }
+	@Column(name = "N_BLOCK4_TAG_94L_LE_ID_NUMBER") 
+	private BigDecimal block4Tag94LLeIdNumber;
+
+	public String getBlock4Tag94LQualifier() {
+		return block4Tag94LQualifier;
+	}
+
+	public void setBlock4Tag94LQualifier(String block4Tag94LQualifier) {
+		this.block4Tag94LQualifier = block4Tag94LQualifier;
+	}
+
+	public String getBlock4Tag94LLeIdCode() {
+		return block4Tag94LLeIdCode;
+	}
+
+	public void setBlock4Tag94LLeIdCode(String block4Tag94LLeIdCode) {
+		this.block4Tag94LLeIdCode = block4Tag94LLeIdCode;
+	}
+
+	public BigDecimal getBlock4Tag94LLeIdNumber() {
+		return block4Tag94LLeIdNumber;
+	}
+
+	public void setBlock4Tag94LLeIdNumber(BigDecimal block4Tag94LLeIdNumber) {
+		this.block4Tag94LLeIdNumber = block4Tag94LLeIdNumber;
+	}
 }
