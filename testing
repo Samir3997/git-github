@@ -1,76 +1,32 @@
 package com.maybank.ilm.embeddable;
 
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class Block4Tag98E {
+public class Block4Tag98ETest {
 
-	@Column(name = "V_BLOCK4_TAG_98E_QUALIFIER") 
-	private String block4Tag98EQualifier; 
+    @Test
+    public void testBlock4Tag98E() {
+        // Creating a new Block4Tag98E object
+        Block4Tag98E block4Tag98E = new Block4Tag98E();
+        
+        // Setting values
+        block4Tag98E.setBlock4Tag98EQualifier("QualifierE");
+        block4Tag98E.setBlock4Tag98EDate("2023-11-01");
+        block4Tag98E.setBlock4Tag98ETime("12:30:00");
+        block4Tag98E.setBlock4Tag98EDecimals(new BigDecimal("123.45"));
+        block4Tag98E.setBlock4Tag98ESign("+");
+        block4Tag98E.setBlock4Tag98EUtcInd("Y");
 
-	@Column(name = "V_BLOCK4_TAG_98E_DATE") 
-	private String block4Tag98EDate; 
-
-	@Column(name = "V_BLOCK4_TAG_98E_TIME") 
-	private String block4Tag98ETime; 
-
-	@Column(name = "N_BLOCK4_TAG_98E_DECIMALS") 
-	private BigDecimal block4Tag98EDecimals; 
-
-	@Column(name = "V_BLOCK4_TAG_98E_SIGN") 
-	private String block4Tag98ESign; 
-
-	@Column(name = "V_BLOCK4_TAG_98E_UTC_IND") 
-	private String block4Tag98EUtcInd;
-
-	public String getBlock4Tag98EQualifier() {
-		return block4Tag98EQualifier;
-	}
-
-	public void setBlock4Tag98EQualifier(String block4Tag98EQualifier) {
-		this.block4Tag98EQualifier = block4Tag98EQualifier;
-	}
-
-	public String getBlock4Tag98EDate() {
-		return block4Tag98EDate;
-	}
-
-	public void setBlock4Tag98EDate(String block4Tag98EDate) {
-		this.block4Tag98EDate = block4Tag98EDate;
-	}
-
-	public String getBlock4Tag98ETime() {
-		return block4Tag98ETime;
-	}
-
-	public void setBlock4Tag98ETime(String block4Tag98ETime) {
-		this.block4Tag98ETime = block4Tag98ETime;
-	}
-
-	public BigDecimal getBlock4Tag98EDecimals() {
-		return block4Tag98EDecimals;
-	}
-
-	public void setBlock4Tag98EDecimals(BigDecimal block4Tag98EDecimals) {
-		this.block4Tag98EDecimals = block4Tag98EDecimals;
-	}
-
-	public String getBlock4Tag98ESign() {
-		return block4Tag98ESign;
-	}
-
-	public void setBlock4Tag98ESign(String block4Tag98ESign) {
-		this.block4Tag98ESign = block4Tag98ESign;
-	}
-
-	public String getBlock4Tag98EUtcInd() {
-		return block4Tag98EUtcInd;
-	}
-
-	public void setBlock4Tag98EUtcInd(String block4Tag98EUtcInd) {
-		this.block4Tag98EUtcInd = block4Tag98EUtcInd;
-	}
+        // Asserting values
+        assertEquals("QualifierE", block4Tag98E.getBlock4Tag98EQualifier());
+        assertEquals("2023-11-01", block4Tag98E.getBlock4Tag98EDate());
+        assertEquals("12:30:00", block4Tag98E.getBlock4Tag98ETime());
+        assertEquals(new BigDecimal("123.45"), block4Tag98E.getBlock4Tag98EDecimals());
+        assertEquals("+", block4Tag98E.getBlock4Tag98ESign());
+        assertEquals("Y", block4Tag98E.getBlock4Tag98EUtcInd());
+    }
 }
