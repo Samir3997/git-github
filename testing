@@ -1,30 +1,22 @@
 package com.maybank.ilm.embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag97E {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	@Column(name = "V_BLOCK4_TAG_97E_QUALIFIER") 
-	private String block4Tag97EQualifier; 
+public class Block4Tag97ETest {
 
-	@Column(name = "V_BLOCK4_TAG_97E_ACCOUNT") 
-	private String block4Tag97EAccount;
+    @Test
+    public void testBlock4Tag97E() {
+        // Creating a new Block4Tag97E object
+        Block4Tag97E block4Tag97E = new Block4Tag97E();
+        
+        // Setting values
+        block4Tag97E.setBlock4Tag97EQualifier("QualifierE");
+        block4Tag97E.setBlock4Tag97EAccount("AccountE123");
 
-	public String getBlock4Tag97EQualifier() {
-		return block4Tag97EQualifier;
-	}
-
-	public void setBlock4Tag97EQualifier(String block4Tag97EQualifier) {
-		this.block4Tag97EQualifier = block4Tag97EQualifier;
-	}
-
-	public String getBlock4Tag97EAccount() {
-		return block4Tag97EAccount;
-	}
-
-	public void setBlock4Tag97EAccount(String block4Tag97EAccount) {
-		this.block4Tag97EAccount = block4Tag97EAccount;
-	} 
+        // Asserting values
+        assertEquals("QualifierE", block4Tag97E.getBlock4Tag97EQualifier());
+        assertEquals("AccountE123", block4Tag97E.getBlock4Tag97EAccount());
+    }
 }
