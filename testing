@@ -1,93 +1,33 @@
 package com.maybank.ilm.embeddable;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag70to71 implements Serializable{
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6708085759067838120L;
+public class Block4Tag70to71Test {
 
-	@Column(name = "V_BLOCK4_TAG_70_NAR_1") 
-	private String block4Tag70Nar1; 
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag70to71 block4Tag70to71 = new Block4Tag70to71();
 
-	@Column(name = "V_BLOCK4_TAG_70_NAR_2") 
-	private String block4Tag70Nar2; 
+        // Set properties
+        block4Tag70to71.setBlock4Tag70Nar1("Narrative 1");
+        block4Tag70to71.setBlock4Tag70Nar2("Narrative 2");
+        block4Tag70to71.setBlock4Tag70Nar3("Narrative 3");
+        block4Tag70to71.setBlock4Tag70Nar4("Narrative 4");
+        block4Tag70to71.setBlock4Tag71a("Tag 71A");
+        block4Tag70to71.setBlock4Tag71gCurrency("USD");
+        block4Tag70to71.setBlock4Tag71gReceivCharge(BigDecimal.valueOf(100.50));
 
-	@Column(name = "V_BLOCK4_TAG_70_NAR_3") 
-	private String block4Tag70Nar3; 
-
-	@Column(name = "V_BLOCK4_TAG_70_NAR_4") 
-	private String block4Tag70Nar4; 
-
-	@Column(name = "V_BLOCK4_TAG_71A") 
-	private String block4Tag71a; 
-
-	@Column(name = "V_BLOCK4_TAG_71G_CURRENCY") 
-	private String block4Tag71gCurrency; 
-
-	@Column(name = "N_BLOCK4_TAG_71G_RECEIV_CHARGE") 
-	private BigDecimal block4Tag71gReceivCharge; 
-	
-	public String getBlock4Tag70Nar1() {
-		return block4Tag70Nar1;
-	}
-
-	public void setBlock4Tag70Nar1(String block4Tag70Nar1) {
-		this.block4Tag70Nar1 = block4Tag70Nar1;
-	}
-
-	public String getBlock4Tag70Nar2() {
-		return block4Tag70Nar2;
-	}
-
-	public void setBlock4Tag70Nar2(String block4Tag70Nar2) {
-		this.block4Tag70Nar2 = block4Tag70Nar2;
-	}
-
-	public String getBlock4Tag70Nar3() {
-		return block4Tag70Nar3;
-	}
-
-	public void setBlock4Tag70Nar3(String block4Tag70Nar3) {
-		this.block4Tag70Nar3 = block4Tag70Nar3;
-	}
-
-	public String getBlock4Tag70Nar4() {
-		return block4Tag70Nar4;
-	}
-
-	public void setBlock4Tag70Nar4(String block4Tag70Nar4) {
-		this.block4Tag70Nar4 = block4Tag70Nar4;
-	}
-
-	public String getBlock4Tag71a() {
-		return block4Tag71a;
-	}
-
-	public void setBlock4Tag71a(String block4Tag71a) {
-		this.block4Tag71a = block4Tag71a;
-	}
-
-	public String getBlock4Tag71gCurrency() {
-		return block4Tag71gCurrency;
-	}
-
-	public void setBlock4Tag71gCurrency(String block4Tag71gCurrency) {
-		this.block4Tag71gCurrency = block4Tag71gCurrency;
-	}
-
-	public BigDecimal getBlock4Tag71gReceivCharge() {
-		return block4Tag71gReceivCharge;
-	}
-
-	public void setBlock4Tag71gReceivCharge(BigDecimal block4Tag71gReceivCharge) {
-		this.block4Tag71gReceivCharge = block4Tag71gReceivCharge;
-	}
+        // Assert properties
+        assertEquals("Narrative 1", block4Tag70to71.getBlock4Tag70Nar1());
+        assertEquals("Narrative 2", block4Tag70to71.getBlock4Tag70Nar2());
+        assertEquals("Narrative 3", block4Tag70to71.getBlock4Tag70Nar3());
+        assertEquals("Narrative 4", block4Tag70to71.getBlock4Tag70Nar4());
+        assertEquals("Tag 71A", block4Tag70to71.getBlock4Tag71a());
+        assertEquals("USD", block4Tag70to71.getBlock4Tag71gCurrency());
+        assertEquals(BigDecimal.valueOf(100.50), block4Tag70to71.getBlock4Tag71gReceivCharge());
+    }
 }
