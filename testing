@@ -1,81 +1,29 @@
 package com.maybank.ilm.embeddable;
 
-import java.io.Serializable;
+import org.junit.jupiter.api.Test;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class Block4Tag56 implements Serializable{
+public class Block4Tag56Test {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6260080506499553401L;
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag56 block4Tag56 = new Block4Tag56();
 
-	@Column(name = "V_BLOCK4_TAG_56A_DCMARK") 
-	private String block4Tag56aDcmark; 
+        // Set properties
+        block4Tag56.setBlock4Tag56aDcmark("DCMarkA");
+        block4Tag56.setBlock4Tag56aAcct("accountA");
+        block4Tag56.setBlock4Tag56aBic("BIC_A");
+        block4Tag56.setBlock4Tag56dDcmark("DCMarkD");
+        block4Tag56.setBlock4Tag56dAcct("accountD");
+        block4Tag56.setBlock4Tag56dNameAddr("Name Address D");
 
-	@Column(name = "V_BLOCK4_TAG_56A_ACCT") 
-	private String block4Tag56aAcct; 
-
-	@Column(name = "V_BLOCK4_TAG_56A_BIC") 
-	private String block4Tag56aBic; 
-
-	@Column(name = "V_BLOCK4_TAG_56D_DCMARK") 
-	private String block4Tag56dDcmark; 
-
-	@Column(name = "V_BLOCK4_TAG_56D_ACCT") 
-	private String block4Tag56dAcct; 
-
-	@Column(name = "V_BLOCK4_TAG_56D_NAME_ADDR") 
-	private String block4Tag56dNameAddr;
-
-	public String getBlock4Tag56aDcmark() {
-		return block4Tag56aDcmark;
-	}
-
-	public void setBlock4Tag56aDcmark(String block4Tag56aDcmark) {
-		this.block4Tag56aDcmark = block4Tag56aDcmark;
-	}
-
-	public String getBlock4Tag56aAcct() {
-		return block4Tag56aAcct;
-	}
-
-	public void setBlock4Tag56aAcct(String block4Tag56aAcct) {
-		this.block4Tag56aAcct = block4Tag56aAcct;
-	}
-
-	public String getBlock4Tag56aBic() {
-		return block4Tag56aBic;
-	}
-
-	public void setBlock4Tag56aBic(String block4Tag56aBic) {
-		this.block4Tag56aBic = block4Tag56aBic;
-	}
-
-	public String getBlock4Tag56dDcmark() {
-		return block4Tag56dDcmark;
-	}
-
-	public void setBlock4Tag56dDcmark(String block4Tag56dDcmark) {
-		this.block4Tag56dDcmark = block4Tag56dDcmark;
-	}
-
-	public String getBlock4Tag56dAcct() {
-		return block4Tag56dAcct;
-	}
-
-	public void setBlock4Tag56dAcct(String block4Tag56dAcct) {
-		this.block4Tag56dAcct = block4Tag56dAcct;
-	}
-
-	public String getBlock4Tag56dNameAddr() {
-		return block4Tag56dNameAddr;
-	}
-
-	public void setBlock4Tag56dNameAddr(String block4Tag56dNameAddr) {
-		this.block4Tag56dNameAddr = block4Tag56dNameAddr;
-	}
+        // Assert properties
+        assertEquals("DCMarkA", block4Tag56.getBlock4Tag56aDcmark());
+        assertEquals("accountA", block4Tag56.getBlock4Tag56aAcct());
+        assertEquals("BIC_A", block4Tag56.getBlock4Tag56aBic());
+        assertEquals("DCMarkD", block4Tag56.getBlock4Tag56dDcmark());
+        assertEquals("accountD", block4Tag56.getBlock4Tag56dAcct());
+        assertEquals("Name Address D", block4Tag56.getBlock4Tag56dNameAddr());
+    }
 }
