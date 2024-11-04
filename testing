@@ -1,28 +1,98 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package com.maybank.ilm.embeddable;
 
 import java.math.BigDecimal;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class MT400Block4Test {
+@Embeddable
+public class MT900MT910Block4 {
 
-    @Test
-    public void testMT400Block4() {
-        // Create an instance of MT400Block4
-        MT400Block4 block4 = new MT400Block4();
+	@Column(name = "V_BLOCK4_TAG_20") 
+	private String block4Tag20; 
+	
+	@Column(name = "V_BLOCK4_TAG_21") 
+	private String block4Tag21;
+	
+	@Column(name = "V_BLOCK4_TAG_25P_ACCT") 
+	private String block4Tag25PAcct;
+	
+	@Column(name = "V_BLOCK4_TAG_25P_BIC") 
+	private String block4Tag25PBic;
+	
+	@Column(name = "V_BLOCK4_TAG_25") 
+	private String block4Tag25;
+	
+	@Column(name = "V_BLOCK4_TAG_32A_DATE") 
+	private String block4Tag32ADate;
+	
+	@Column(name = "V_BLOCK4_TAG_32A_CURR") 
+	private String block4Tag32ACurr;
+	
+	@Column(name = "N_BLOCK4_TAG_32A_AMNT") 
+	private BigDecimal block4Tag32AAmnt;
 
-        // Set values
-        block4.setBlock4Tag20("TAG20Value");
-        block4.setBlock4Tag21("TAG21Value");
-        block4.setBlock4Tag33a(new BigDecimal("3000.00"));
-        block4.setBlock4Tag71b("TAG71BValue");
-        block4.setBlock4Tag73("TAG73Value");
+	public String getBlock4Tag20() {
+		return block4Tag20;
+	}
 
-        // Assert values
-        assertEquals("TAG20Value", block4.getBlock4Tag20());
-        assertEquals("TAG21Value", block4.getBlock4Tag21());
-        assertEquals(new BigDecimal("3000.00"), block4.getBlock4Tag33a());
-        assertEquals("TAG71BValue", block4.getBlock4Tag71b());
-        assertEquals("TAG73Value", block4.getBlock4Tag73());
-    }
+	public void setBlock4Tag20(String block4Tag20) {
+		this.block4Tag20 = block4Tag20;
+	}
+
+	public String getBlock4Tag21() {
+		return block4Tag21;
+	}
+
+	public void setBlock4Tag21(String block4Tag21) {
+		this.block4Tag21 = block4Tag21;
+	}
+
+	public String getBlock4Tag25PAcct() {
+		return block4Tag25PAcct;
+	}
+
+	public void setBlock4Tag25PAcct(String block4Tag25PAcct) {
+		this.block4Tag25PAcct = block4Tag25PAcct;
+	}
+
+	public String getBlock4Tag25PBic() {
+		return block4Tag25PBic;
+	}
+
+	public void setBlock4Tag25PBic(String block4Tag25PBic) {
+		this.block4Tag25PBic = block4Tag25PBic;
+	}
+
+	public String getBlock4Tag25() {
+		return block4Tag25;
+	}
+
+	public void setBlock4Tag25(String block4Tag25) {
+		this.block4Tag25 = block4Tag25;
+	}
+
+	public String getBlock4Tag32ADate() {
+		return block4Tag32ADate;
+	}
+
+	public void setBlock4Tag32ADate(String block4Tag32ADate) {
+		this.block4Tag32ADate = block4Tag32ADate;
+	}
+
+	public String getBlock4Tag32ACurr() {
+		return block4Tag32ACurr;
+	}
+
+	public void setBlock4Tag32ACurr(String block4Tag32ACurr) {
+		this.block4Tag32ACurr = block4Tag32ACurr;
+	}
+
+	public BigDecimal getBlock4Tag32AAmnt() {
+		return block4Tag32AAmnt;
+	}
+
+	public void setBlock4Tag32AAmnt(BigDecimal block4Tag32AAmnt) {
+		this.block4Tag32AAmnt = block4Tag32AAmnt;
+	}
 }
