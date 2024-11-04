@@ -1,43 +1,25 @@
 package com.maybank.ilm.embeddable;
 
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class Block4Tag92A {
+public class Block4Tag92ATest {
 
-	@Column(name = "V_BLOCK4_TAG_92A_QUALIFIER") 
-	private String block4Tag92AQualifier; 
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag92A block4Tag92A = new Block4Tag92A();
 
-	@Column(name = "V_BLOCK4_TAG_92A_SIGN") 
-	private String block4Tag92ASign; 
+        // Set properties
+        block4Tag92A.setBlock4Tag92AQualifier("QualifierA");
+        block4Tag92A.setBlock4Tag92ASign("+");
+        block4Tag92A.setBlock4Tag92ARateAmnt(BigDecimal.valueOf(1500.75));
 
-	@Column(name = "N_BLOCK4_TAG_92A_RATE_AMNT") 
-	private BigDecimal block4Tag92ARateAmnt;
-
-	public String getBlock4Tag92AQualifier() {
-		return block4Tag92AQualifier;
-	}
-
-	public void setBlock4Tag92AQualifier(String block4Tag92AQualifier) {
-		this.block4Tag92AQualifier = block4Tag92AQualifier;
-	}
-
-	public String getBlock4Tag92ASign() {
-		return block4Tag92ASign;
-	}
-
-	public void setBlock4Tag92ASign(String block4Tag92ASign) {
-		this.block4Tag92ASign = block4Tag92ASign;
-	}
-
-	public BigDecimal getBlock4Tag92ARateAmnt() {
-		return block4Tag92ARateAmnt;
-	}
-
-	public void setBlock4Tag92ARateAmnt(BigDecimal block4Tag92ARateAmnt) {
-		this.block4Tag92ARateAmnt = block4Tag92ARateAmnt;
-	}
+        // Assert properties
+        assertEquals("QualifierA", block4Tag92A.getBlock4Tag92AQualifier());
+        assertEquals("+", block4Tag92A.getBlock4Tag92ASign());
+        assertEquals(BigDecimal.valueOf(1500.75), block4Tag92A.getBlock4Tag92ARateAmnt());
+    }
 }
