@@ -1,45 +1,88 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.io.Serializable;
 
-import java.math.BigDecimal;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+@Embeddable
+public class Block4Tag52 implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2453912216659152218L;
 
-public class Block4Tag50Test {
+	@Column(name = "V_BLOCK4_TAG_52A_DCMARK") 
+	private String block4Tag52aDcmark; 
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag50 block4Tag50 = new Block4Tag50();
+	@Column(name = "V_BLOCK4_TAG_52A_ACCT") 
+	private String block4Tag52aAcct; 
 
-        // Set properties
-        block4Tag50.setBlock4Tag50aAcct("account123");
-        block4Tag50.setBlock4Tag50aBic("BIC123");
-        block4Tag50.setBlock4Tag50fPartyId("party123");
-        block4Tag50.setBlock4Tag50fNumber1("12345");
-        block4Tag50.setBlock4Tag50fNameAddr1("Name Address 1");
-        block4Tag50.setBlock4Tag50fNumber2("67890");
-        block4Tag50.setBlock4Tag50fNameAddr2("Name Address 2");
-        block4Tag50.setBlock4Tag50fNumber3("112233");
-        block4Tag50.setBlock4Tag50fNameAddr3("Name Address 3");
-        block4Tag50.setBlock4Tag50fNumber4("445566");
-        block4Tag50.setBlock4Tag50fNameAddr4("Name Address 4");
-        block4Tag50.setBlock4Tag50kAccount("kAccount123");
-        block4Tag50.setBlock4Tag50kNameAddr("K Name Address");
+	@Column(name = "V_BLOCK4_TAG_52A_BIC") 
+	private String block4Tag52aBic; 
 
-        // Assert properties
-        assertEquals("account123", block4Tag50.getBlock4Tag50aAcct());
-        assertEquals("BIC123", block4Tag50.getBlock4Tag50aBic());
-        assertEquals("party123", block4Tag50.getBlock4Tag50fPartyId());
-        assertEquals("12345", block4Tag50.getBlock4Tag50fNumber1());
-        assertEquals("Name Address 1", block4Tag50.getBlock4Tag50fNameAddr1());
-        assertEquals("67890", block4Tag50.getBlock4Tag50fNumber2());
-        assertEquals("Name Address 2", block4Tag50.getBlock4Tag50fNameAddr2());
-        assertEquals("112233", block4Tag50.getBlock4Tag50fNumber3());
-        assertEquals("Name Address 3", block4Tag50.getBlock4Tag50fNameAddr3());
-        assertEquals("445566", block4Tag50.getBlock4Tag50fNumber4());
-        assertEquals("Name Address 4", block4Tag50.getBlock4Tag50fNameAddr4());
-        assertEquals("kAccount123", block4Tag50.getBlock4Tag50kAccount());
-        assertEquals("K Name Address", block4Tag50.getBlock4Tag50kNameAddr());
-    }
+	@Column(name = "V_BLOCK4_TAG_52D_DCMARK") 
+	private String block4Tag52dDcmark; 
+
+	@Column(name = "V_BLOCK4_TAG_52D_ACCT") 
+	private String block4Tag52dAcct; 
+
+	@Column(name = "V_BLOCK4_TAG_52D_NAME_ADDR") 
+	private String block4Tag52dNameAddr;
+
+	public String getBlock4Tag52aDcmark() {
+		return block4Tag52aDcmark;
+	}
+
+	public void setBlock4Tag52aDcmark(String block4Tag52aDcmark) {
+		this.block4Tag52aDcmark = block4Tag52aDcmark;
+	}
+
+	public String getBlock4Tag52aAcct() {
+		return block4Tag52aAcct;
+	}
+
+	public void setBlock4Tag52aAcct(String block4Tag52aAcct) {
+		this.block4Tag52aAcct = block4Tag52aAcct;
+	}
+
+	public String getBlock4Tag52aBic() {
+		return block4Tag52aBic;
+	}
+
+	public void setBlock4Tag52aBic(String block4Tag52aBic) {
+		this.block4Tag52aBic = block4Tag52aBic;
+	}
+
+	public String getBlock4Tag52dDcmark() {
+		return block4Tag52dDcmark;
+	}
+
+	public void setBlock4Tag52dDcmark(String block4Tag52dDcmark) {
+		this.block4Tag52dDcmark = block4Tag52dDcmark;
+	}
+
+	public String getBlock4Tag52dAcct() {
+		return block4Tag52dAcct;
+	}
+
+	public void setBlock4Tag52dAcct(String block4Tag52dAcct) {
+		this.block4Tag52dAcct = block4Tag52dAcct;
+	}
+
+	public String getBlock4Tag52dNameAddr() {
+		return block4Tag52dNameAddr;
+	}
+
+	public void setBlock4Tag52dNameAddr(String block4Tag52dNameAddr) {
+		this.block4Tag52dNameAddr = block4Tag52dNameAddr;
+	}
+
+	@Override
+	public String toString() {
+		return "MT103Block4Tag52 [block4Tag52aDcmark=" + block4Tag52aDcmark + ", block4Tag52aAcct=" + block4Tag52aAcct
+				+ ", block4Tag52aBic=" + block4Tag52aBic + ", block4Tag52dDcmark=" + block4Tag52dDcmark
+				+ ", block4Tag52dAcct=" + block4Tag52dAcct + ", block4Tag52dNameAddr=" + block4Tag52dNameAddr + "]";
+	} 
 }
