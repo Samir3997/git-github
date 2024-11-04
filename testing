@@ -1,25 +1,30 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import java.math.BigDecimal;
+@Embeddable
+public class Block4Tag95C {
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+	@Column(name = "V_BLOCK4_TAG_95C_QUALIFIER") 
+	private String block4Tag95CQualifier; 
 
-public class Block4Tag94LTest {
+	@Column(name = "V_BLOCK4_TAG_95C_COUNTRY_CODE") 
+	private String block4Tag95CCountryCode; 
+	
+	public String getBlock4Tag95CQualifier() {
+		return block4Tag95CQualifier;
+	}
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag94L block4Tag94L = new Block4Tag94L();
+	public void setBlock4Tag95CQualifier(String block4Tag95CQualifier) {
+		this.block4Tag95CQualifier = block4Tag95CQualifier;
+	}
 
-        // Set properties
-        block4Tag94L.setBlock4Tag94LQualifier("QualifierL");
-        block4Tag94L.setBlock4Tag94LLeIdCode("ID123");
-        block4Tag94L.setBlock4Tag94LLeIdNumber(new BigDecimal("123456789"));
+	public String getBlock4Tag95CCountryCode() {
+		return block4Tag95CCountryCode;
+	}
 
-        // Assert properties
-        assertEquals("QualifierL", block4Tag94L.getBlock4Tag94LQualifier());
-        assertEquals("ID123", block4Tag94L.getBlock4Tag94LLeIdCode());
-        assertEquals(new BigDecimal("123456789"), block4Tag94L.getBlock4Tag94LLeIdNumber());
-    }
+	public void setBlock4Tag95CCountryCode(String block4Tag95CCountryCode) {
+		this.block4Tag95CCountryCode = block4Tag95CCountryCode;
+	}
 }
