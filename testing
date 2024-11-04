@@ -1,35 +1,30 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import java.math.BigDecimal;
+@Embeddable
+public class Block4Tag70C {
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+	@Column(name = "V_BLOCK4_TAG_70C_QUALIFIER") 
+	private String block4Tag70CQualifier; 
 
-public class Block4Tag62Test {
+	@Column(name = "V_BLOCK4_TAG_70C_NARRATIVE") 
+	private String block4Tag70CNarrative;
+	
+	public String getBlock4Tag70CQualifier() {
+		return block4Tag70CQualifier;
+	}
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag62 block4Tag62 = new Block4Tag62();
+	public void setBlock4Tag70CQualifier(String block4Tag70CQualifier) {
+		this.block4Tag70CQualifier = block4Tag70CQualifier;
+	}
 
-        // Set properties
-        block4Tag62.setBlock4Tag62FdCMark("DCMarkF");
-        block4Tag62.setBlock4Tag62FDate("2024-01-01");
-        block4Tag62.setBlock4Tag62FCurrency("USD");
-        block4Tag62.setBlock4Tag62FAmnt(new BigDecimal("1000.00"));
-        block4Tag62.setBlock4Tag62MdCMark("DCMarkM");
-        block4Tag62.setBlock4Tag62MDate("2024-01-02");
-        block4Tag62.setBlock4Tag62MCurrency("EUR");
-        block4Tag62.setBlock4Tag62MAmnt(new BigDecimal("2000.00"));
+	public String getBlock4Tag70CNarrative() {
+		return block4Tag70CNarrative;
+	}
 
-        // Assert properties
-        assertEquals("DCMarkF", block4Tag62.getBlock4Tag62FdCMark());
-        assertEquals("2024-01-01", block4Tag62.getBlock4Tag62FDate());
-        assertEquals("USD", block4Tag62.getBlock4Tag62FCurrency());
-        assertEquals(new BigDecimal("1000.00"), block4Tag62.getBlock4Tag62FAmnt());
-        assertEquals("DCMarkM", block4Tag62.getBlock4Tag62MdCMark());
-        assertEquals("2024-01-02", block4Tag62.getBlock4Tag62MDate());
-        assertEquals("EUR", block4Tag62.getBlock4Tag62MCurrency());
-        assertEquals(new BigDecimal("2000.00"), block4Tag62.getBlock4Tag62MAmnt());
-    }
+	public void setBlock4Tag70CNarrative(String block4Tag70CNarrative) {
+		this.block4Tag70CNarrative = block4Tag70CNarrative;
+	}
 }
