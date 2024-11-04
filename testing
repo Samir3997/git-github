@@ -1,40 +1,70 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package com.maybank.ilm.embeddable;
 
-import java.math.BigDecimal;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import org.junit.jupiter.api.Test;
+@Embeddable
+public class MTBlock1 {
 
-public class MT940Block4Test {
+	@Column(name = "V_BLOCK1_APPL_ID")
+	private String block1ApplicationId;
+	
+	@Column(name = "V_BLOCK1_SERVICE_ID")
+	private String block1ServiceId;
+	
+	@Column(name = "V_BLOCK1_LOGICAL_TERMINAL")
+	private String block1LogicalTerminal;
+	
+	@Column(name = "V_BLOCK1_SESSION_NUMBER")
+	private String block1SessionNumber;
+	
+	@Column(name = "V_BLOCK1_SEQ_NUMBER")
+	private String block1SequenceNumber;
 
-    @Test
-    public void testMT940Block4() {
-        // Create an instance of MT940Block4
-        MT940Block4 block4 = new MT940Block4();
+	public String getBlock1ApplicationId() {
+		return block1ApplicationId;
+	}
 
-        // Set values
-        block4.setBlock4Tag20("TAG20Value");
-        block4.setBlock4Tag21("TAG21Value");
-        block4.setBlock4Tag25("TAG25Value");
-        block4.setBlock4Tag28CStatNum("STATNumValue");
-        block4.setBlock4Tag28CSeqNum("SEQNumValue");
-        block4.setBlock4Tag25PAcct("AccountValue");
-        block4.setBlock4Tag25PBIC("BICValue");
-        block4.setBlock4Tag64DCMark("DCMarkValue");
-        block4.setBlock4Tag64Date("2023-01-01");
-        block4.setBlock4Tag64Currency("USD");
-        block4.setBlock4Tag64CloseAvailBal(new BigDecimal("5000.00"));
+	public void setBlock1ApplicationId(String block1ApplicationId) {
+		this.block1ApplicationId = block1ApplicationId;
+	}
 
-        // Assert values
-        assertEquals("TAG20Value", block4.getBlock4Tag20());
-        assertEquals("TAG21Value", block4.getBlock4Tag21());
-        assertEquals("TAG25Value", block4.getBlock4Tag25());
-        assertEquals("STATNumValue", block4.getBlock4Tag28CStatNum());
-        assertEquals("SEQNumValue", block4.getBlock4Tag28CSeqNum());
-        assertEquals("AccountValue", block4.getBlock4Tag25PAcct());
-        assertEquals("BICValue", block4.getBlock4Tag25PBIC());
-        assertEquals("DCMarkValue", block4.getBlock4Tag64DCMark());
-        assertEquals("2023-01-01", block4.getBlock4Tag64Date());
-        assertEquals("USD", block4.getBlock4Tag64Currency());
-        assertEquals(new BigDecimal("5000.00"), block4.getBlock4Tag64CloseAvailBal());
-    }
+	public String getBlock1ServiceId() {
+		return block1ServiceId;
+	}
+
+	public void setBlock1ServiceId(String block1ServiceId) {
+		this.block1ServiceId = block1ServiceId;
+	}
+
+	public String getBlock1LogicalTerminal() {
+		return block1LogicalTerminal;
+	}
+
+	public void setBlock1LogicalTerminal(String block1LogicalTerminal) {
+		this.block1LogicalTerminal = block1LogicalTerminal;
+	}
+
+	public String getBlock1SessionNumber() {
+		return block1SessionNumber;
+	}
+
+	public void setBlock1SessionNumber(String block1SessionNumber) {
+		this.block1SessionNumber = block1SessionNumber;
+	}
+
+	public String getBlock1SequenceNumber() {
+		return block1SequenceNumber;
+	}
+
+	public void setBlock1SequenceNumber(String block1SequenceNumber) {
+		this.block1SequenceNumber = block1SequenceNumber;
+	}
+
+	@Override
+	public String toString() {
+		return "MTBlock1 [block1ApplicationId=" + block1ApplicationId + ", block1ServiceId=" + block1ServiceId
+				+ ", block1LogicalTerminal=" + block1LogicalTerminal + ", block1SessionNumber=" + block1SessionNumber
+				+ ", block1SequenceNumber=" + block1SequenceNumber + "]";
+	}
 }
