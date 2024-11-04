@@ -1,25 +1,54 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class Block4Tag92ATest {
+@Embeddable
+public class Block4Tag92B {
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag92A block4Tag92A = new Block4Tag92A();
+	@Column(name = "V_BLOCK4_TAG_92B_QUALIFIER") 
+	private String block4Tag92BQualifier; 
 
-        // Set properties
-        block4Tag92A.setBlock4Tag92AQualifier("QualifierA");
-        block4Tag92A.setBlock4Tag92ASign("+");
-        block4Tag92A.setBlock4Tag92ARateAmnt(BigDecimal.valueOf(1500.75));
+	@Column(name = "V_BLOCK4_TAG_92B_FRST_CUR_CODE") 
+	private String block4Tag92BFrstCurCode; 
 
-        // Assert properties
-        assertEquals("QualifierA", block4Tag92A.getBlock4Tag92AQualifier());
-        assertEquals("+", block4Tag92A.getBlock4Tag92ASign());
-        assertEquals(BigDecimal.valueOf(1500.75), block4Tag92A.getBlock4Tag92ARateAmnt());
-    }
+	@Column(name = "V_BLOCK4_TAG_92B_SCND_CUR_CODE") 
+	private String block4Tag92BScndCurCode; 
+
+	@Column(name = "N_BLOCK4_TAG_92B_RATE") 
+	private BigDecimal block4Tag92BRate;
+
+	public String getBlock4Tag92BQualifier() {
+		return block4Tag92BQualifier;
+	}
+
+	public void setBlock4Tag92BQualifier(String block4Tag92BQualifier) {
+		this.block4Tag92BQualifier = block4Tag92BQualifier;
+	}
+
+	public String getBlock4Tag92BFrstCurCode() {
+		return block4Tag92BFrstCurCode;
+	}
+
+	public void setBlock4Tag92BFrstCurCode(String block4Tag92BFrstCurCode) {
+		this.block4Tag92BFrstCurCode = block4Tag92BFrstCurCode;
+	}
+
+	public String getBlock4Tag92BScndCurCode() {
+		return block4Tag92BScndCurCode;
+	}
+
+	public void setBlock4Tag92BScndCurCode(String block4Tag92BScndCurCode) {
+		this.block4Tag92BScndCurCode = block4Tag92BScndCurCode;
+	}
+
+	public BigDecimal getBlock4Tag92BRate() {
+		return block4Tag92BRate;
+	}
+
+	public void setBlock4Tag92BRate(BigDecimal block4Tag92BRate) {
+		this.block4Tag92BRate = block4Tag92BRate;
+	} 
 }
