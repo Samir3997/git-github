@@ -1,32 +1,24 @@
 package com.maybank.ilm.embeddable;
 
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class Block4Tag99B {
+public class Block4Tag99BTest {
 
-	@Column(name = "V_BLOCK4_TAG_99B_QUALIFIER") 
-	private String block4Tag99BQualifier; 
+    @Test
+    public void testBlock4Tag99B() {
+        // Creating a new Block4Tag99B object
+        Block4Tag99B block4Tag99B = new Block4Tag99B();
+        
+        // Setting values
+        block4Tag99B.setBlock4Tag99BQualifier("QualifierB");
+        block4Tag99B.setBlock4Tag99BNumber(new BigDecimal("200.50"));
 
-	@Column(name = "N_BLOCK4_TAG_99B_NUMBER") 
-	private BigDecimal block4Tag99BNumber;
-
-	public String getBlock4Tag99BQualifier() {
-		return block4Tag99BQualifier;
-	}
-
-	public void setBlock4Tag99BQualifier(String block4Tag99BQualifier) {
-		this.block4Tag99BQualifier = block4Tag99BQualifier;
-	}
-
-	public BigDecimal getBlock4Tag99BNumber() {
-		return block4Tag99BNumber;
-	}
-
-	public void setBlock4Tag99BNumber(BigDecimal block4Tag99BNumber) {
-		this.block4Tag99BNumber = block4Tag99BNumber;
-	} 
+        // Asserting values
+        assertEquals("QualifierB", block4Tag99B.getBlock4Tag99BQualifier());
+        assertEquals(new BigDecimal("200.50"), block4Tag99B.getBlock4Tag99BNumber());
+    }
 }
