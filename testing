@@ -1,54 +1,27 @@
 package com.maybank.ilm.embeddable;
 
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Embeddable
-public class Block4Tag92B {
+public class Block4Tag92BTest {
 
-	@Column(name = "V_BLOCK4_TAG_92B_QUALIFIER") 
-	private String block4Tag92BQualifier; 
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag92B block4Tag92B = new Block4Tag92B();
 
-	@Column(name = "V_BLOCK4_TAG_92B_FRST_CUR_CODE") 
-	private String block4Tag92BFrstCurCode; 
+        // Set properties
+        block4Tag92B.setBlock4Tag92BQualifier("QualifierB");
+        block4Tag92B.setBlock4Tag92BFrstCurCode("USD");
+        block4Tag92B.setBlock4Tag92BScndCurCode("EUR");
+        block4Tag92B.setBlock4Tag92BRate(BigDecimal.valueOf(1.5));
 
-	@Column(name = "V_BLOCK4_TAG_92B_SCND_CUR_CODE") 
-	private String block4Tag92BScndCurCode; 
-
-	@Column(name = "N_BLOCK4_TAG_92B_RATE") 
-	private BigDecimal block4Tag92BRate;
-
-	public String getBlock4Tag92BQualifier() {
-		return block4Tag92BQualifier;
-	}
-
-	public void setBlock4Tag92BQualifier(String block4Tag92BQualifier) {
-		this.block4Tag92BQualifier = block4Tag92BQualifier;
-	}
-
-	public String getBlock4Tag92BFrstCurCode() {
-		return block4Tag92BFrstCurCode;
-	}
-
-	public void setBlock4Tag92BFrstCurCode(String block4Tag92BFrstCurCode) {
-		this.block4Tag92BFrstCurCode = block4Tag92BFrstCurCode;
-	}
-
-	public String getBlock4Tag92BScndCurCode() {
-		return block4Tag92BScndCurCode;
-	}
-
-	public void setBlock4Tag92BScndCurCode(String block4Tag92BScndCurCode) {
-		this.block4Tag92BScndCurCode = block4Tag92BScndCurCode;
-	}
-
-	public BigDecimal getBlock4Tag92BRate() {
-		return block4Tag92BRate;
-	}
-
-	public void setBlock4Tag92BRate(BigDecimal block4Tag92BRate) {
-		this.block4Tag92BRate = block4Tag92BRate;
-	} 
+        // Assert properties
+        assertEquals("QualifierB", block4Tag92B.getBlock4Tag92BQualifier());
+        assertEquals("USD", block4Tag92B.getBlock4Tag92BFrstCurCode());
+        assertEquals("EUR", block4Tag92B.getBlock4Tag92BScndCurCode());
+        assertEquals(BigDecimal.valueOf(1.5), block4Tag92B.getBlock4Tag92BRate());
+    }
 }
