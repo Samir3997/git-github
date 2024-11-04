@@ -1,131 +1,40 @@
-package com.maybank.ilm.embeddable;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class MT940Block4 {
+public class MT940Block4Test {
 
-	@Column(name = "V_BLOCK4_TAG_20")
-	private String block4Tag20;
-	
-	@Column(name = "V_BLOCK4_TAG_21")
-	private String block4Tag21;
-	
-	@Column(name = "V_BLOCK4_TAG_25")
-	private String block4Tag25;
-	
-	@Column(name = "V_BLOCK4_TAG_28C_STAT_NUM")
-	private String block4Tag28CStatNum;
-	
-	@Column(name = "V_BLOCK4_TAG_28C_SEQ_NUM")
-	private String block4Tag28CSeqNum;
-	
-	@Column(name = "V_BLOCK4_TAG_25P_ACCT")
-	private String block4Tag25PAcct;
-	
-	@Column(name = "V_BLOCK4_TAG_25P_BIC")
-	private String block4Tag25PBIC;
-	
-	@Column(name = "V_BLOCK4_TAG_64_DCMARK")
-	private String block4Tag64DCMark;
-	
-	@Column(name = "V_BLOCK4_TAG_64_DATE")
-	private String block4Tag64Date;
-	
-	@Column(name = "V_BLOCK4_TAG_64_CURRENCY")
-	private String block4Tag64Currency;
-	
-	@Column(name = "N_BLOCK4_TAG_64_CLOSE_AVAIL_BAL")
-	private BigDecimal block4Tag64CloseAvailBal;
+    @Test
+    public void testMT940Block4() {
+        // Create an instance of MT940Block4
+        MT940Block4 block4 = new MT940Block4();
 
-	public String getBlock4Tag20() {
-		return block4Tag20;
-	}
+        // Set values
+        block4.setBlock4Tag20("TAG20Value");
+        block4.setBlock4Tag21("TAG21Value");
+        block4.setBlock4Tag25("TAG25Value");
+        block4.setBlock4Tag28CStatNum("STATNumValue");
+        block4.setBlock4Tag28CSeqNum("SEQNumValue");
+        block4.setBlock4Tag25PAcct("AccountValue");
+        block4.setBlock4Tag25PBIC("BICValue");
+        block4.setBlock4Tag64DCMark("DCMarkValue");
+        block4.setBlock4Tag64Date("2023-01-01");
+        block4.setBlock4Tag64Currency("USD");
+        block4.setBlock4Tag64CloseAvailBal(new BigDecimal("5000.00"));
 
-	public void setBlock4Tag20(String block4Tag20) {
-		this.block4Tag20 = block4Tag20;
-	}
-
-	public String getBlock4Tag21() {
-		return block4Tag21;
-	}
-
-	public void setBlock4Tag21(String block4Tag21) {
-		this.block4Tag21 = block4Tag21;
-	}
-
-	public String getBlock4Tag25() {
-		return block4Tag25;
-	}
-
-	public void setBlock4Tag25(String block4Tag25) {
-		this.block4Tag25 = block4Tag25;
-	}
-
-	public String getBlock4Tag28CStatNum() {
-		return block4Tag28CStatNum;
-	}
-
-	public void setBlock4Tag28CStatNum(String block4Tag28CStatNum) {
-		this.block4Tag28CStatNum = block4Tag28CStatNum;
-	}
-
-	public String getBlock4Tag28CSeqNum() {
-		return block4Tag28CSeqNum;
-	}
-
-	public void setBlock4Tag28CSeqNum(String block4Tag28CSeqNum) {
-		this.block4Tag28CSeqNum = block4Tag28CSeqNum;
-	}
-
-	public String getBlock4Tag25PAcct() {
-		return block4Tag25PAcct;
-	}
-
-	public void setBlock4Tag25PAcct(String block4Tag25PAcct) {
-		this.block4Tag25PAcct = block4Tag25PAcct;
-	}
-
-	public String getBlock4Tag25PBIC() {
-		return block4Tag25PBIC;
-	}
-
-	public void setBlock4Tag25PBIC(String block4Tag25PBIC) {
-		this.block4Tag25PBIC = block4Tag25PBIC;
-	}
-
-	public String getBlock4Tag64DCMark() {
-		return block4Tag64DCMark;
-	}
-
-	public void setBlock4Tag64DCMark(String block4Tag64DCMark) {
-		this.block4Tag64DCMark = block4Tag64DCMark;
-	}
-
-	public String getBlock4Tag64Date() {
-		return block4Tag64Date;
-	}
-
-	public void setBlock4Tag64Date(String block4Tag64Date) {
-		this.block4Tag64Date = block4Tag64Date;
-	}
-
-	public String getBlock4Tag64Currency() {
-		return block4Tag64Currency;
-	}
-
-	public void setBlock4Tag64Currency(String block4Tag64Currency) {
-		this.block4Tag64Currency = block4Tag64Currency;
-	}
-
-	public BigDecimal getBlock4Tag64CloseAvailBal() {
-		return block4Tag64CloseAvailBal;
-	}
-
-	public void setBlock4Tag64CloseAvailBal(BigDecimal block4Tag64CloseAvailBal) {
-		this.block4Tag64CloseAvailBal = block4Tag64CloseAvailBal;
-	}
+        // Assert values
+        assertEquals("TAG20Value", block4.getBlock4Tag20());
+        assertEquals("TAG21Value", block4.getBlock4Tag21());
+        assertEquals("TAG25Value", block4.getBlock4Tag25());
+        assertEquals("STATNumValue", block4.getBlock4Tag28CStatNum());
+        assertEquals("SEQNumValue", block4.getBlock4Tag28CSeqNum());
+        assertEquals("AccountValue", block4.getBlock4Tag25PAcct());
+        assertEquals("BICValue", block4.getBlock4Tag25PBIC());
+        assertEquals("DCMarkValue", block4.getBlock4Tag64DCMark());
+        assertEquals("2023-01-01", block4.getBlock4Tag64Date());
+        assertEquals("USD", block4.getBlock4Tag64Currency());
+        assertEquals(new BigDecimal("5000.00"), block4.getBlock4Tag64CloseAvailBal());
+    }
 }
