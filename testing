@@ -1,23 +1,52 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+@Embeddable
+public class Block4Tag94B {
 
-public class Block4Tag92CTest {
+	@Column(name = "V_BLOCK4_TAG_94B_QUALIFIER") 
+	private String block4Tag94BQualifier; 
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag92C block4Tag92C = new Block4Tag92C();
+	@Column(name = "V_BLOCK4_TAG_94B_DATA_SRC") 
+	private String block4Tag94BDataSrc; 
 
-        // Set properties
-        block4Tag92C.setBlock4Tag92CQualifier("QualifierC");
-        block4Tag92C.setBlock4Tag92CDataSrc("DataSourceC");
-        block4Tag92C.setBlock4Tag92CCode("CodeC");
+	@Column(name = "V_BLOCK4_TAG_94B_PLACE_CODE") 
+	private String block4Tag94BPlaceCode; 
 
-        // Assert properties
-        assertEquals("QualifierC", block4Tag92C.getBlock4Tag92CQualifier());
-        assertEquals("DataSourceC", block4Tag92C.getBlock4Tag92CDataSrc());
-        assertEquals("CodeC", block4Tag92C.getBlock4Tag92CCode());
-    }
+	@Column(name = "V_BLOCK4_TAG_94B_NARRATIVE") 
+	private String block4Tag94BNarrative;
+
+	public String getBlock4Tag94BQualifier() {
+		return block4Tag94BQualifier;
+	}
+
+	public void setBlock4Tag94BQualifier(String block4Tag94BQualifier) {
+		this.block4Tag94BQualifier = block4Tag94BQualifier;
+	}
+
+	public String getBlock4Tag94BDataSrc() {
+		return block4Tag94BDataSrc;
+	}
+
+	public void setBlock4Tag94BDataSrc(String block4Tag94BDataSrc) {
+		this.block4Tag94BDataSrc = block4Tag94BDataSrc;
+	}
+
+	public String getBlock4Tag94BPlaceCode() {
+		return block4Tag94BPlaceCode;
+	}
+
+	public void setBlock4Tag94BPlaceCode(String block4Tag94BPlaceCode) {
+		this.block4Tag94BPlaceCode = block4Tag94BPlaceCode;
+	}
+
+	public String getBlock4Tag94BNarrative() {
+		return block4Tag94BNarrative;
+	}
+
+	public void setBlock4Tag94BNarrative(String block4Tag94BNarrative) {
+		this.block4Tag94BNarrative = block4Tag94BNarrative;
+	}
 }
