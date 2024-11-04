@@ -1,28 +1,117 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+package com.maybank.ilm.embeddable;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class MT202Block4Test {
+@Embeddable
+public class MT400Block4 implements Serializable{
 
-    @Test
-    public void testMT202Block4() {
-        // Create an instance of MT202Block4
-        MT202Block4 block4 = new MT202Block4();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2074133380190916074L;
 
-        // Set values
-        block4.setBlock4Tag20("TAG20Value");
-        block4.setBlock4Tag21("TAG21Value");
-        block4.setBlock4Tag32ADate("2023-01-01");
-        block4.setBlock4Tag32ACurr("USD");
-        block4.setBlock4Tag32AAmnt(new BigDecimal("2500.00"));
+	@Column(name = "V_BLOCK4_TAG_20") 
+	private String block4Tag20;
+	
+	@Column(name = "V_BLOCK4_TAG_21") 
+	private String block4Tag21; 
+	
+//	@Column(name = "V_BLOCK4_TAG_32A_DATE") 
+//	private String block4Tag32aDate; 
+//
+//	@Column(name = "V_BLOCK4_TAG_32A_CURRENCY") 
+//	private String block4Tag32aCurrency; 
+//
+//	@Column(name = "N_BLOCK4_TAG_32A_COLLECTED_AMNT") 
+//	private BigDecimal block4Tag32aCollectedAmnt; 
+	
+//	public String getBlock4Tag32aDate() {
+//		return block4Tag32aDate;
+//	}
+//
+//	public void setBlock4Tag32aDate(String block4Tag32aDate) {
+//		this.block4Tag32aDate = block4Tag32aDate;
+//	}
+//
+//	public String getBlock4Tag32aCurrency() {
+//		return block4Tag32aCurrency;
+//	}
+//
+//	public void setBlock4Tag32aCurrency(String block4Tag32aCurrency) {
+//		this.block4Tag32aCurrency = block4Tag32aCurrency;
+//	}
 
-        // Assert values
-        assertEquals("TAG20Value", block4.getBlock4Tag20());
-        assertEquals("TAG21Value", block4.getBlock4Tag21());
-        assertEquals("2023-01-01", block4.getBlock4Tag32ADate());
-        assertEquals("USD", block4.getBlock4Tag32ACurr());
-        assertEquals(new BigDecimal("2500.00"), block4.getBlock4Tag32AAmnt());
-    }
+//	public BigDecimal getBlock4Tag32aCollectedAmnt() {
+//		return block4Tag32aCollectedAmnt;
+//	}
+//
+//	public void setBlock4Tag32aCollectedAmnt(BigDecimal block4Tag32aCollectedAmnt) {
+//		this.block4Tag32aCollectedAmnt = block4Tag32aCollectedAmnt;
+//	}
+
+	@Column(name = "V_BLOCK4_TAG_33A") 
+	private BigDecimal block4Tag33a; 
+
+	@Column(name = "V_BLOCK4_TAG_71B") 
+	private String block4Tag71b; 
+	
+//	@Column(name = "V_BLOCK4_TAG_72") 
+//	private String block4Tag72; 
+	
+	@Column(name = "V_BLOCK4_TAG_73") 
+	private String block4Tag73;
+
+	public String getBlock4Tag20() {
+		return block4Tag20;
+	}
+
+	public void setBlock4Tag20(String block4Tag20) {
+		this.block4Tag20 = block4Tag20;
+	}
+
+	public String getBlock4Tag21() {
+		return block4Tag21;
+	}
+
+	public void setBlock4Tag21(String block4Tag21) {
+		this.block4Tag21 = block4Tag21;
+	}
+
+	public BigDecimal getBlock4Tag33a() {
+		return block4Tag33a;
+	}
+
+	public void setBlock4Tag33a(BigDecimal block4Tag33a) {
+		this.block4Tag33a = block4Tag33a;
+	}
+
+	public String getBlock4Tag71b() {
+		return block4Tag71b;
+	}
+
+	public void setBlock4Tag71b(String block4Tag71b) {
+		this.block4Tag71b = block4Tag71b;
+	}
+//
+//	public String getBlock4Tag72() {
+//		return block4Tag72;
+//	}
+//
+//	public void setBlock4Tag72(String block4Tag72) {
+//		this.block4Tag72 = block4Tag72;
+//	}
+
+	public String getBlock4Tag73() {
+		return block4Tag73;
+	}
+
+	public void setBlock4Tag73(String block4Tag73) {
+		this.block4Tag73 = block4Tag73;
+	} 
+	
+
 }
