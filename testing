@@ -1,22 +1,86 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.io.Serializable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-public class CommonPkTest {
+@Embeddable
+public class MT012Block4 implements Serializable {
 
-    @Test
-    public void testCommonPk() {
-        // Creating a new CommonPk object
-        CommonPk commonPk = new CommonPk();
-        
-        // Setting values
-        commonPk.setMtType("MT103");
-        commonPk.setMtSkey(123456789L);
+	private static final long serialVersionUID = 2074133380190916074L;
 
-        // Asserting values
-        assertEquals("MT103", commonPk.getMtType());
-        assertEquals(Long.valueOf(123456789), commonPk.getMtSkey());
-    }
+	@Column(name = "V_BLOCK4_175_INPUT_TIME")
+	private String block4175InputTime; 
+
+	@Column(name = "V_BLOCK4_106_MIR") 
+	private String block4106Mir; 
+
+	@Column(name = "V_BLOCK4_108_MUR") 
+	private String block4108Mur; 
+
+	@Column(name = "V_BLOCK4_102_SWIFT_ADDRESS") 
+	private String block4102SwiftAddress; 
+
+	@Column(name = "V_BLOCK4_103_SERVICE_CODE") 
+	private String block4103ServiceCode; 
+
+	@Column(name = "V_BLOCK4_114_PAYMENT_RELEASE_INFORMATION_SERDER") 
+	private String block4114PaymentReleaseInformationSender;
+
+	public String getBlock4175InputTime() {
+		return block4175InputTime;
+	}
+
+	public void setBlock4175InputTime(String block4175InputTime) {
+		this.block4175InputTime = block4175InputTime;
+	}
+
+	public String getBlock4106Mir() {
+		return block4106Mir;
+	}
+
+	public void setBlock4106Mir(String block4106Mir) {
+		this.block4106Mir = block4106Mir;
+	}
+
+	public String getBlock4108Mur() {
+		return block4108Mur;
+	}
+
+	public void setBlock4108Mur(String block4108Mur) {
+		this.block4108Mur = block4108Mur;
+	}
+
+	public String getBlock4102SwiftAddress() {
+		return block4102SwiftAddress;
+	}
+
+	public void setBlock4102SwiftAddress(String block4102SwiftAddress) {
+		this.block4102SwiftAddress = block4102SwiftAddress;
+	}
+
+	public String getBlock4103ServiceCode() {
+		return block4103ServiceCode;
+	}
+
+	public void setBlock4103ServiceCode(String block4103ServiceCode) {
+		this.block4103ServiceCode = block4103ServiceCode;
+	}
+
+	public String getBlock4114PaymentReleaseInformationSender() {
+		return block4114PaymentReleaseInformationSender;
+	}
+
+	public void setBlock4114PaymentReleaseInformationSender(String block4114PaymentReleaseInformationSender) {
+		this.block4114PaymentReleaseInformationSender = block4114PaymentReleaseInformationSender;
+	}
+
+	@Override
+	public String toString() {
+		return "MT012Block4 [block4175InputTime=" + block4175InputTime + ", block4106Mir=" + block4106Mir
+				+ ", block4108Mur=" + block4108Mur + ", block4102SwiftAddress=" + block4102SwiftAddress
+				+ ", block4103ServiceCode=" + block4103ServiceCode + ", block4114PaymentReleaseInformationSender="
+				+ block4114PaymentReleaseInformationSender + "]";
+	}
 }
