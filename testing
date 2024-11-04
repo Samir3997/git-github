@@ -1,96 +1,56 @@
 package com.maybank.ilm.embeddable;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
 
-import javax.persistence.Column;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Block4Tag95LPR {
+public class Block4Tag95LPRTest {
 
-	@Column(name = "V_BLOCK4_TAG_95L_QUALIFIER") 
-	private String block4Tag95LQualifier; 
+    private Block4Tag95LPR block4Tag95LPR;
 
-	@Column(name = "V_BLOCK4_TAG_95L_LE_ID_CODE") 
-	private String block4Tag95LLeIdCode; 
+    @BeforeEach
+    public void setUp() {
+        block4Tag95LPR = new Block4Tag95LPR();
+    }
 
-	@Column(name = "N_BLOCK4_TAG_95L_LE_ID_NUMBER") 
-	private BigDecimal block4Tag95LLeIdNumber; 
-	
-	@Column(name = "V_BLOCK4_TAG_95P_QUALIFIER") 
-	private String block4Tag95PQualifier; 
+    @Test
+    public void testGettersAndSetters() {
+        // Setting values
+        String qualifierL = "QualifierL";
+        block4Tag95LPR.setBlock4Tag95LQualifier(qualifierL);
+        
+        String leIdCode = "LEIDCode";
+        block4Tag95LPR.setBlock4Tag95LLeIdCode(leIdCode);
+        
+        BigDecimal leIdNumber = new BigDecimal("1234567890");
+        block4Tag95LPR.setBlock4Tag95LLeIdNumber(leIdNumber);
+        
+        String qualifierP = "QualifierP";
+        block4Tag95LPR.setBlock4Tag95PQualifier(qualifierP);
+        
+        String bicCode = "BICCode";
+        block4Tag95LPR.setBlock4Tag95PBic(bicCode);
+        
+        String qualifierR = "QualifierR";
+        block4Tag95LPR.setBlock4Tag95RQualifier(qualifierR);
+        
+        String dataSource = "DataSource";
+        block4Tag95LPR.setBlock4Tag95RDataSrc(dataSource);
+        
+        String proprieCode = "ProprieCode";
+        block4Tag95LPR.setBlock4Tag95RProprieCode(proprieCode);
 
-	@Column(name = "V_BLOCK4_TAG_95P_BIC") 
-	private String block4Tag95PBic; 
-
-	@Column(name = "V_BLOCK4_TAG_95R_QUALIFIER") 
-	private String block4Tag95RQualifier; 
-
-	@Column(name = "V_BLOCK4_TAG_95R_DATA_SRC") 
-	private String block4Tag95RDataSrc; 
-
-	@Column(name = "V_BLOCK4_TAG_95R_PROPRIE_CODE") 
-	private String block4Tag95RProprieCode;
-
-	public String getBlock4Tag95LQualifier() {
-		return block4Tag95LQualifier;
-	}
-
-	public void setBlock4Tag95LQualifier(String block4Tag95LQualifier) {
-		this.block4Tag95LQualifier = block4Tag95LQualifier;
-	}
-
-	public String getBlock4Tag95LLeIdCode() {
-		return block4Tag95LLeIdCode;
-	}
-
-	public void setBlock4Tag95LLeIdCode(String block4Tag95LLeIdCode) {
-		this.block4Tag95LLeIdCode = block4Tag95LLeIdCode;
-	}
-
-	public BigDecimal getBlock4Tag95LLeIdNumber() {
-		return block4Tag95LLeIdNumber;
-	}
-
-	public void setBlock4Tag95LLeIdNumber(BigDecimal block4Tag95LLeIdNumber) {
-		this.block4Tag95LLeIdNumber = block4Tag95LLeIdNumber;
-	}
-
-	public String getBlock4Tag95PQualifier() {
-		return block4Tag95PQualifier;
-	}
-
-	public void setBlock4Tag95PQualifier(String block4Tag95PQualifier) {
-		this.block4Tag95PQualifier = block4Tag95PQualifier;
-	}
-
-	public String getBlock4Tag95PBic() {
-		return block4Tag95PBic;
-	}
-
-	public void setBlock4Tag95PBic(String block4Tag95PBic) {
-		this.block4Tag95PBic = block4Tag95PBic;
-	}
-
-	public String getBlock4Tag95RQualifier() {
-		return block4Tag95RQualifier;
-	}
-
-	public void setBlock4Tag95RQualifier(String block4Tag95RQualifier) {
-		this.block4Tag95RQualifier = block4Tag95RQualifier;
-	}
-
-	public String getBlock4Tag95RDataSrc() {
-		return block4Tag95RDataSrc;
-	}
-
-	public void setBlock4Tag95RDataSrc(String block4Tag95RDataSrc) {
-		this.block4Tag95RDataSrc = block4Tag95RDataSrc;
-	}
-
-	public String getBlock4Tag95RProprieCode() {
-		return block4Tag95RProprieCode;
-	}
-
-	public void setBlock4Tag95RProprieCode(String block4Tag95RProprieCode) {
-		this.block4Tag95RProprieCode = block4Tag95RProprieCode;
-	} 
+        // Asserting values
+        assertEquals(qualifierL, block4Tag95LPR.getBlock4Tag95LQualifier());
+        assertEquals(leIdCode, block4Tag95LPR.getBlock4Tag95LLeIdCode());
+        assertEquals(leIdNumber, block4Tag95LPR.getBlock4Tag95LLeIdNumber());
+        assertEquals(qualifierP, block4Tag95LPR.getBlock4Tag95PQualifier());
+        assertEquals(bicCode, block4Tag95LPR.getBlock4Tag95PBic());
+        assertEquals(qualifierR, block4Tag95LPR.getBlock4Tag95RQualifier());
+        assertEquals(dataSource, block4Tag95LPR.getBlock4Tag95RDataSrc());
+        assertEquals(proprieCode, block4Tag95LPR.getBlock4Tag95RProprieCode());
+    }
 }
