@@ -1,52 +1,26 @@
 package com.maybank.ilm.embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag97B {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	@Column(name = "V_BLOCK4_TAG_97B_QUALIFIER") 
-	private String block4Tag97BQualifier; 
+public class Block4Tag97BTest {
 
-	@Column(name = "V_BLOCK4_TAG_97B_DATA_SRC") 
-	private String block4Tag97BDataSrc; 
+    @Test
+    public void testBlock4Tag97B() {
+        // Creating a new Block4Tag97B object
+        Block4Tag97B block4Tag97B = new Block4Tag97B();
+        
+        // Setting values
+        block4Tag97B.setBlock4Tag97BQualifier("QualifierB");
+        block4Tag97B.setBlock4Tag97BDataSrc("DataSourceB");
+        block4Tag97B.setBlock4Tag97BAcctCode("AcctCodeB");
+        block4Tag97B.setBlock4Tag97BAcctNumber("AccountNumberB");
 
-	@Column(name = "V_BLOCK4_TAG_97B_ACCT_CODE") 
-	private String block4Tag97BAcctCode; 
-
-	@Column(name = "V_BLOCK4_TAG_97B_ACCT_NUMBER") 
-	private String block4Tag97BAcctNumber;
-
-	public String getBlock4Tag97BQualifier() {
-		return block4Tag97BQualifier;
-	}
-
-	public void setBlock4Tag97BQualifier(String block4Tag97BQualifier) {
-		this.block4Tag97BQualifier = block4Tag97BQualifier;
-	}
-
-	public String getBlock4Tag97BDataSrc() {
-		return block4Tag97BDataSrc;
-	}
-
-	public void setBlock4Tag97BDataSrc(String block4Tag97BDataSrc) {
-		this.block4Tag97BDataSrc = block4Tag97BDataSrc;
-	}
-
-	public String getBlock4Tag97BAcctCode() {
-		return block4Tag97BAcctCode;
-	}
-
-	public void setBlock4Tag97BAcctCode(String block4Tag97BAcctCode) {
-		this.block4Tag97BAcctCode = block4Tag97BAcctCode;
-	}
-
-	public String getBlock4Tag97BAcctNumber() {
-		return block4Tag97BAcctNumber;
-	}
-
-	public void setBlock4Tag97BAcctNumber(String block4Tag97BAcctNumber) {
-		this.block4Tag97BAcctNumber = block4Tag97BAcctNumber;
-	}
+        // Asserting values
+        assertEquals("QualifierB", block4Tag97B.getBlock4Tag97BQualifier());
+        assertEquals("DataSourceB", block4Tag97B.getBlock4Tag97BDataSrc());
+        assertEquals("AcctCodeB", block4Tag97B.getBlock4Tag97BAcctCode());
+        assertEquals("AccountNumberB", block4Tag97B.getBlock4Tag97BAcctNumber());
+    }
 }
