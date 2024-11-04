@@ -1,52 +1,25 @@
 package com.maybank.ilm.embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag94B {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	@Column(name = "V_BLOCK4_TAG_94B_QUALIFIER") 
-	private String block4Tag94BQualifier; 
+public class Block4Tag94BTest {
 
-	@Column(name = "V_BLOCK4_TAG_94B_DATA_SRC") 
-	private String block4Tag94BDataSrc; 
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag94B block4Tag94B = new Block4Tag94B();
 
-	@Column(name = "V_BLOCK4_TAG_94B_PLACE_CODE") 
-	private String block4Tag94BPlaceCode; 
+        // Set properties
+        block4Tag94B.setBlock4Tag94BQualifier("QualifierB");
+        block4Tag94B.setBlock4Tag94BDataSrc("DataSourceB");
+        block4Tag94B.setBlock4Tag94BPlaceCode("PlaceCodeB");
+        block4Tag94B.setBlock4Tag94BNarrative("NarrativeB");
 
-	@Column(name = "V_BLOCK4_TAG_94B_NARRATIVE") 
-	private String block4Tag94BNarrative;
-
-	public String getBlock4Tag94BQualifier() {
-		return block4Tag94BQualifier;
-	}
-
-	public void setBlock4Tag94BQualifier(String block4Tag94BQualifier) {
-		this.block4Tag94BQualifier = block4Tag94BQualifier;
-	}
-
-	public String getBlock4Tag94BDataSrc() {
-		return block4Tag94BDataSrc;
-	}
-
-	public void setBlock4Tag94BDataSrc(String block4Tag94BDataSrc) {
-		this.block4Tag94BDataSrc = block4Tag94BDataSrc;
-	}
-
-	public String getBlock4Tag94BPlaceCode() {
-		return block4Tag94BPlaceCode;
-	}
-
-	public void setBlock4Tag94BPlaceCode(String block4Tag94BPlaceCode) {
-		this.block4Tag94BPlaceCode = block4Tag94BPlaceCode;
-	}
-
-	public String getBlock4Tag94BNarrative() {
-		return block4Tag94BNarrative;
-	}
-
-	public void setBlock4Tag94BNarrative(String block4Tag94BNarrative) {
-		this.block4Tag94BNarrative = block4Tag94BNarrative;
-	}
+        // Assert properties
+        assertEquals("QualifierB", block4Tag94B.getBlock4Tag94BQualifier());
+        assertEquals("DataSourceB", block4Tag94B.getBlock4Tag94BDataSrc());
+        assertEquals("PlaceCodeB", block4Tag94B.getBlock4Tag94BPlaceCode());
+        assertEquals("NarrativeB", block4Tag94B.getBlock4Tag94BNarrative());
+    }
 }
