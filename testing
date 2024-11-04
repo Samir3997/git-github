@@ -1,63 +1,27 @@
 package com.maybank.ilm.embeddable;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import org.junit.jupiter.api.Test;
 
-@Embeddable
-public class Block4Tag94CF {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-	@Column(name = "V_BLOCK4_TAG_94C_QUALIFIER") 
-	private String block4Tag94CQualifier; 
+public class Block4Tag94CFTest {
 
-	@Column(name = "V_BLOCK4_TAG_94C_COUNTRY_CODE") 
-	private String block4Tag94CCountryCode; 
+    @Test
+    public void testSetAndGetProperties() {
+        Block4Tag94CF block4Tag94CF = new Block4Tag94CF();
 
-	@Column(name = "V_BLOCK4_TAG_94F_QUALIFIER") 
-	private String block4Tag94FQualifier; 
+        // Set properties
+        block4Tag94CF.setBlock4Tag94CQualifier("QualifierC");
+        block4Tag94CF.setBlock4Tag94CCountryCode("CountryCodeC");
+        block4Tag94CF.setBlock4Tag94FQualifier("QualifierF");
+        block4Tag94CF.setBlock4Tag94FCode("CodeF");
+        block4Tag94CF.setBlock4Tag94FBic("BICF");
 
-	@Column(name = "V_BLOCK4_TAG_94F_CODE") 
-	private String block4Tag94FCode; 
-
-	@Column(name = "V_BLOCK4_TAG_94F_BIC") 
-	private String block4Tag94FBic;
-
-	public String getBlock4Tag94CQualifier() {
-		return block4Tag94CQualifier;
-	}
-
-	public void setBlock4Tag94CQualifier(String block4Tag94CQualifier) {
-		this.block4Tag94CQualifier = block4Tag94CQualifier;
-	}
-
-	public String getBlock4Tag94CCountryCode() {
-		return block4Tag94CCountryCode;
-	}
-
-	public void setBlock4Tag94CCountryCode(String block4Tag94CCountryCode) {
-		this.block4Tag94CCountryCode = block4Tag94CCountryCode;
-	}
-
-	public String getBlock4Tag94FQualifier() {
-		return block4Tag94FQualifier;
-	}
-
-	public void setBlock4Tag94FQualifier(String block4Tag94FQualifier) {
-		this.block4Tag94FQualifier = block4Tag94FQualifier;
-	}
-
-	public String getBlock4Tag94FCode() {
-		return block4Tag94FCode;
-	}
-
-	public void setBlock4Tag94FCode(String block4Tag94FCode) {
-		this.block4Tag94FCode = block4Tag94FCode;
-	}
-
-	public String getBlock4Tag94FBic() {
-		return block4Tag94FBic;
-	}
-
-	public void setBlock4Tag94FBic(String block4Tag94FBic) {
-		this.block4Tag94FBic = block4Tag94FBic;
-	}
+        // Assert properties
+        assertEquals("QualifierC", block4Tag94CF.getBlock4Tag94CQualifier());
+        assertEquals("CountryCodeC", block4Tag94CF.getBlock4Tag94CCountryCode());
+        assertEquals("QualifierF", block4Tag94CF.getBlock4Tag94FQualifier());
+        assertEquals("CodeF", block4Tag94CF.getBlock4Tag94FCode());
+        assertEquals("BICF", block4Tag94CF.getBlock4Tag94FBic());
+    }
 }
