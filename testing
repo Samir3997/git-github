@@ -1,21 +1,96 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import javax.persistence.Column;
 
-public class Block4Tag95CTest {
+public class Block4Tag95LPR {
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag95C block4Tag95C = new Block4Tag95C();
+	@Column(name = "V_BLOCK4_TAG_95L_QUALIFIER") 
+	private String block4Tag95LQualifier; 
 
-        // Set properties
-        block4Tag95C.setBlock4Tag95CQualifier("QualifierC");
-        block4Tag95C.setBlock4Tag95CCountryCode("US");
+	@Column(name = "V_BLOCK4_TAG_95L_LE_ID_CODE") 
+	private String block4Tag95LLeIdCode; 
 
-        // Assert properties
-        assertEquals("QualifierC", block4Tag95C.getBlock4Tag95CQualifier());
-        assertEquals("US", block4Tag95C.getBlock4Tag95CCountryCode());
-    }
+	@Column(name = "N_BLOCK4_TAG_95L_LE_ID_NUMBER") 
+	private BigDecimal block4Tag95LLeIdNumber; 
+	
+	@Column(name = "V_BLOCK4_TAG_95P_QUALIFIER") 
+	private String block4Tag95PQualifier; 
+
+	@Column(name = "V_BLOCK4_TAG_95P_BIC") 
+	private String block4Tag95PBic; 
+
+	@Column(name = "V_BLOCK4_TAG_95R_QUALIFIER") 
+	private String block4Tag95RQualifier; 
+
+	@Column(name = "V_BLOCK4_TAG_95R_DATA_SRC") 
+	private String block4Tag95RDataSrc; 
+
+	@Column(name = "V_BLOCK4_TAG_95R_PROPRIE_CODE") 
+	private String block4Tag95RProprieCode;
+
+	public String getBlock4Tag95LQualifier() {
+		return block4Tag95LQualifier;
+	}
+
+	public void setBlock4Tag95LQualifier(String block4Tag95LQualifier) {
+		this.block4Tag95LQualifier = block4Tag95LQualifier;
+	}
+
+	public String getBlock4Tag95LLeIdCode() {
+		return block4Tag95LLeIdCode;
+	}
+
+	public void setBlock4Tag95LLeIdCode(String block4Tag95LLeIdCode) {
+		this.block4Tag95LLeIdCode = block4Tag95LLeIdCode;
+	}
+
+	public BigDecimal getBlock4Tag95LLeIdNumber() {
+		return block4Tag95LLeIdNumber;
+	}
+
+	public void setBlock4Tag95LLeIdNumber(BigDecimal block4Tag95LLeIdNumber) {
+		this.block4Tag95LLeIdNumber = block4Tag95LLeIdNumber;
+	}
+
+	public String getBlock4Tag95PQualifier() {
+		return block4Tag95PQualifier;
+	}
+
+	public void setBlock4Tag95PQualifier(String block4Tag95PQualifier) {
+		this.block4Tag95PQualifier = block4Tag95PQualifier;
+	}
+
+	public String getBlock4Tag95PBic() {
+		return block4Tag95PBic;
+	}
+
+	public void setBlock4Tag95PBic(String block4Tag95PBic) {
+		this.block4Tag95PBic = block4Tag95PBic;
+	}
+
+	public String getBlock4Tag95RQualifier() {
+		return block4Tag95RQualifier;
+	}
+
+	public void setBlock4Tag95RQualifier(String block4Tag95RQualifier) {
+		this.block4Tag95RQualifier = block4Tag95RQualifier;
+	}
+
+	public String getBlock4Tag95RDataSrc() {
+		return block4Tag95RDataSrc;
+	}
+
+	public void setBlock4Tag95RDataSrc(String block4Tag95RDataSrc) {
+		this.block4Tag95RDataSrc = block4Tag95RDataSrc;
+	}
+
+	public String getBlock4Tag95RProprieCode() {
+		return block4Tag95RProprieCode;
+	}
+
+	public void setBlock4Tag95RProprieCode(String block4Tag95RProprieCode) {
+		this.block4Tag95RProprieCode = block4Tag95RProprieCode;
+	} 
 }
