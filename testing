@@ -1,25 +1,63 @@
 package com.maybank.ilm.embeddable;
 
-import org.junit.jupiter.api.Test;
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+@Embeddable
+public class Block4Tag94CF {
 
-public class Block4Tag94BTest {
+	@Column(name = "V_BLOCK4_TAG_94C_QUALIFIER") 
+	private String block4Tag94CQualifier; 
 
-    @Test
-    public void testSetAndGetProperties() {
-        Block4Tag94B block4Tag94B = new Block4Tag94B();
+	@Column(name = "V_BLOCK4_TAG_94C_COUNTRY_CODE") 
+	private String block4Tag94CCountryCode; 
 
-        // Set properties
-        block4Tag94B.setBlock4Tag94BQualifier("QualifierB");
-        block4Tag94B.setBlock4Tag94BDataSrc("DataSourceB");
-        block4Tag94B.setBlock4Tag94BPlaceCode("PlaceCodeB");
-        block4Tag94B.setBlock4Tag94BNarrative("NarrativeB");
+	@Column(name = "V_BLOCK4_TAG_94F_QUALIFIER") 
+	private String block4Tag94FQualifier; 
 
-        // Assert properties
-        assertEquals("QualifierB", block4Tag94B.getBlock4Tag94BQualifier());
-        assertEquals("DataSourceB", block4Tag94B.getBlock4Tag94BDataSrc());
-        assertEquals("PlaceCodeB", block4Tag94B.getBlock4Tag94BPlaceCode());
-        assertEquals("NarrativeB", block4Tag94B.getBlock4Tag94BNarrative());
-    }
+	@Column(name = "V_BLOCK4_TAG_94F_CODE") 
+	private String block4Tag94FCode; 
+
+	@Column(name = "V_BLOCK4_TAG_94F_BIC") 
+	private String block4Tag94FBic;
+
+	public String getBlock4Tag94CQualifier() {
+		return block4Tag94CQualifier;
+	}
+
+	public void setBlock4Tag94CQualifier(String block4Tag94CQualifier) {
+		this.block4Tag94CQualifier = block4Tag94CQualifier;
+	}
+
+	public String getBlock4Tag94CCountryCode() {
+		return block4Tag94CCountryCode;
+	}
+
+	public void setBlock4Tag94CCountryCode(String block4Tag94CCountryCode) {
+		this.block4Tag94CCountryCode = block4Tag94CCountryCode;
+	}
+
+	public String getBlock4Tag94FQualifier() {
+		return block4Tag94FQualifier;
+	}
+
+	public void setBlock4Tag94FQualifier(String block4Tag94FQualifier) {
+		this.block4Tag94FQualifier = block4Tag94FQualifier;
+	}
+
+	public String getBlock4Tag94FCode() {
+		return block4Tag94FCode;
+	}
+
+	public void setBlock4Tag94FCode(String block4Tag94FCode) {
+		this.block4Tag94FCode = block4Tag94FCode;
+	}
+
+	public String getBlock4Tag94FBic() {
+		return block4Tag94FBic;
+	}
+
+	public void setBlock4Tag94FBic(String block4Tag94FBic) {
+		this.block4Tag94FBic = block4Tag94FBic;
+	}
 }
