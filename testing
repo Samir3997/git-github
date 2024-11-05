@@ -1,49 +1,92 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
+@Controller
+@RequestMapping("/")
+public class GenericBlotterController {
 
-import java.math.BigDecimal;
 
-import org.junit.jupiter.api.Test;
+	private final String success = "success";
 
-public class MT200Block4Test {
-
-    private static final long EXPECTED_SERIAL_VERSION_UID = -3402887972982015083L;
-
-    @Test
-    public void testMT200Block4() {
-        // Create an instance of MT200Block4
-        MT200Block4 block4 = new MT200Block4();
-
-        // Set values
-        block4.setBlock4Tag20("TAG20_VALUE");
-        block4.setBlock4Tag32ADate("2024-11-01");
-        block4.setBlock4Tag32ACurr("USD");
-        block4.setBlock4Tag32AAmnt(BigDecimal.valueOf(1000.00));
-
-        // Assert values
-        assertEquals("TAG20_VALUE", block4.getBlock4Tag20());
-        assertEquals("2024-11-01", block4.getBlock4Tag32ADate());
-        assertEquals("USD", block4.getBlock4Tag32ACurr());
-        assertEquals(BigDecimal.valueOf(1000.00), block4.getBlock4Tag32AAmnt());
-    }
-
-    @Test
-    public void testToString() {
-        // Create an instance of MT200Block4
-        MT200Block4 block4 = new MT200Block4();
-        block4.setBlock4Tag20("TAG20_VALUE");
-        block4.setBlock4Tag32ADate("2024-11-01");
-        block4.setBlock4Tag32ACurr("USD");
-        block4.setBlock4Tag32AAmnt(BigDecimal.valueOf(1000.00));
-
-        // Assert the toString output
-        String expectedString = "MT200Block4 [block4Tag20=TAG20_VALUE, block4Tag32ADate=2024-11-01, "
-                              + "block4Tag32ACurr=USD, block4Tag32AAmnt=1000.00]";
-        assertEquals(expectedString, block4.toString());
-    }
-
-    @Test
-    public void testSerialVersionUID() {
-        // Assert that the serialVersionUID is as expected
-        assertEquals(EXPECTED_SERIAL_VERSION_UID, MT200Block4.getSerialversionuid());
-    }
+	@GetMapping(value="/genilmbalances")
+	@ResponseBody
+	@CrossOrigin("${cors.urls}")
+	public ResponseEntity<CommonResponseEntity<Map<String, List<AccountBalanceAggregation>>>> getBalancesByEntity(@RequestParam Long countrySkey, @RequestParam Long entitySkey, @RequestParam Long currencySkey, @RequestParam String timezone, @RequestParam String indicator) {
+		final Map<String, List<AccountBalanceAggregation>> aggregatedData =  blotterService.getBalancesByEntity(countrySkey, entitySkey, currencySkey, timezone, indicator);
+		return new ResponseEntity<>(new CommonResponseEntity<Map<String, List<AccountBalanceAggregation>>>(1l, success, "getBalancesByEntity", aggregatedData), HttpStatus.OK);
+	}
 }
+
+
+
+public interface GenericBlotterService {
+
+	public Map<String, List<AccountBalanceAggregation>> getBalancesByEntity(Long countrySkey, Long entitySkey, Long currencySkey, String timezone, String indicator);
+}
+
+
+
+
+@Service
+public class GenericBlotterServiceImpl extends IlmAbstractMessageHandler implements GenericBlotterService {
+
+	@Override
+	@FindNormEx
+	public Map<String, List<AccountBalanceAggregation>> getBalancesByEntity(final Long countrySkey, final Long entitySkey, final Long currencySkey, final String timezone, final String indicator) {
+		return Optional.ofNullable(DateUtil.getCurrentDateTimeByZone(timezone))
+				.map(endTime -> {
+					final LocalDate valueDt = endTime.toLocalDate();
+					final List<String> acctTypeList = this.getAccountTypeList(countrySkey);
+					final LocalDateTime startTime = LocalDateTime.of(endTime.toLocalDate(), LocalTime.of(0, 1));
+					final Map<String, List<AccountBalanceAggregation>> accountWiseBalListMap = new HashMap<>();
+					this.getBalanceParamDTOList(acctTypeList, entitySkey, currencySkey).stream()
+					.forEach(paramDTO -> {
+						final String acctName = paramDTO.getAcctName();
+						final String aggrInd = paramDTO.getAggrInd();
+						final Long eamSkey = paramDTO.getEamSkey();
+						if(eamSkey != null) {
+							final AccountBalanceAggregation openingBalAggr = this.getOpeningBalanceAggregation(eamSkey, valueDt, aggrInd);
+							final List<AccountBalanceAggregation> aggregationList = this.getAccountBalanceAggregationList(indicator, startTime, endTime, eamSkey, valueDt, aggrInd);
+							this.setAccountWiseBalanceList(accountWiseBalListMap, eamSkey, valueDt, acctName, aggregationList, openingBalAggr);
+						} else {
+							accountWiseBalListMap.put(acctName, this.getDefaultAccountBalanceList(eamSkey, valueDt));
+						}
+					});
+					return accountWiseBalListMap;
+				})
+				.orElseGet(() -> new HashMap<>());
+	}
+	
+	private AccountBalanceAggregation getOpeningBalanceAggregation(final Long eamSkey, final LocalDate valueDt, final String aggrInd) {
+		return Optional.ofNullable(acctBalAggrRepo.findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd(eamSkey, valueDt, ILMCoreConstants.OPENINGBALANCE, aggrInd))
+				.orElseGet(() -> new AccountBalanceAggregation(null, eamSkey, BigDecimal.ZERO, null, valueDt, BigDecimal.ZERO, BigDecimal.ZERO));
+	}
+	private List<AccountBalanceAggregation> getAccountBalanceAggregationList(final String indicator, final LocalDateTime startTime, final LocalDateTime endTime, final Long eamSkey, final LocalDate valueDt, final String aggrInd) {
+		if(indicator.contentEquals(ILMCoreConstants.ILM_BALANCES)) {
+			return this.getLastUpdatedAccountBalanceAggregation(eamSkey, valueDt, aggrInd);
+		} else {
+			return blotterDao.getAggrsBetweenBusinessDts(eamSkey, valueDt, startTime, endTime, aggrInd);
+		}
+	}
+	private List<AccountBalanceAggregation> getLastUpdatedAccountBalanceAggregation(final Long eamSkey, final LocalDate valueDt, final String aggrInd) {
+		return Optional.ofNullable(finMsgDao.getLastUpdatedAcctBalAggr(eamSkey, valueDt, aggrInd))
+				.map(aggregation -> new ArrayList<AccountBalanceAggregation>(Arrays.asList(aggregation)))
+				.orElseGet(() -> new ArrayList<AccountBalanceAggregation>());
+	}
+}	
+
+
+@Transactional(transactionManager = "transactionManager",propagation=Propagation.NOT_SUPPORTED)
+public interface AccountBalanceAggrRepo extends JpaRepository<AccountBalanceAggregation, Long>{
+	public AccountBalanceAggregation findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd(Long entityAcctMapSkey,LocalDate valueDate, String openingClosingBalInd, String aggrInd);
+}
+
+public interface FinMessageDao {
+	
+	public AccountBalanceAggregation getLastUpdatedAcctBalAggr(Long entityAcctMapSkey, LocalDate valueDt, String aggrInd);
+	
+}
+
+public interface BlotterDao {
+
+	public List<AccountBalanceAggregation> getAggrsBetweenBusinessDts(Long entityAcctMapSkey, LocalDate valueDt, LocalDateTime startTime, LocalDateTime endTime, String aggrInd);
+
+}
+
