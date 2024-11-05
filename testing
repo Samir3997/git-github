@@ -1,200 +1,355 @@
 
-http://10.172.120.19:8013/ilm-web//getTreasuryDataForNostro?entitySkey=1&currency=USD&currencySkey=41&countrySkey=1&Indicator=User&timeZone=Asia/Kuala_Lumpur&entityAcctMapSkey=21&typeOfAgent=Main%20Agent&bicCode=CITIUS33
+http://10.172.120.19:8013/ilm-web//fcyntmainagent?countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur
 
-
-
-entitySkey=1&currency=USD&currencySkey=41&countrySkey=1&Indicator=User&timeZone=Asia/Kuala_Lumpur&entityAcctMapSkey=21&typeOfAgent=Main%20Agent&bicCode=CITIUS33
-
+countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "getTreasuryDataForNostro",
+    "serviceName": "getMainAgentTransactions",
     "t": {
-        "treasuryData": [
+        "trade": [
             {
-                "unit": "Conventional",
-                "refLable": null,
-                "inFlowAmout": 0,
-                "outFlowAmout": 0,
-                "nettAmout": 0,
-                "openingBal": null,
-                "inwardAmount": null,
-                "outwardAmount": null,
-                "projectBal": null,
-                "sweepingAmount": null,
-                "minReserveBal": null,
-                "entityAccMapSkey": null
+                "displayLabel": "Citibank NY",
+                "entityAcctMapSkey": 21,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
             },
             {
-                "unit": "Islamic",
-                "refLable": null,
-                "inFlowAmout": 0,
-                "outFlowAmout": 0,
-                "nettAmout": 0,
-                "openingBal": null,
-                "inwardAmount": null,
-                "outwardAmount": null,
-                "projectBal": null,
-                "sweepingAmount": null,
-                "minReserveBal": null,
-                "entityAccMapSkey": null
+                "displayLabel": "JP Morgan Chase NY",
+                "entityAcctMapSkey": 22,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
             },
             {
-                "unit": "Protocoll",
-                "refLable": null,
-                "inFlowAmout": 0,
-                "outFlowAmout": 0,
-                "nettAmout": 0,
-                "openingBal": null,
-                "inwardAmount": null,
-                "outwardAmount": null,
-                "projectBal": null,
-                "sweepingAmount": null,
-                "minReserveBal": null,
-                "entityAccMapSkey": null
+                "displayLabel": "Bank of America NY",
+                "entityAcctMapSkey": 25,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
             },
             {
-                "unit": "Euroclear",
-                "refLable": null,
-                "inFlowAmout": 0,
-                "outFlowAmout": 0,
-                "nettAmout": 0,
-                "openingBal": null,
-                "inwardAmount": null,
-                "outwardAmount": null,
-                "projectBal": null,
-                "sweepingAmount": null,
-                "minReserveBal": null,
-                "entityAccMapSkey": null
+                "displayLabel": "Wells Fargo Bank NY",
+                "entityAcctMapSkey": 26,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
             },
             {
-                "unit": "Treasury Mail",
-                "refLable": null,
-                "inFlowAmout": 0,
-                "outFlowAmout": 0,
-                "nettAmout": 0,
-                "openingBal": null,
-                "inwardAmount": null,
-                "outwardAmount": null,
-                "projectBal": null,
-                "sweepingAmount": null,
-                "minReserveBal": null,
-                "entityAccMapSkey": null
+                "displayLabel": "Deutsche Bank NY",
+                "entityAcctMapSkey": 27,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Bank of New York",
+                "entityAcctMapSkey": 30,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Standard Chartered Bank NY",
+                "entityAcctMapSkey": 31,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Citi HK",
+                "entityAcctMapSkey": 41,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "MAYBANK NEW YORK",
+                "entityAcctMapSkey": 221,
+                "txnTypeCode": "TRADE",
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "nettAmount": 0
             }
         ],
-        "swpeeingAmount": [
+        "custody": [
             {
-                "unit": null,
-                "refLable": "JP Morgan Chase NY",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 14488240.52,
-                "inwardAmount": 0,
+                "displayLabel": "Citibank NY",
+                "entityAcctMapSkey": 21,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 14488240.52,
-                "sweepingAmount": 0,
-                "minReserveBal": 5000,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "Bank of America NY",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 1444123.17,
-                "inwardAmount": 0,
+                "displayLabel": "JP Morgan Chase NY",
+                "entityAcctMapSkey": 22,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 1444123.17,
-                "sweepingAmount": 0,
-                "minReserveBal": 800,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "Wells Fargo Bank NY",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 6448730.51,
-                "inwardAmount": 0,
+                "displayLabel": "Bank of America NY",
+                "entityAcctMapSkey": 25,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 6448730.51,
-                "sweepingAmount": 0,
-                "minReserveBal": 0,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "Deutsche Bank NY",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 400500.33,
-                "inwardAmount": 0,
+                "displayLabel": "Wells Fargo Bank NY",
+                "entityAcctMapSkey": 26,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 400500.33,
-                "sweepingAmount": 0,
-                "minReserveBal": 0,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "Bank of New York",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 20656366.68,
-                "inwardAmount": 0,
+                "displayLabel": "Deutsche Bank NY",
+                "entityAcctMapSkey": 27,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 20656366.68,
-                "sweepingAmount": 0,
-                "minReserveBal": 0,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "Standard Chartered Bank NY",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 4126031.91,
-                "inwardAmount": 0,
+                "displayLabel": "Bank of New York",
+                "entityAcctMapSkey": 30,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 4126031.91,
-                "sweepingAmount": 0,
-                "minReserveBal": 0,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "Citi HK",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 0,
-                "inwardAmount": 0,
+                "displayLabel": "Standard Chartered Bank NY",
+                "entityAcctMapSkey": 31,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
                 "outwardAmount": 0,
-                "projectBal": 0,
-                "sweepingAmount": 0,
-                "minReserveBal": 0,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             },
             {
-                "unit": null,
-                "refLable": "MAYBANK NEW YORK",
-                "inFlowAmout": null,
-                "outFlowAmout": null,
-                "nettAmout": null,
-                "openingBal": 6192873.28,
+                "displayLabel": "Citi HK",
+                "entityAcctMapSkey": 41,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "MAYBANK NEW YORK",
+                "entityAcctMapSkey": 221,
+                "txnTypeCode": "CUSTODY",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            }
+        ],
+        "rdp": [
+            {
+                "displayLabel": "Citibank NY",
+                "entityAcctMapSkey": 21,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "JP Morgan Chase NY",
+                "entityAcctMapSkey": 22,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Bank of America NY",
+                "entityAcctMapSkey": 25,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Wells Fargo Bank NY",
+                "entityAcctMapSkey": 26,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Deutsche Bank NY",
+                "entityAcctMapSkey": 27,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Bank of New York",
+                "entityAcctMapSkey": 30,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Standard Chartered Bank NY",
+                "entityAcctMapSkey": 31,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Citi HK",
+                "entityAcctMapSkey": 41,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "MAYBANK NEW YORK",
+                "entityAcctMapSkey": 221,
+                "txnTypeCode": "RDP",
+                "inwardAmount": null,
+                "outwardAmount": 0,
+                "nettAmount": 0
+            }
+        ],
+        "inward": [
+            {
+                "displayLabel": "Citibank NY",
+                "entityAcctMapSkey": 21,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "JP Morgan Chase NY",
+                "entityAcctMapSkey": 22,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Bank of America NY",
+                "entityAcctMapSkey": 25,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Wells Fargo Bank NY",
+                "entityAcctMapSkey": 26,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Deutsche Bank NY",
+                "entityAcctMapSkey": 27,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Bank of New York",
+                "entityAcctMapSkey": 30,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Standard Chartered Bank NY",
+                "entityAcctMapSkey": 31,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "Citi HK",
+                "entityAcctMapSkey": 41,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            },
+            {
+                "displayLabel": "MAYBANK NEW YORK",
+                "entityAcctMapSkey": 221,
+                "txnTypeCode": "INWARD",
+                "inwardAmount": 0,
+                "outwardAmount": null,
+                "nettAmount": 0
+            }
+        ],
+        "deptWiseManualInput": [
+            {
+                "displayLabel": "TRADE",
+                "fcyManualInwardAmount": 0,
+                "fcyManualOutwardAmount": 0,
+                "fcyManualNettAmount": 0
+            },
+            {
+                "displayLabel": "CUSTODY",
+                "fcyManualInwardAmount": 0,
+                "fcyManualOutwardAmount": 0,
+                "fcyManualNettAmount": 0
+            },
+            {
+                "displayLabel": "RDP",
+                "fcyManualInwardAmount": 0,
+                "fcyManualOutwardAmount": 0,
+                "fcyManualNettAmount": 0
+            },
+            {
+                "displayLabel": "INWARD",
+                "fcyManualInwardAmount": 0,
+                "fcyManualOutwardAmount": 0,
+                "fcyManualNettAmount": 0
+            },
+            {
+                "displayLabel": "TREASURY",
+                "fcyManualInwardAmount": 0,
+                "fcyManualOutwardAmount": 0,
+                "fcyManualNettAmount": 0
+            },
+            {
+                "displayLabel": "OTHERS",
+                "fcyManualInwardAmount": 0,
+                "fcyManualOutwardAmount": 0,
+                "fcyManualNettAmount": 0
+            }
+        ],
+        "totalFCYNTAmount": [
+            {
+                "displayLabel": null,
+                "entityAcctMapSkey": null,
+                "txnTypeCode": null,
                 "inwardAmount": 0,
                 "outwardAmount": 0,
-                "projectBal": 6192873.28,
-                "sweepingAmount": 0,
-                "minReserveBal": 4000000,
-                "entityAccMapSkey": null
+                "nettAmount": 0
             }
         ]
     }
@@ -206,66 +361,105 @@ entitySkey=1&currency=USD&currencySkey=41&countrySkey=1&Indicator=User&timeZone=
 
 
 
-
-
 @Controller
 @RequestMapping("/")
 public class FCYBlotterController {
-@GetMapping(value = "/getTreasuryDataForNostro")
+	@GetMapping(value = "/fcyntmainagent")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<FCYTreasuryDTO>> getTreasuryDataForNostro(
-			@RequestParam String entitySkey, @RequestParam String currency, @RequestParam String currencySkey,
-			@RequestParam String countrySkey, @RequestParam String Indicator, @RequestParam String timeZone, @RequestParam Long entityAcctMapSkey , @RequestParam String typeOfAgent , @RequestParam String bicCode,
-			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate selectedDate) {
-		LOGGER.info("FCYBlotterController {} getTreasuryDataForNostro");
-		FCYTreasuryDTO result = fcyBlotterService.getTreasuryAndKplusData(entitySkey, currency, currencySkey, countrySkey,
-				Indicator, timeZone, entityAcctMapSkey ,typeOfAgent,bicCode, selectedDate);
+	public ResponseEntity<CommonResponseEntity<FCYNTMainAgentDTO>> getMainAgentTransactions(
+			@RequestParam Long countrySkey, @RequestParam Long entitySkey, @RequestParam Long currencySkey,
+			@RequestParam String timeZone, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate selectedDate) {
+		LOGGER.info("FCYBlotterController getMainAgentTransactions");
+		final FCYNTMainAgentDTO result = fcyBlotterService.getMainAgentTransactions(countrySkey, entitySkey,
+				currencySkey, timeZone, selectedDate);
 		return new ResponseEntity<>(
-				new CommonResponseEntity<FCYTreasuryDTO>(1L, success, "getTreasuryDataForNostro", result),
+				new CommonResponseEntity<FCYNTMainAgentDTO>(1l, success, "getMainAgentTransactions", result),
 				HttpStatus.OK);
 	}
-}
+}	
+
+
+
 
 public interface FCYBlotterService {
-public FCYTreasuryDTO getTreasuryAndKplusData(String entitySkey, String currency, String currencySkey, String countrySkey,
-			String Indicator, String timeZone, Long entityAcctMapSkey, String typeOfAgent, String bicCode, LocalDate selectedDate);
+
+	FCYNTMainAgentDTO getMainAgentTransactions(Long countrySkey, Long entitySkey, Long currencySkey, String timeZone, LocalDate selectedDate);
 
 }
+
 
 @Service
 public class FCYBlotterServiceImpl implements FCYBlotterService {
-@Override
-	public FCYTreasuryDTO getTreasuryAndKplusData(final String entitySkey, final String currency, final String currencySkey,
-			final String countrySkey, final String Indicator, final String timeZone, final Long entityAcctMapSkey, final String typeOfAgent, final String bicCode,
-			final LocalDate selectedDate) {
-		final FCYTreasuryDTO fCYTreasuryDTO = new FCYTreasuryDTO();
-    	fCYTreasuryDTO.setTreasuryData(this.prepareKplusSumOfIncomingOutgoingAmount(entitySkey, currency, entityAcctMapSkey, timeZone, "User", typeOfAgent, bicCode, selectedDate));
-		fCYTreasuryDTO.setSwpeeingAmount(this.prepareSweepingTreasuryData(Long.parseLong(countrySkey),
-				Long.parseLong(entitySkey), Long.parseLong(currencySkey), Indicator, timeZone, selectedDate));
-		return fCYTreasuryDTO;
 
+	@Override
+	public FCYNTMainAgentDTO getMainAgentTransactions(final Long countrySkey, final Long entitySkey,
+			final Long currencySkey, final String timeZone, LocalDate selectedDate) {
+		final LocalDateTime valueDtTime = DateUtil.getCurrentDateTimeByZone(timeZone);
+		final LocalDate valueDate = selectedDate != null ? selectedDate : valueDtTime.toLocalDate();
+		final List<EntityAccountMapDefinition> entityAcctMapDefs = entityAccountMappingRepo
+				.findByEntitySkeyAndCountrySkeyAndCurrencySkey(entitySkey, countrySkey, currencySkey);
+		final List<Long> notToCalcProjectedAmt = entityAcctMapDefs.stream().
+				filter(eam->  Objects.equals(eam.getProjectedAmountCalculationInd(), ILMCoreConstants.NIND)).
+				map(eamSkey->eamSkey.getEntityAcctMapSkey()).collect(Collectors.toList());
+		final EntityAccountMapDefinition mainAgent = entityAcctMapDefs.stream()//NOSONAR
+				.filter(e -> ILMCoreConstants.MainAgent.equals(e.getTypeOfNostroAgent())).findFirst().get();//NOSONAR
+		LOGGER.info("Main Agent {}", mainAgent);
+		final List<EntityAccountMapDefinition> subAgents = entityAcctMapDefs.stream()
+				.filter(e -> ILMCoreConstants.SubAgent.equals(e.getTypeOfNostroAgent())).collect(Collectors.toList());
+		LOGGER.info("Sub Agents {}", subAgents);
+		return this.prepareFCYNTMainAgentDTO(valueDate, mainAgent, subAgents,notToCalcProjectedAmt);
 	}
+	
+	
+	
+	private FCYNTMainAgentDTO prepareFCYNTMainAgentDTO(final LocalDate valueDate,
+			final EntityAccountMapDefinition mainAgent, final List<EntityAccountMapDefinition> subAgents,final List<Long> notToCalcProjectedAmt) {
+		final FCYNTMainAgentDTO fcyNTMainAgentDTO = new FCYNTMainAgentDTO();
+		final List<FCYNTAgentAccumAmtDTO> trades = new ArrayList<FCYNTAgentAccumAmtDTO>();
+		final List<FCYNTAgentAccumAmtDTO> custody = new ArrayList<FCYNTAgentAccumAmtDTO>();
+		final List<FCYNTAgentAccumAmtDTO> rdp = new ArrayList<FCYNTAgentAccumAmtDTO>();
+		final List<FCYNTAgentAccumAmtDTO> inward = new ArrayList<FCYNTAgentAccumAmtDTO>();
+		final List<FCYBlotterManualEntryDTO> departWiseManualAmount = new ArrayList<FCYBlotterManualEntryDTO>();
+		final FCYBlotterManualEntryDTO tradeManual = this.getFcyManualInput(valueDate, mainAgent.getEntityAcctMapSkey(),
+				ILMCoreConstants.TRADE);
+		final FCYBlotterManualEntryDTO custodyManual = this.getFcyManualInput(valueDate,
+				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.CUSTODY);
+		final FCYBlotterManualEntryDTO rdpManual = this.getFcyManualInput(valueDate, mainAgent.getEntityAcctMapSkey(),
+				ILMCoreConstants.RDP);
+		final FCYBlotterManualEntryDTO inwardManual = this.getFcyManualInput(valueDate,
+				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.INWARD);
+		final FCYBlotterManualEntryDTO treasuryManual = this.getFcyManualInput(valueDate,
+				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.TREASURY);
+		final FCYBlotterManualEntryDTO othersManual = this.getFcyManualInput(valueDate,
+				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.OTHERS);
+		departWiseManualAmount.add(tradeManual);
+		departWiseManualAmount.add(custodyManual);
+		departWiseManualAmount.add(rdpManual);
+		departWiseManualAmount.add(inwardManual);
+		departWiseManualAmount.add(treasuryManual);
+		departWiseManualAmount.add(othersManual);
+		trades.add(this.prepareTradeAgentAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
+		custody.add(this.prepareCustodyAgentAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
+		rdp.add(this.prepareRDPAgentAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
+		inward.add(this.prepareAgentInwardAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
+		subAgents.stream().forEach(subAgent -> {
+			trades.add(this.prepareTradeAgentAccumulatedAmount(valueDate, subAgent, ILMCoreConstants.MainAgent));
+			custody.add(this.prepareCustodyAgentAccumulatedAmount(valueDate, subAgent, ILMCoreConstants.MainAgent));
+			rdp.add(this.prepareRDPAgentAccumulatedAmount(valueDate, subAgent,ILMCoreConstants.MainAgent));
+			inward.add(this.prepareAgentInwardAccumulatedAmount(valueDate, subAgent, ILMCoreConstants.MainAgent));
+		});
+		fcyNTMainAgentDTO.setTrade(trades);
+		fcyNTMainAgentDTO.setCustody(custody);
+		fcyNTMainAgentDTO.setRdp(rdp);
+		fcyNTMainAgentDTO.setInward(inward);
+		fcyNTMainAgentDTO.setDeptWiseManualInput(departWiseManualAmount);
+		fcyNTMainAgentDTO.setTotalFCYNTAmount(this.calculateTotalFCYNAmount(fcyNTMainAgentDTO,notToCalcProjectedAmt));
+		return fcyNTMainAgentDTO;
+	}
+
 }
 
-public class FCYTreasuryDTO {
-
-	private List<FCYTreasuryDataDTO> treasuryData;
-	private List<FCYTreasuryDataDTO> swpeeingAmount;
-	public List<FCYTreasuryDataDTO> getTreasuryData() {
-		return treasuryData;
-	}
-	public void setTreasuryData(List<FCYTreasuryDataDTO> treasuryData) {
-		this.treasuryData = treasuryData;
-	}
-	public List<FCYTreasuryDataDTO> getSwpeeingAmount() {
-		return swpeeingAmount;
-	}
-	public void setSwpeeingAmount(List<FCYTreasuryDataDTO> swpeeingAmount) {
-		this.swpeeingAmount = swpeeingAmount;
-	}
-	
-	
-	
-    
+public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
+public List<EntityAccountMapDefinition> findByEntitySkeyAndCountrySkeyAndCurrencySkey(Long entitySkey, Long countrySkey, Long currencySkey);
 }
