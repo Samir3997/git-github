@@ -1,179 +1,173 @@
+Payment Details:
+http://10.172.120.19:8013/ilm-web/paymentPosition
 
-http://10.172.120.19:8013/ilm-web/fund/position
-
-{"endDate":"04-11-2024","entitySkey":1,"rank":"2","startDate":"04-11-2024","countrySkey":1,"currencySkey":41,"nostroBankSkey":21,"entityAccountType":"Main Account"}
-
-
-
+{"analysisType":"SingleDay","countrySkey":1,"currencySkey":1,"entitySkey":1,"fromTime":"01-10-2024 00:00:00","nHighest":"1","paymentCase":1,"toTime":"02-10-2024 00:00:00","positionType":"lowest","paymentDisplayType":false}
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "findFundPosition",
+    "serviceName": "getNHighestIntraday",
     "t": {
-        "LARGEST_NEGATIVE": {
-            "entityAcctMapSkeyK": null,
-            "rank": null,
-            "startDate": null,
-            "endDate": null,
-            "order": null,
-            "countrySkey": null,
-            "entitySkey": null,
-            "currencySkey": null,
-            "entityAcctMapSkeyMain": null,
-            "avgPositive": null,
-            "avgNegative": 0.00,
-            "aggrs": [],
-            "allAggrs": [],
-            "nostroBankSkey": null,
-            "entityAccountType": null
+        "sentPayments": {
+            "2024-10-01T08:06:49.749": 992.5
         },
-        "LARGEST_POSITIVE": {
-            "entityAcctMapSkeyK": null,
-            "rank": null,
-            "startDate": null,
-            "endDate": null,
-            "order": null,
-            "countrySkey": null,
-            "entitySkey": null,
-            "currencySkey": null,
-            "entityAcctMapSkeyMain": null,
-            "avgPositive": 0.00,
-            "avgNegative": null,
-            "aggrs": [
-                {
-                    "acctBalAggrSkey": 101639,
-                    "entityAcctMapSkey": 21,
-                    "totalAmnt": 92.57865528,
-                    "businessDtTime": "05-11-2024 12:30:00 AM",
-                    "valueDate": "04-11-2024",
-                    "totalInFlowAmnt": 0,
-                    "totalOutFlowAmnt": 0,
-                    "totalInFlowAmntSecurities": null,
-                    "totalOutFlowAmntSecurities": null,
-                    "aggrInd": "OTHERS",
-                    "openingClosingBalInd": "CLOSING_BALANCE",
-                    "trackerID": 324437,
-                    "rnk": null,
-                    "srrClosingBalance": 0.0,
-                    "srrDailyPercentage": 0.0,
-                    "calculatedDailySrrPercentage": 0.0,
-                    "cashBalance": null,
-                    "securitiesBalance": null,
-                    "srrExcessBalance": null
-                }
-            ],
-            "allAggrs": [],
-            "nostroBankSkey": null,
-            "entityAccountType": null
-        }
+        "recievedPayments": null,
+        "sentPastPeriodPayments": null,
+        "recievedPastPeriodPayments": null,
+        "average": null
     }
 }
 
+
 @Controller
 @RequestMapping("/")
-public class PaymentMessageController {
-@PostMapping(value="/fund/position")
+public class PaymentPositionController {
+@PostMapping(value="/paymentPosition")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<Map<String, FundPositionDto>>> findFundPosition(@RequestBody FundPositionDto positionDto) {
-		Map<String, FundPositionDto> aggregations=paymentMessageService.findFundPosition(positionDto);
-		return new ResponseEntity<>(new CommonResponseEntity<Map<String, FundPositionDto>>(1l, success, "findFundPosition", aggregations),HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<PaymentPosDTO>> getNHighestIntraday(@RequestBody PaymentPosParamsDTO paymentParams){
+		PaymentPosDTO paymentPosDto=paymentPos.getPaymentDetails(paymentParams);
+		LOGGER.info("PaymentPositionController {} getNHighestIntraday",paymentParams.getToTime());
+		return new ResponseEntity<>(new CommonResponseEntity<PaymentPosDTO>(1l, "SUCCESS", "getNHighestIntraday", paymentPosDto),HttpStatus.OK);
 	}
 }
 
-public interface PaymentMessageService {
-	public Map<String, FundPositionDto> findFundPosition(FundPositionDto positionDto);
-}
+public interface PaymentPositionService {
 
-@Service
-public class PaymentMessageServiceImpl extends IlmAbstractCommonService implements PaymentMessageService {
+	public PaymentPosDTO getPaymentDetails(PaymentPosParamsDTO paymentPosParams);
+	}
+	
+	
+	@Service
+public class PaymentPositionServiceImpl implements PaymentPositionService {
 @Override
-	@Find(arguments= {"Fund Position DTO"},returnType="map of Acct Bal Aggr",type="JSON",comment="find_fund_position")
+	@Find(arguments = { "payment params DTO" }, returnType = "PaymentPositionDTo", type = "JSON")
 	@FindNormEx
-	public Map<String, FundPositionDto> findFundPosition(FundPositionDto positionDto) {
-		Map<String, FundPositionDto> cumulativePositions = new HashMap<>();
-		List<EntityAccountMapDefinition> mainEAMDefns = new ArrayList();
-		if(positionDto.getNostroBankSkey()==null) {
-			mainEAMDefns = eamRepo.findByEntitySkeyAndAccountType(positionDto.getEntitySkey(), positionDto.getEntityAccountType());
+	public PaymentPosDTO getPaymentDetails(PaymentPosParamsDTO paymentPosParams) {
+		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
+		List<Long> entityMapSkey = getEntitySkey(paymentPosParams);
+		// Condition for Single day PAyment and PastPeriod Payment
+		if (paymentPosParams.getAnalysisType().equalsIgnoreCase(ILMCoreConstants.SINGLE_DAY)) {
+			paymentPosDTO = singleDayPaymentAnalysis(paymentPosParams, entityMapSkey);
+		} else if (paymentPosParams.getPaymentDisplayType()) {
+			paymentPosDTO = individualPastPeriodPaymentAnalysis(paymentPosParams, entityMapSkey);
+		} else {
+			paymentPosDTO = pastPeriodPaymentAnalysis(paymentPosParams, entityMapSkey);
 		}
-		else {
-			mainEAMDefns = eamRepo.findByEntityAcctMapSkey(positionDto.getNostroBankSkey());
-		}
-		LocalDate startDate = positionDto.getStartDate();
-		LocalDate endDate = positionDto.getEndDate();
-		List<LocalDate> holidaysList = holidayRepo.getHolidayDates(startDate, endDate, positionDto.getCurrencySkey());
-		//List<EntityAccountMapDefinition> kEAMDefns = eamRepo.findByEntitySkeyAndAccountType(positionDto.getEntitySkey(), ILMCoreConstants.KACCOUNT);
-		if(CollectionUtils.isNotEmpty(mainEAMDefns)) {
-			FundPositionDto fundPositionDto = new FundPositionDto();
-			List<AccountBalanceAggregationDTO> aggrs = new ArrayList<>();
-			List<AccountBalanceAggregationDTO> allAggrs = new ArrayList<>();
-			positionDto.setEntityAcctMapSkeyMain(mainEAMDefns.get(0).getEntityAcctMapSkey());
-			if(Objects.nonNull(startDate) && Objects.nonNull(endDate)) {
-				if(startDate.isEqual(endDate)) {
-					aggrs = paymentMessageDao.findFundPosition(positionDto, QueryConstants.GETPOSCUMULATIVEFUNDPOSN ,holidaysList);
-				}else {
-					aggrs = paymentMessageDao.findFundPosition(positionDto, QueryConstants.GETPOSCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
-					allAggrs = paymentMessageDao.findAllFundPosition(positionDto, QueryConstants.GETALLPOSCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
-					
-				}
-				fundPositionDto.setAggrs(getAmountsInMillions(aggrs));
-				fundPositionDto.setAllAggrs(allAggrs);
-				int weekDays = (int) DateUtil.noOfBusinessDays(startDate,endDate);
-				int holidays = holidayRepo.getHolidays(startDate,endDate, positionDto.getCurrencySkey()).size();
-				LOGGER.info("no of holidays : "+holidays);
-				int diffInDays = weekDays - holidays ;
-				LOGGER.info("Business days : "+ diffInDays);
-				BigDecimal amnt = BigDecimal.ZERO;
-				for(int row=0 ; row < fundPositionDto.getAllAggrs().size() ; row++) {
-					amnt = amnt.add(fundPositionDto.getAllAggrs().get(row).getTotalAmnt());
-				}
-				if(diffInDays > 0) {
-					fundPositionDto.setAvgPositive(amnt.divide(BigDecimal.valueOf(diffInDays), 2 , RoundingMode.HALF_UP));
-				}
-				else {
-					fundPositionDto.setAvgPositive(null);
-				}
-				
-			}
-			cumulativePositions.put("LARGEST_POSITIVE", fundPositionDto);
-		}	
-		if(CollectionUtils.isNotEmpty(mainEAMDefns)) {
-			FundPositionDto fundPositionDto = new FundPositionDto();
-			List<AccountBalanceAggregationDTO> aggrs = new ArrayList<>();
-			List<AccountBalanceAggregationDTO> allAggrs = new ArrayList<>();
-			//Long eamSkeyK = kEAMDefns.get(0).getEntityAcctMapSkey();
-			//positionDto.setEntityAcctMapSkeyK(eamSkeyK);
-			positionDto.setEntityAcctMapSkeyMain(mainEAMDefns.get(0).getEntityAcctMapSkey());
-			if(Objects.nonNull(startDate) && Objects.nonNull(endDate)) {
-				if(startDate.isEqual(endDate)) {
-					aggrs = paymentMessageDao.findFundPositionForNegativeCumulative(positionDto, QueryConstants.GETNEGCUMULATIVEFUNDPOSN,holidaysList);
-				}else {
-					aggrs = paymentMessageDao.findFundPositionForNegativeCumulative(positionDto, QueryConstants.GETNEGCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
-					allAggrs = paymentMessageDao.findAllFundPositionForNegativeCumulative(positionDto, QueryConstants.GETALLNEGCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
+		return paymentPosDTO;
+	}
+	
+	private PaymentPosDTO singleDayPaymentAnalysis(PaymentPosParamsDTO paymentPosParams, List<Long> entityMapSkey) {
+		Integer paymentCase = paymentPosParams.getPaymentCase();
+		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
+		Integer nHighest = paymentPosParams.getnHighest();
+		LocalDateTime toDate = paymentPosParams.getToTime();
+		LocalDateTime fromDate = paymentPosParams.getFromTime();
+		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(fromDate.toLocalDate(), toDate.toLocalDate(), paymentPosParams.getCurrencySkey());
+		List<AccountBalanceManagement> acctBalMgmt = new ArrayList<AccountBalanceManagement>();
+		if (paymentPosParams.getPositionType().compareTo("highest") == 0) {
+			switch (paymentCase) {
+			case 0:
+				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
+				break;
+			case 1:
+				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
+				break;
+			case 2:
+				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
+				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
 
-				}
-				fundPositionDto.setAggrs(getAmountsInMillions(aggrs));
-				fundPositionDto.setAllAggrs(allAggrs);
-				int weekDays = (int) DateUtil.noOfBusinessDays(startDate,endDate);
-				int holidays = holidayRepo.getHolidays(startDate,endDate, positionDto.getCurrencySkey()).size();
-				LOGGER.info("no of holidays : "+holidays);
-				int diffInDays = weekDays - holidays ;
-				LOGGER.info("Business days : "+ diffInDays);
-				BigDecimal amnt = BigDecimal.ZERO;
-				for(int row =0; row < fundPositionDto.getAllAggrs().size() ; row++) {
-					amnt = amnt.add(fundPositionDto.getAllAggrs().get(row).getTotalAmnt());
-				}
-				if(diffInDays > 0) {
-					fundPositionDto.setAvgNegative(amnt.divide(BigDecimal.valueOf(diffInDays), 2 , RoundingMode.HALF_UP));
-				}
-				else {
-					fundPositionDto.setAvgNegative(null);
-				}
+				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
+				break;
 			}
-			//aggrs.stream().filter(p -> p.getEntityAcctMapSkey().compareTo(eamSkeyK) == 0).forEach(p -> p.setTotalAmnt(p.getTotalAmnt().negate()));
-			cumulativePositions.put("LARGEST_NEGATIVE", fundPositionDto);
+		} else {
+			switch (paymentCase) {
+			case 0:
+				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
+				break;
+			case 1:
+				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
+				break;
+			case 2:
+				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
+				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+
+				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
+				break;
+			}
 		}
-		return cumulativePositions;
+		return paymentPosDTO;
+	}
+	
+	private PaymentPosDTO pastPeriodPaymentAnalysis(PaymentPosParamsDTO paymentPosParams, List<Long> entityMapSkey) {
+		Integer paymentCase = paymentPosParams.getPaymentCase();
+		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
+		Integer nHighest = paymentPosParams.getnHighest();
+		LocalDateTime toDate = paymentPosParams.getToTime();
+		LocalDateTime fromDate = paymentPosParams.getFromTime();
+		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(fromDate.toLocalDate(), toDate.toLocalDate(), paymentPosParams.getCurrencySkey());
+		List<PastPosDTO> acctBalMgmt = new ArrayList<PastPosDTO>();
+		if (paymentPosParams.getPositionType().compareTo("highest") == 0) {
+			switch (paymentCase) {
+			case 0:
+				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
+				break;
+			case 1:
+				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
+				break;
+			case 2:
+				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
+				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
+
+				break;
+			}
+		} else {
+			switch (paymentCase) {
+			case 0:
+				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
+				break;
+			case 1:
+				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
+				break;
+			case 2:
+				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.plusSign, holidaysList);
+				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
+				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
+						ILMCoreConstants.negativeSign, holidaysList);
+				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
+
+				break;
+			}
+		}
+
+		return paymentPosDTO;
+
 	}
 }
