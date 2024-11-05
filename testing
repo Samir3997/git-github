@@ -1,358 +1,73 @@
+http://10.172.120.19:8013/ilm-web/kacctanalydata
 
-http://10.172.120.19:8013/ilm-web//fcyntmainagent?countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur
-
-countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur
+{"analysisInd":"P","countrySkeys":[1],"currencySkeys":[1],"entitySkeys":[1],"entityName":"Conventional","fromDate":"01-11-2024","toDate":"04-11-2024","createdBy":"00142397"}
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "getMainAgentTransactions",
-    "t": {
-        "trade": [
-            {
-                "displayLabel": "Citibank NY",
-                "entityAcctMapSkey": 21,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "JP Morgan Chase NY",
-                "entityAcctMapSkey": 22,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of America NY",
-                "entityAcctMapSkey": 25,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Wells Fargo Bank NY",
-                "entityAcctMapSkey": 26,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Deutsche Bank NY",
-                "entityAcctMapSkey": 27,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of New York",
-                "entityAcctMapSkey": 30,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Standard Chartered Bank NY",
-                "entityAcctMapSkey": 31,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Citi HK",
-                "entityAcctMapSkey": 41,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "MAYBANK NEW YORK",
-                "entityAcctMapSkey": 221,
-                "txnTypeCode": "TRADE",
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            }
-        ],
-        "custody": [
-            {
-                "displayLabel": "Citibank NY",
-                "entityAcctMapSkey": 21,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "JP Morgan Chase NY",
-                "entityAcctMapSkey": 22,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of America NY",
-                "entityAcctMapSkey": 25,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Wells Fargo Bank NY",
-                "entityAcctMapSkey": 26,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Deutsche Bank NY",
-                "entityAcctMapSkey": 27,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of New York",
-                "entityAcctMapSkey": 30,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Standard Chartered Bank NY",
-                "entityAcctMapSkey": 31,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Citi HK",
-                "entityAcctMapSkey": 41,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "MAYBANK NEW YORK",
-                "entityAcctMapSkey": 221,
-                "txnTypeCode": "CUSTODY",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            }
-        ],
-        "rdp": [
-            {
-                "displayLabel": "Citibank NY",
-                "entityAcctMapSkey": 21,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "JP Morgan Chase NY",
-                "entityAcctMapSkey": 22,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of America NY",
-                "entityAcctMapSkey": 25,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Wells Fargo Bank NY",
-                "entityAcctMapSkey": 26,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Deutsche Bank NY",
-                "entityAcctMapSkey": 27,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of New York",
-                "entityAcctMapSkey": 30,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Standard Chartered Bank NY",
-                "entityAcctMapSkey": 31,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Citi HK",
-                "entityAcctMapSkey": 41,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "MAYBANK NEW YORK",
-                "entityAcctMapSkey": 221,
-                "txnTypeCode": "RDP",
-                "inwardAmount": null,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            }
-        ],
-        "inward": [
-            {
-                "displayLabel": "Citibank NY",
-                "entityAcctMapSkey": 21,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "JP Morgan Chase NY",
-                "entityAcctMapSkey": 22,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of America NY",
-                "entityAcctMapSkey": 25,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Wells Fargo Bank NY",
-                "entityAcctMapSkey": 26,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Deutsche Bank NY",
-                "entityAcctMapSkey": 27,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Bank of New York",
-                "entityAcctMapSkey": 30,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Standard Chartered Bank NY",
-                "entityAcctMapSkey": 31,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "Citi HK",
-                "entityAcctMapSkey": 41,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            },
-            {
-                "displayLabel": "MAYBANK NEW YORK",
-                "entityAcctMapSkey": 221,
-                "txnTypeCode": "INWARD",
-                "inwardAmount": 0,
-                "outwardAmount": null,
-                "nettAmount": 0
-            }
-        ],
-        "deptWiseManualInput": [
-            {
-                "displayLabel": "TRADE",
-                "fcyManualInwardAmount": 0,
-                "fcyManualOutwardAmount": 0,
-                "fcyManualNettAmount": 0
-            },
-            {
-                "displayLabel": "CUSTODY",
-                "fcyManualInwardAmount": 0,
-                "fcyManualOutwardAmount": 0,
-                "fcyManualNettAmount": 0
-            },
-            {
-                "displayLabel": "RDP",
-                "fcyManualInwardAmount": 0,
-                "fcyManualOutwardAmount": 0,
-                "fcyManualNettAmount": 0
-            },
-            {
-                "displayLabel": "INWARD",
-                "fcyManualInwardAmount": 0,
-                "fcyManualOutwardAmount": 0,
-                "fcyManualNettAmount": 0
-            },
-            {
-                "displayLabel": "TREASURY",
-                "fcyManualInwardAmount": 0,
-                "fcyManualOutwardAmount": 0,
-                "fcyManualNettAmount": 0
-            },
-            {
-                "displayLabel": "OTHERS",
-                "fcyManualInwardAmount": 0,
-                "fcyManualOutwardAmount": 0,
-                "fcyManualNettAmount": 0
-            }
-        ],
-        "totalFCYNTAmount": [
-            {
-                "displayLabel": null,
-                "entityAcctMapSkey": null,
-                "txnTypeCode": null,
-                "inwardAmount": 0,
-                "outwardAmount": 0,
-                "nettAmount": 0
-            }
-        ]
-    }
+    "serviceName": "getKAcctAnalyticsData",
+    "t": [
+        {
+            "effectiveDate": "01-11-2024",
+            "amntUtilized": 0,
+            "trancheSize": 5000000,
+            "costPerTranche": 12,
+            "utilizationTime": null,
+            "trancheUtilized": 0,
+            "billedAmnt": 0,
+            "amntRedeemed": null,
+            "redemptionTime": null,
+            "trancheRedeemed": null,
+            "availCollateralBal": 26356554238.69,
+            "excessSrr": 26356554238.69,
+            "mt535Amount": null
+        },
+        {
+            "effectiveDate": "02-11-2024",
+            "amntUtilized": 0,
+            "trancheSize": 5000000,
+            "costPerTranche": 12,
+            "utilizationTime": null,
+            "trancheUtilized": 0,
+            "billedAmnt": 0,
+            "amntRedeemed": null,
+            "redemptionTime": null,
+            "trancheRedeemed": null,
+            "availCollateralBal": null,
+            "excessSrr": null,
+            "mt535Amount": null
+        },
+        {
+            "effectiveDate": "03-11-2024",
+            "amntUtilized": 0,
+            "trancheSize": 5000000,
+            "costPerTranche": 12,
+            "utilizationTime": null,
+            "trancheUtilized": 0,
+            "billedAmnt": 0,
+            "amntRedeemed": null,
+            "redemptionTime": null,
+            "trancheRedeemed": null,
+            "availCollateralBal": null,
+            "excessSrr": null,
+            "mt535Amount": null
+        },
+        {
+            "effectiveDate": "04-11-2024",
+            "amntUtilized": 0,
+            "trancheSize": 5000000,
+            "costPerTranche": 12,
+            "utilizationTime": null,
+            "trancheUtilized": 0,
+            "billedAmnt": 0,
+            "amntRedeemed": null,
+            "redemptionTime": null,
+            "trancheRedeemed": null,
+            "availCollateralBal": 26356554238.69,
+            "excessSrr": 26356554238.69,
+            "mt535Amount": null
+        }
+    ]
 }
 
 
@@ -363,103 +78,171 @@ countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur
 
 @Controller
 @RequestMapping("/")
-public class FCYBlotterController {
-	@GetMapping(value = "/fcyntmainagent")
+public class KAccountAnalyticsController {
+@RequestMapping(value="/kacctanalydata", method=RequestMethod.POST)
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<FCYNTMainAgentDTO>> getMainAgentTransactions(
-			@RequestParam Long countrySkey, @RequestParam Long entitySkey, @RequestParam Long currencySkey,
-			@RequestParam String timeZone, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate selectedDate) {
-		LOGGER.info("FCYBlotterController getMainAgentTransactions");
-		final FCYNTMainAgentDTO result = fcyBlotterService.getMainAgentTransactions(countrySkey, entitySkey,
-				currencySkey, timeZone, selectedDate);
-		return new ResponseEntity<>(
-				new CommonResponseEntity<FCYNTMainAgentDTO>(1l, success, "getMainAgentTransactions", result),
-				HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<List<KAccountAnalyticsDataDTO>>> getKAcctAnalyticsData(@RequestBody RequestAnalyticsDTO filterDTO) {
+		LOGGER.info("KAccountAnalyticsController {} getKAcctAnalyticsData");
+		List<KAccountAnalyticsDataDTO> dataDtos = analyticsService.getKAcctAnalyticsData(filterDTO);
+		return new ResponseEntity<>(new CommonResponseEntity<List<KAccountAnalyticsDataDTO>>(1l, "SUCCESS", "getKAcctAnalyticsData", dataDtos),HttpStatus.OK);
 	}
-}	
-
-
-
-
-public interface FCYBlotterService {
-
-	FCYNTMainAgentDTO getMainAgentTransactions(Long countrySkey, Long entitySkey, Long currencySkey, String timeZone, LocalDate selectedDate);
-
 }
 
+public interface KAccountAnalyticsService {
+
+	public List<KAccountAnalyticsDataDTO> getKAcctAnalyticsData(RequestAnalyticsDTO filterDTO);
+}
 
 @Service
-public class FCYBlotterServiceImpl implements FCYBlotterService {
+public class KAccountAnalyticsServiceImpl implements KAccountAnalyticsService{
 
 	@Override
-	public FCYNTMainAgentDTO getMainAgentTransactions(final Long countrySkey, final Long entitySkey,
-			final Long currencySkey, final String timeZone, LocalDate selectedDate) {
-		final LocalDateTime valueDtTime = DateUtil.getCurrentDateTimeByZone(timeZone);
-		final LocalDate valueDate = selectedDate != null ? selectedDate : valueDtTime.toLocalDate();
-		final List<EntityAccountMapDefinition> entityAcctMapDefs = entityAccountMappingRepo
-				.findByEntitySkeyAndCountrySkeyAndCurrencySkey(entitySkey, countrySkey, currencySkey);
-		final List<Long> notToCalcProjectedAmt = entityAcctMapDefs.stream().
-				filter(eam->  Objects.equals(eam.getProjectedAmountCalculationInd(), ILMCoreConstants.NIND)).
-				map(eamSkey->eamSkey.getEntityAcctMapSkey()).collect(Collectors.toList());
-		final EntityAccountMapDefinition mainAgent = entityAcctMapDefs.stream()//NOSONAR
-				.filter(e -> ILMCoreConstants.MainAgent.equals(e.getTypeOfNostroAgent())).findFirst().get();//NOSONAR
-		LOGGER.info("Main Agent {}", mainAgent);
-		final List<EntityAccountMapDefinition> subAgents = entityAcctMapDefs.stream()
-				.filter(e -> ILMCoreConstants.SubAgent.equals(e.getTypeOfNostroAgent())).collect(Collectors.toList());
-		LOGGER.info("Sub Agents {}", subAgents);
-		return this.prepareFCYNTMainAgentDTO(valueDate, mainAgent, subAgents,notToCalcProjectedAmt);
+	@Find(arguments= {"request Analytics DTO"},returnType="List of K Account Analytics DTO",type="JSON",comment="k_account_analytics")
+	@FindNormEx
+	public List<KAccountAnalyticsDataDTO> getKAcctAnalyticsData(RequestAnalyticsDTO filterDTO){
+		System.out.println("Inside getKacctAnalyticsData");
+		List<EntityAccountMapDefinition> kAcctEam = eamRepo.findByEntitySkeyAndAccountType(filterDTO.getEntitySkeys().get(0), ILMCoreConstants.KACCOUNT);
+		List<EntityAccountMapDefinition> srrAcctEam = eamRepo.findByEntitySkeyAndAccountType(filterDTO.getEntitySkeys().get(0), ILMCoreConstants.SRRACCOUNT);
+		List<KAccountAnalyticsDataDTO> dataDtos = new ArrayList<>();
+		if(CollectionUtils.isNotEmpty(kAcctEam)) {
+			LOGGER.info("Inside if ");
+			Long eamSkey = kAcctEam.get(0).getEntityAcctMapSkey();
+			Long srrEamSkey = null ;
+			LOGGER.info("srrAcctEam " + srrAcctEam.toString());
+			if (CollectionUtils.isNotEmpty(srrAcctEam)) {
+				LOGGER.info("srrAcctEam is not empty ");
+				srrEamSkey = srrAcctEam.get(0).getEntityAcctMapSkey();
+				LOGGER.info("Srr eam skey : "+srrEamSkey);
+			}
+			LOGGER.info("eamSkey : "+eamSkey);
+			if(eamSkey != null) {
+				if(filterDTO.getAnalysisInd() == 'I') {
+					dataDtos = getKAcctAnalyticsForIntraDay(filterDTO, eamSkey);
+				}else if(filterDTO.getAnalysisInd() == 'P'){
+					dataDtos = getKAcctAnalyticsForPastPeriod(filterDTO, eamSkey , srrEamSkey);
+				}
+			}
+		}
+		return dataDtos;
 	}
-	
-	
-	
-	private FCYNTMainAgentDTO prepareFCYNTMainAgentDTO(final LocalDate valueDate,
-			final EntityAccountMapDefinition mainAgent, final List<EntityAccountMapDefinition> subAgents,final List<Long> notToCalcProjectedAmt) {
-		final FCYNTMainAgentDTO fcyNTMainAgentDTO = new FCYNTMainAgentDTO();
-		final List<FCYNTAgentAccumAmtDTO> trades = new ArrayList<FCYNTAgentAccumAmtDTO>();
-		final List<FCYNTAgentAccumAmtDTO> custody = new ArrayList<FCYNTAgentAccumAmtDTO>();
-		final List<FCYNTAgentAccumAmtDTO> rdp = new ArrayList<FCYNTAgentAccumAmtDTO>();
-		final List<FCYNTAgentAccumAmtDTO> inward = new ArrayList<FCYNTAgentAccumAmtDTO>();
-		final List<FCYBlotterManualEntryDTO> departWiseManualAmount = new ArrayList<FCYBlotterManualEntryDTO>();
-		final FCYBlotterManualEntryDTO tradeManual = this.getFcyManualInput(valueDate, mainAgent.getEntityAcctMapSkey(),
-				ILMCoreConstants.TRADE);
-		final FCYBlotterManualEntryDTO custodyManual = this.getFcyManualInput(valueDate,
-				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.CUSTODY);
-		final FCYBlotterManualEntryDTO rdpManual = this.getFcyManualInput(valueDate, mainAgent.getEntityAcctMapSkey(),
-				ILMCoreConstants.RDP);
-		final FCYBlotterManualEntryDTO inwardManual = this.getFcyManualInput(valueDate,
-				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.INWARD);
-		final FCYBlotterManualEntryDTO treasuryManual = this.getFcyManualInput(valueDate,
-				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.TREASURY);
-		final FCYBlotterManualEntryDTO othersManual = this.getFcyManualInput(valueDate,
-				mainAgent.getEntityAcctMapSkey(), ILMCoreConstants.OTHERS);
-		departWiseManualAmount.add(tradeManual);
-		departWiseManualAmount.add(custodyManual);
-		departWiseManualAmount.add(rdpManual);
-		departWiseManualAmount.add(inwardManual);
-		departWiseManualAmount.add(treasuryManual);
-		departWiseManualAmount.add(othersManual);
-		trades.add(this.prepareTradeAgentAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
-		custody.add(this.prepareCustodyAgentAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
-		rdp.add(this.prepareRDPAgentAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
-		inward.add(this.prepareAgentInwardAccumulatedAmount(valueDate, mainAgent, ILMCoreConstants.MainAgent));
-		subAgents.stream().forEach(subAgent -> {
-			trades.add(this.prepareTradeAgentAccumulatedAmount(valueDate, subAgent, ILMCoreConstants.MainAgent));
-			custody.add(this.prepareCustodyAgentAccumulatedAmount(valueDate, subAgent, ILMCoreConstants.MainAgent));
-			rdp.add(this.prepareRDPAgentAccumulatedAmount(valueDate, subAgent,ILMCoreConstants.MainAgent));
-			inward.add(this.prepareAgentInwardAccumulatedAmount(valueDate, subAgent, ILMCoreConstants.MainAgent));
-		});
-		fcyNTMainAgentDTO.setTrade(trades);
-		fcyNTMainAgentDTO.setCustody(custody);
-		fcyNTMainAgentDTO.setRdp(rdp);
-		fcyNTMainAgentDTO.setInward(inward);
-		fcyNTMainAgentDTO.setDeptWiseManualInput(departWiseManualAmount);
-		fcyNTMainAgentDTO.setTotalFCYNTAmount(this.calculateTotalFCYNAmount(fcyNTMainAgentDTO,notToCalcProjectedAmt));
-		return fcyNTMainAgentDTO;
-	}
-
 }
+
 
 public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
-public List<EntityAccountMapDefinition> findByEntitySkeyAndCountrySkeyAndCurrencySkey(Long entitySkey, Long countrySkey, Long currencySkey);
+
+	public List<EntityAccountMapDefinition> findByEntitySkeyAndAccountType(Long entitySkey, String accountType);
 }
+
+
+private List<KAccountAnalyticsDataDTO> getKAcctAnalyticsForIntraDay(RequestAnalyticsDTO filterDTO, Long eamSkey) {
+		List<KAccountAnalyticsDataDTO> dataDTOs = new ArrayList<>();
+		LocalDate analysisDate = filterDTO.getFromDate();
+		KAccountConfiguration reqConfig = null;
+		List<AccountBalanceManagement> balanceManagements = acctBalMgmtRepo.findByValueDateAndEntityAcctMapSkey(analysisDate, eamSkey);
+		List<AccountBalanceManagement> filteredBalMgmts = balanceManagements.stream().filter(p -> (p.getMessageType().compareTo(ILMCoreConstants.MESSAGETYPE535) != 0)).collect(Collectors.toList());
+		List<KAccountConfiguration> kAcctConfigs = kAcctConfigDao.getKAcctConfigByDims(filterDTO.getCountrySkeys(), filterDTO.getEntitySkeys(), filterDTO.getCurrencySkeys(), ILMCoreConstants.TRANCHEDEFN);
+		if(CollectionUtils.isNotEmpty(kAcctConfigs)) {
+			Optional<KAccountConfiguration> configurationOptional = kAcctConfigs.stream().filter(p -> (p.getEffectiveFrom().compareTo(analysisDate) <= 0 && p.getEffectiveTo().compareTo(analysisDate) >= 0)).findFirst();
+			if(configurationOptional.isPresent()) {
+				reqConfig = configurationOptional.get();
+				for(AccountBalanceManagement balMgmt : filteredBalMgmts) {
+					KAccountAnalyticsDataDTO analyticsDataDTO = new KAccountAnalyticsDataDTO();
+					BigDecimal amount = balMgmt.getAmount();
+					BigDecimal trancheUtilized = amount.divide(reqConfig.getTrancheSize(), 0, RoundingMode.HALF_UP);
+					BigDecimal billedAmnt = trancheUtilized.multiply(reqConfig.getCostPerTranche());
+					if(balMgmt.getAmountSign() != null && balMgmt.getAmountSign().contentEquals(ILMCoreConstants.PLUS)) {
+						analyticsDataDTO.setAmntUtilized(amount);
+						analyticsDataDTO.setUtilizationTime(DateUtil.getTimeFromTimeStamp(balMgmt.getBusinessDtTime()));
+						analyticsDataDTO.setTrancheUtilized(trancheUtilized);
+						analyticsDataDTO.setAmntRedeemed(BigDecimal.ZERO);
+						analyticsDataDTO.setRedemptionTime("-");
+						analyticsDataDTO.setTrancheRedeemed(BigDecimal.ZERO);
+						analyticsDataDTO.setBilledAmnt(billedAmnt);
+					}else if(balMgmt.getAmountSign() != null && balMgmt.getAmountSign().contentEquals(ILMCoreConstants.MINUS)){
+						analyticsDataDTO.setAmntRedeemed(amount);
+						analyticsDataDTO.setRedemptionTime(DateUtil.getTimeFromTimeStamp(balMgmt.getBusinessDtTime()));
+						analyticsDataDTO.setTrancheRedeemed(trancheUtilized);
+						analyticsDataDTO.setAmntUtilized(BigDecimal.ZERO);
+						analyticsDataDTO.setUtilizationTime("-");
+						analyticsDataDTO.setTrancheUtilized(BigDecimal.ZERO);
+						analyticsDataDTO.setBilledAmnt(BigDecimal.ZERO);
+					}
+					
+					analyticsDataDTO.setTrancheSize(reqConfig.getTrancheSize());
+					analyticsDataDTO.setCostPerTranche(reqConfig.getCostPerTranche());
+					dataDTOs.add(analyticsDataDTO);
+				}
+			}
+		}
+		return dataDTOs;	
+	}
+
+	
+	private List<KAccountAnalyticsDataDTO> getKAcctAnalyticsForPastPeriod(RequestAnalyticsDTO filterDTO, Long eamSkey , Long srrEamSkey){
+		LocalDate startDate = filterDTO.getFromDate();
+		LocalDate endDate = filterDTO.getToDate();
+		List<String> messageTypes=new ArrayList<String>();
+		messageTypes.add(ILMCoreConstants.MESSAGETYPE535);
+		List<KAccountAnalyticsDataDTO> dataDTOs = new ArrayList<>();
+		int diffInDays = DateUtil.daysBetween(startDate, endDate);
+		for(int index = 0; index <= diffInDays; index++) {
+			BigDecimal amount = BigDecimal.ZERO;
+			BigDecimal excessSrrAmount = BigDecimal.ZERO;
+			BigDecimal availCollateralBal = BigDecimal.ZERO;
+			LocalDate analysisDate = startDate.plusDays(index);
+			List<AccountBalanceAggregation> aggregations = acctBalAggrRepo.findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeDesc(analysisDate, eamSkey);
+			List<KAccountConfiguration> kAcctConfigs = kAcctConfigDao.getKAcctConfigByDims(filterDTO.getCountrySkeys(), filterDTO.getEntitySkeys(), filterDTO.getCurrencySkeys(), ILMCoreConstants.TRANCHEDEFN);
+			amount=acctBalMgmtRepo.getTotalAmountByMessageTypeInAndEntityAcctMapSkeyAndValueDate(messageTypes, eamSkey, analysisDate);
+			if(srrEamSkey != null) {
+				excessSrrAmount=excessSrrAmountRepo.getExcessSrrAmount(srrEamSkey,analysisDate);
+			}else {
+				excessSrrAmount = null ;
+			}
+			if(DateUtil.isWeekend(analysisDate) || holidayRepo.findByHolidayDateAndCurrencySkey(analysisDate, filterDTO.getCurrencySkeys().get(0)).size() != 0) {
+				excessSrrAmount = null ;
+			}
+			if(excessSrrAmount!= null && excessSrrAmount.compareTo(BigDecimal.ZERO) < 0) {
+				excessSrrAmount = BigDecimal.ZERO ;
+			}
+			LOGGER.info(analysisDate);
+			LOGGER.info("MT535 Amount : "+amount);
+			LOGGER.info("excessSRRAmount : "+excessSrrAmount);
+			if(amount!=null && excessSrrAmount!=null ) {
+				availCollateralBal=amount.add(excessSrrAmount);
+			}
+			else if(amount == null && excessSrrAmount != null) {
+				availCollateralBal = excessSrrAmount;
+			}
+			else if(amount != null && excessSrrAmount == null) {
+				availCollateralBal = amount ;
+			}
+			else {
+				availCollateralBal = null;
+			}
+			
+			if(CollectionUtils.isNotEmpty(kAcctConfigs)) {
+				Optional<KAccountConfiguration> configurationOptional = kAcctConfigs.stream().filter(p -> (p.getEffectiveFrom().compareTo(analysisDate) <= 0 && p.getEffectiveTo().compareTo(analysisDate) >= 0)).findFirst();
+				if(configurationOptional.isPresent()) {
+					KAccountConfiguration reqConfig = configurationOptional.get();
+					if(CollectionUtils.isNotEmpty(aggregations)) {
+						KAccountAnalyticsDataDTO analyticsDataDTO = new KAccountAnalyticsDataDTO();
+						AccountBalanceAggregation balanceAggregation = aggregations.get(0);
+						BigDecimal trancheUtilized = balanceAggregation.getTotalInFlowAmnt().abs().divide(reqConfig.getTrancheSize(),0, RoundingMode.HALF_UP);
+						BigDecimal billedAmnt = trancheUtilized.multiply(reqConfig.getCostPerTranche());
+						analyticsDataDTO.setAmntUtilized(balanceAggregation.getTotalInFlowAmnt().abs());
+						analyticsDataDTO.setEffectiveDate(analysisDate);
+						analyticsDataDTO.setTrancheSize(reqConfig.getTrancheSize());
+						analyticsDataDTO.setCostPerTranche(reqConfig.getCostPerTranche());
+						analyticsDataDTO.setTrancheUtilized(trancheUtilized);
+						analyticsDataDTO.setBilledAmnt(billedAmnt);
+						analyticsDataDTO.setAvailCollateralBal(availCollateralBal);
+						analyticsDataDTO.setExcessSrr(excessSrrAmount);
+						analyticsDataDTO.setMt535Amount(amount);
+						dataDTOs.add(analyticsDataDTO);
+					}
+				}
+			}
+		}
+		return dataDTOs;
+	}
