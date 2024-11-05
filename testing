@@ -1,24 +1,204 @@
-http://10.172.120.19:8013/ilm-web/getProjectedAmount?countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur&entityAccMapSkey=21&indicator=Main%20Agent&currency=USD&minReserveBal=1000&bicCode=CITIUS33
+
+http://10.172.120.19:8013/ilm-web//getTreasuryDataForNostro?entitySkey=1&currency=USD&currencySkey=41&countrySkey=1&Indicator=User&timeZone=Asia/Kuala_Lumpur&entityAcctMapSkey=21&typeOfAgent=Main%20Agent&bicCode=CITIUS33
 
 
 
-countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur&entityAccMapSkey=21&indicator=Main%20Agent&currency=USD&minReserveBal=1000&bicCode=CITIUS33
+entitySkey=1&currency=USD&currencySkey=41&countrySkey=1&Indicator=User&timeZone=Asia/Kuala_Lumpur&entityAcctMapSkey=21&typeOfAgent=Main%20Agent&bicCode=CITIUS33
 
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "getIncomingAndOutgoingDrillDown",
+    "serviceName": "getTreasuryDataForNostro",
     "t": {
-        "projectedAmount": 142328721.68,
-        "openingBalance": 146335521.68,
-        "sumofNonTreasury": 0,
-        "sumOfTreasury": 0,
-        "nettManualInput": 0,
-        "minReserveBal": 4006800
+        "treasuryData": [
+            {
+                "unit": "Conventional",
+                "refLable": null,
+                "inFlowAmout": 0,
+                "outFlowAmout": 0,
+                "nettAmout": 0,
+                "openingBal": null,
+                "inwardAmount": null,
+                "outwardAmount": null,
+                "projectBal": null,
+                "sweepingAmount": null,
+                "minReserveBal": null,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": "Islamic",
+                "refLable": null,
+                "inFlowAmout": 0,
+                "outFlowAmout": 0,
+                "nettAmout": 0,
+                "openingBal": null,
+                "inwardAmount": null,
+                "outwardAmount": null,
+                "projectBal": null,
+                "sweepingAmount": null,
+                "minReserveBal": null,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": "Protocoll",
+                "refLable": null,
+                "inFlowAmout": 0,
+                "outFlowAmout": 0,
+                "nettAmout": 0,
+                "openingBal": null,
+                "inwardAmount": null,
+                "outwardAmount": null,
+                "projectBal": null,
+                "sweepingAmount": null,
+                "minReserveBal": null,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": "Euroclear",
+                "refLable": null,
+                "inFlowAmout": 0,
+                "outFlowAmout": 0,
+                "nettAmout": 0,
+                "openingBal": null,
+                "inwardAmount": null,
+                "outwardAmount": null,
+                "projectBal": null,
+                "sweepingAmount": null,
+                "minReserveBal": null,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": "Treasury Mail",
+                "refLable": null,
+                "inFlowAmout": 0,
+                "outFlowAmout": 0,
+                "nettAmout": 0,
+                "openingBal": null,
+                "inwardAmount": null,
+                "outwardAmount": null,
+                "projectBal": null,
+                "sweepingAmount": null,
+                "minReserveBal": null,
+                "entityAccMapSkey": null
+            }
+        ],
+        "swpeeingAmount": [
+            {
+                "unit": null,
+                "refLable": "JP Morgan Chase NY",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 14488240.52,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 14488240.52,
+                "sweepingAmount": 0,
+                "minReserveBal": 5000,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "Bank of America NY",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 1444123.17,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 1444123.17,
+                "sweepingAmount": 0,
+                "minReserveBal": 800,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "Wells Fargo Bank NY",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 6448730.51,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 6448730.51,
+                "sweepingAmount": 0,
+                "minReserveBal": 0,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "Deutsche Bank NY",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 400500.33,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 400500.33,
+                "sweepingAmount": 0,
+                "minReserveBal": 0,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "Bank of New York",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 20656366.68,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 20656366.68,
+                "sweepingAmount": 0,
+                "minReserveBal": 0,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "Standard Chartered Bank NY",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 4126031.91,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 4126031.91,
+                "sweepingAmount": 0,
+                "minReserveBal": 0,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "Citi HK",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 0,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 0,
+                "sweepingAmount": 0,
+                "minReserveBal": 0,
+                "entityAccMapSkey": null
+            },
+            {
+                "unit": null,
+                "refLable": "MAYBANK NEW YORK",
+                "inFlowAmout": null,
+                "outFlowAmout": null,
+                "nettAmout": null,
+                "openingBal": 6192873.28,
+                "inwardAmount": 0,
+                "outwardAmount": 0,
+                "projectBal": 6192873.28,
+                "sweepingAmount": 0,
+                "minReserveBal": 4000000,
+                "entityAccMapSkey": null
+            }
+        ]
     }
 }
-
 
 
 
@@ -31,183 +211,61 @@ countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur&entityAccM
 @Controller
 @RequestMapping("/")
 public class FCYBlotterController {
-  @GetMapping(value = "/getProjectedAmount")
+@GetMapping(value = "/getTreasuryDataForNostro")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<ProjectedBalanceDTO>> getProjectedAmount(@RequestParam Long countrySkey,
-			@RequestParam Long entitySkey, @RequestParam Long currencySkey, @RequestParam String timeZone,
-			@RequestParam String indicator, @RequestParam Long entityAccMapSkey, @RequestParam String currency,
-			@RequestParam BigDecimal minReserveBal , @RequestParam String bicCode, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-			LocalDate selectedDate) {
-		LOGGER.info("FCYBlotterController {} getProjectedAmount");
-		ProjectedBalanceDTO transactions = fcyBlotterService.prepareProjectedAmountData(countrySkey, entitySkey, currencySkey,
-				timeZone, entityAccMapSkey, indicator, currency, minReserveBal, bicCode, selectedDate);
-
+	public ResponseEntity<CommonResponseEntity<FCYTreasuryDTO>> getTreasuryDataForNostro(
+			@RequestParam String entitySkey, @RequestParam String currency, @RequestParam String currencySkey,
+			@RequestParam String countrySkey, @RequestParam String Indicator, @RequestParam String timeZone, @RequestParam Long entityAcctMapSkey , @RequestParam String typeOfAgent , @RequestParam String bicCode,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate selectedDate) {
+		LOGGER.info("FCYBlotterController {} getTreasuryDataForNostro");
+		FCYTreasuryDTO result = fcyBlotterService.getTreasuryAndKplusData(entitySkey, currency, currencySkey, countrySkey,
+				Indicator, timeZone, entityAcctMapSkey ,typeOfAgent,bicCode, selectedDate);
 		return new ResponseEntity<>(
-				new CommonResponseEntity<ProjectedBalanceDTO>(1l, success, "getIncomingAndOutgoingDrillDown", transactions),
+				new CommonResponseEntity<FCYTreasuryDTO>(1L, success, "getTreasuryDataForNostro", result),
 				HttpStatus.OK);
 	}
 }
 
-
 public interface FCYBlotterService {
-public ProjectedBalanceDTO prepareProjectedAmountData(Long countrySkey,Long entitySkey, Long currencySkey,
-	        String timeZone, Long entityAccMapSkey, String indicator, String currency, BigDecimal minReserveBal, String bicCode, LocalDate selectedDate);
-}
+public FCYTreasuryDTO getTreasuryAndKplusData(String entitySkey, String currency, String currencySkey, String countrySkey,
+			String Indicator, String timeZone, Long entityAcctMapSkey, String typeOfAgent, String bicCode, LocalDate selectedDate);
 
+}
 
 @Service
 public class FCYBlotterServiceImpl implements FCYBlotterService {
-
 @Override
-	public ProjectedBalanceDTO prepareProjectedAmountData(final Long countrySkey, final Long entitySkey, final Long currencySkey,
-	        final String timeZone, final Long entityAccMapSkey, final String indicator, final String currency, final BigDecimal minReserveBal,
-	        final String bicCode, final LocalDate selectedDate) {
-		
-	    ProjectedBalanceDTO projectedBalDTO = new ProjectedBalanceDTO();
+	public FCYTreasuryDTO getTreasuryAndKplusData(final String entitySkey, final String currency, final String currencySkey,
+			final String countrySkey, final String Indicator, final String timeZone, final Long entityAcctMapSkey, final String typeOfAgent, final String bicCode,
+			final LocalDate selectedDate) {
+		final FCYTreasuryDTO fCYTreasuryDTO = new FCYTreasuryDTO();
+    	fCYTreasuryDTO.setTreasuryData(this.prepareKplusSumOfIncomingOutgoingAmount(entitySkey, currency, entityAcctMapSkey, timeZone, "User", typeOfAgent, bicCode, selectedDate));
+		fCYTreasuryDTO.setSwpeeingAmount(this.prepareSweepingTreasuryData(Long.parseLong(countrySkey),
+				Long.parseLong(entitySkey), Long.parseLong(currencySkey), Indicator, timeZone, selectedDate));
+		return fCYTreasuryDTO;
 
-	    if (indicator.equals(ILMCoreConstants.MainAgent)) {
-	    	
-	    	List<EntityAccountMapDefinition> eamDefns= entityAccountMappingRepo
-					.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(countrySkey, entitySkey, currencySkey,
-							ILMCoreConstants.NOSTROACCOUNT);
-	    	
-	    	List<Long> eamSkeyList= eamDefns.stream().filter(skey-> Objects.equals(skey.getProjectedAmountCalculationInd(), ILMCoreConstants.YIND))
-					.map(EntityAccountMapDefinition::getEntityAcctMapSkey).collect(Collectors.toList());
-	    	
-	    	System.out.println("eamSkeyList" + eamSkeyList);
-	    	
-	    	BigDecimal totalMinReserveBal = eamDefns.stream().
-	    			filter(skey-> Objects.equals(skey.getProjectedAmountCalculationInd(), ILMCoreConstants.YIND))
-	    			.filter(skey -> skey.getMinBalance() != null)
-					.map(EntityAccountMapDefinition::getMinBalance ).reduce(BigDecimal.ZERO, BigDecimal::add);
-	    	
-	    	BigDecimal openingBal =  accountBalanceAggrRepo
-					.findByValueDateAndOpeningClosingBalIndAndEntityAcctMapSkeyIn(selectedDate != null ? selectedDate : DateUtil.getCurrentDateTimeByZone(timeZone).toLocalDate(),
-							ILMCoreConstants.OPENINGBALANCE, eamSkeyList).parallelStream().map(bal->bal.getTotalAmnt()).reduce(BigDecimal.ZERO, BigDecimal::add);
-	    	
-	        FCYNTMainAgentDTO nonTreasuryData = this.getMainAgentTransactions(countrySkey, entitySkey, currencySkey, timeZone, selectedDate);
-
-	        BigDecimal sumOfTreasuryAmount = this.prepareKplusSumOfIncomingOutgoingAmount(String.valueOf(entitySkey), currency, entityAccMapSkey, timeZone, "System",indicator , bicCode, selectedDate)
-	                .parallelStream().map(amt -> amt.getNettAmout()).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-	        BigDecimal sumOfNonTreasuryAmount = nonTreasuryData.getTotalFCYNTAmount().parallelStream()
-	                .map(tNa -> tNa.getNettAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-	        BigDecimal manualInput = this.getFcyManualInputByTransactionType(selectedDate, eamSkeyList).getFcyManualNettAmount();
-
-	        BigDecimal projectedAmount = openingBal.add(sumOfTreasuryAmount).add(sumOfNonTreasuryAmount)
-	                .add(manualInput).subtract(totalMinReserveBal);
-	        
-	        projectedBalDTO.setNettManualInput(manualInput);
-	        projectedBalDTO.setOpeningBalance(openingBal);
-	        projectedBalDTO.setProjectedAmount(projectedAmount);
-	        projectedBalDTO.setSumofNonTreasury(sumOfNonTreasuryAmount);
-	        projectedBalDTO.setSumOfTreasury(sumOfTreasuryAmount);
-	        projectedBalDTO.setMinReserveBal(totalMinReserveBal);
-
-	        return projectedBalDTO;
-	    } else {
-	    	
-		    List<Long> entityAccMapSkeyList = new ArrayList<>();
-		    entityAccMapSkeyList.add(entityAccMapSkey);
-		    BigDecimal openingBal = this.prepareOpeningBalForNostro(currencySkey, currencySkey, currencySkey, entityAccMapSkeyList, timeZone, selectedDate)
-		            .getOrDefault(entityAccMapSkey, BigDecimal.ZERO);
-	        FCYSubAgentDTO subAgent = this.getSubAgentTransactions(entityAccMapSkey, timeZone, selectedDate);
-	        BigDecimal sumOfSwiftAmount = subAgent.getDepartWiseAmount().parallelStream()
-	                .map(sA -> sA.getNettAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-	        BigDecimal sumOfManualInput = subAgent.getDepartWiseManualInput().parallelStream()
-	                .map(sA -> sA.getFcyManualNettAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
-	        
-	        
-	        BigDecimal sumOfTreasuryAmount = this.prepareKplusSumOfIncomingOutgoingAmount(String.valueOf(entitySkey), currency, entityAccMapSkey, timeZone, "System", indicator , bicCode, selectedDate)
-	                .parallelStream().map(amt -> amt.getNettAmout()).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-	        BigDecimal projectedAmount = openingBal.add(sumOfSwiftAmount).add(sumOfTreasuryAmount).add(sumOfManualInput).subtract(minReserveBal);
-
-	        projectedBalDTO.setOpeningBalance(openingBal);
-	        projectedBalDTO.setMinReserveBal(minReserveBal);
-	        projectedBalDTO.setProjectedAmount(projectedAmount);
-	        projectedBalDTO.setSumofNonTreasury(sumOfSwiftAmount);
-	        projectedBalDTO.setSumOfTreasury(sumOfTreasuryAmount);
-	        projectedBalDTO.setNettManualInput(sumOfManualInput);
-	        return projectedBalDTO;
-	    }
 	}
-	@Override
-	public FCYNTMainAgentDTO getMainAgentTransactions(final Long countrySkey, final Long entitySkey,
-			final Long currencySkey, final String timeZone, LocalDate selectedDate) {
-		final LocalDateTime valueDtTime = DateUtil.getCurrentDateTimeByZone(timeZone);
-		final LocalDate valueDate = selectedDate != null ? selectedDate : valueDtTime.toLocalDate();
-		final List<EntityAccountMapDefinition> entityAcctMapDefs = entityAccountMappingRepo
-				.findByEntitySkeyAndCountrySkeyAndCurrencySkey(entitySkey, countrySkey, currencySkey);
-		final List<Long> notToCalcProjectedAmt = entityAcctMapDefs.stream().
-				filter(eam->  Objects.equals(eam.getProjectedAmountCalculationInd(), ILMCoreConstants.NIND)).
-				map(eamSkey->eamSkey.getEntityAcctMapSkey()).collect(Collectors.toList());
-		final EntityAccountMapDefinition mainAgent = entityAcctMapDefs.stream()//NOSONAR
-				.filter(e -> ILMCoreConstants.MainAgent.equals(e.getTypeOfNostroAgent())).findFirst().get();//NOSONAR
-		LOGGER.info("Main Agent {}", mainAgent);
-		final List<EntityAccountMapDefinition> subAgents = entityAcctMapDefs.stream()
-				.filter(e -> ILMCoreConstants.SubAgent.equals(e.getTypeOfNostroAgent())).collect(Collectors.toList());
-		LOGGER.info("Sub Agents {}", subAgents);
-		return this.prepareFCYNTMainAgentDTO(valueDate, mainAgent, subAgents,notToCalcProjectedAmt);
-	}
-
-
-private List<FCYTreasuryDataDTO> prepareKplusSumOfIncomingOutgoingAmount(final String entitySkey,
-			final String currency, final Long entityAcctMapSkey, 
-			final String timeZone, final String ind, final String typeOfagent , final String bicCode, final LocalDate selectedDate) {
-		List<FCYTreasuryDataDTO> resultRows = new ArrayList<>();
-		final String entityCode = dimDao.getEntityCode(Long.parseLong(entitySkey));
-		
-		if (entityCode.contains("CON")) {
-			FCYTreasuryDataDTO conAmounts = this.prepareEntityAmounts(ILMCoreConstants.TRSY, currency, timeZone, typeOfagent, bicCode, selectedDate);
-			resultRows.add(conAmounts);
-			FCYTreasuryDataDTO islAmounts = this.prepareEntityAmounts(ILMCoreConstants.SPTF, currency, timeZone, typeOfagent, bicCode, selectedDate);
-			resultRows.add(islAmounts);
-			resultRows.add(this.prepareProtocolAmount(timeZone, entityAcctMapSkey, 
-					Arrays.asList(ILMCoreConstants.MESSAGETYPE103, ILMCoreConstants.MESSAGETYPE202), selectedDate));
-			if(ind.contains("User")) {
-				resultRows.add(this.prepareEuroclearAmount(timeZone, entityAcctMapSkey, Arrays.asList(ILMCoreConstants.MESSAGETYPE202), selectedDate));
-				resultRows.add(this.prepareTreasuryMailAmount(timeZone, entityAcctMapSkey, Arrays.asList(ILMCoreConstants.MESSAGETYPE103, ILMCoreConstants.MESSAGETYPE202), selectedDate));
-			}
-		}
-		if (entitySkey.contains("ISL")) {
-			FCYTreasuryDataDTO islAmounts = this.prepareEntityAmounts(ILMCoreConstants.SPTF, currency, timeZone, typeOfagent, bicCode, selectedDate);
-			resultRows.add(islAmounts);
-		}
-		return resultRows;
-	}
-	
-	private FCYBlotterManualEntryDTO getFcyManualInputByTransactionType(final LocalDate valueDate, final List<Long> entityAcctMapSkeys) {
-		FCYBlotterManualEntryDTO fCYBlotterManualEntryDTO = new FCYBlotterManualEntryDTO();
-		fCYBlotterManualEntryDTO
-				.setFcyManualInwardAmount(Optional.ofNullable(fCYManualEntryRepo.SumOfTotalAmountByTransactionType(valueDate,
-						entityAcctMapSkeys, ILMCoreConstants.INWARD, ILMCoreConstants.NIndCharacter)).orElse(BigDecimal.ZERO));
-		fCYBlotterManualEntryDTO
-				.setFcyManualOutwardAmount(Optional.ofNullable(fCYManualEntryRepo.SumOfTotalAmountByTransactionType(valueDate,
-						entityAcctMapSkeys, ILMCoreConstants.OUTWARD, ILMCoreConstants.NIndCharacter)).orElse(BigDecimal.ZERO));
-		fCYBlotterManualEntryDTO.setFcyManualNettAmount(Optional
-				.ofNullable(fCYBlotterManualEntryDTO.getFcyManualInwardAmount()).orElseGet(() -> BigDecimal.ZERO)
-				.subtract(Optional.ofNullable(fCYBlotterManualEntryDTO.getFcyManualOutwardAmount().abs())
-						.orElseGet(() -> BigDecimal.ZERO)));
-
-		return fCYBlotterManualEntryDTO;
-	}
-	
-	
-	
 }
 
+public class FCYTreasuryDTO {
 
-
-public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
- public List <EntityAccountMapDefinition> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
-}
-
-
-@Transactional(transactionManager = "transactionManager",propagation=Propagation.NOT_SUPPORTED)
-public interface AccountBalanceAggrRepo extends JpaRepository<AccountBalanceAggregation, Long>{
-public List<AccountBalanceAggregation> findByValueDateAndOpeningClosingBalIndAndEntityAcctMapSkeyIn(LocalDate valueDate ,String openingClosingBalInd, List<Long> eamSkeyList);
+	private List<FCYTreasuryDataDTO> treasuryData;
+	private List<FCYTreasuryDataDTO> swpeeingAmount;
+	public List<FCYTreasuryDataDTO> getTreasuryData() {
+		return treasuryData;
+	}
+	public void setTreasuryData(List<FCYTreasuryDataDTO> treasuryData) {
+		this.treasuryData = treasuryData;
+	}
+	public List<FCYTreasuryDataDTO> getSwpeeingAmount() {
+		return swpeeingAmount;
+	}
+	public void setSwpeeingAmount(List<FCYTreasuryDataDTO> swpeeingAmount) {
+		this.swpeeingAmount = swpeeingAmount;
+	}
+	
+	
+	
+    
 }
