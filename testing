@@ -1,170 +1,213 @@
-entitySkey=1&currencySkey=1&timezone=Asia/Kuala_Lumpur&indicator=ALL&entityAcctMapSkey=-1
+http://10.172.120.19:8013/ilm-web/getProjectedAmount?countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur&entityAccMapSkey=21&indicator=Main%20Agent&currency=USD&minReserveBal=1000&bicCode=CITIUS33
+
+
+
+countrySkey=1&entitySkey=1&currencySkey=41&timeZone=Asia/Kuala_Lumpur&entityAccMapSkey=21&indicator=Main%20Agent&currency=USD&minReserveBal=1000&bicCode=CITIUS33
 
 
 {
     "timeSpendsInSeconds": 1,
-    "status": "success",
-    "serviceName": "getBalancesByEntity",
+    "status": "SUCCESS",
+    "serviceName": "getIncomingAndOutgoingDrillDown",
     "t": {
-        "K Account": [
-            {
-                "acctBalAggrSkey": 101700,
-                "entityAcctMapSkey": 4,
-                "totalAmnt": 0,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "OTHERS",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "Main Account": [
-            {
-                "acctBalAggrSkey": 101674,
-                "entityAcctMapSkey": 1,
-                "totalAmnt": 0.00163689,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "OTHERS",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "SRR Account": [
-            {
-                "acctBalAggrSkey": 101682,
-                "entityAcctMapSkey": 2,
-                "totalAmnt": 26357.35423869,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "OTHERS",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "K Account OB": [
-            {
-                "acctBalAggrSkey": 101700,
-                "entityAcctMapSkey": 4,
-                "totalAmnt": 0,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "OTHERS",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "Main Account OB": [
-            {
-                "acctBalAggrSkey": 101674,
-                "entityAcctMapSkey": 1,
-                "totalAmnt": 0.00163689,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "OTHERS",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "SRR Securities Account": [
-            {
-                "acctBalAggrSkey": 101704,
-                "entityAcctMapSkey": 3,
-                "totalAmnt": 0,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "SRR_SECURITIES",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "SRR Securities Account OB": [
-            {
-                "acctBalAggrSkey": 101704,
-                "entityAcctMapSkey": 3,
-                "totalAmnt": 0,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "SRR_SECURITIES",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ],
-        "SRR Account OB": [
-            {
-                "acctBalAggrSkey": 101682,
-                "entityAcctMapSkey": 2,
-                "totalAmnt": 26357.35423869,
-                "businessDtTime": "05-11-2024 12:30:00 AM",
-                "valueDate": "05-11-2024",
-                "totalInFlowAmnt": 0,
-                "totalOutFlowAmnt": 0,
-                "aggrInd": "OTHERS",
-                "openingClosingBalInd": "OPENING_BALANCE",
-                "trackerID": null,
-                "rnk": null,
-                "srrClosingBalance": 0.0,
-                "srrDailyPercentage": 0.0,
-                "cashBalance": null,
-                "securitiesBalance": null,
-                "latestMT950Date": null
-            }
-        ]
+        "projectedAmount": 142328721.68,
+        "openingBalance": 146335521.68,
+        "sumofNonTreasury": 0,
+        "sumOfTreasury": 0,
+        "nettManualInput": 0,
+        "minReserveBal": 4006800
     }
+}
+
+
+
+
+
+
+
+
+
+
+@Controller
+@RequestMapping("/")
+public class FCYBlotterController {
+  @GetMapping(value = "/getProjectedAmount")
+	@ResponseBody
+	@CrossOrigin("${cors.urls}")
+	public ResponseEntity<CommonResponseEntity<ProjectedBalanceDTO>> getProjectedAmount(@RequestParam Long countrySkey,
+			@RequestParam Long entitySkey, @RequestParam Long currencySkey, @RequestParam String timeZone,
+			@RequestParam String indicator, @RequestParam Long entityAccMapSkey, @RequestParam String currency,
+			@RequestParam BigDecimal minReserveBal , @RequestParam String bicCode, @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+			LocalDate selectedDate) {
+		LOGGER.info("FCYBlotterController {} getProjectedAmount");
+		ProjectedBalanceDTO transactions = fcyBlotterService.prepareProjectedAmountData(countrySkey, entitySkey, currencySkey,
+				timeZone, entityAccMapSkey, indicator, currency, minReserveBal, bicCode, selectedDate);
+
+		return new ResponseEntity<>(
+				new CommonResponseEntity<ProjectedBalanceDTO>(1l, success, "getIncomingAndOutgoingDrillDown", transactions),
+				HttpStatus.OK);
+	}
+}
+
+
+public interface FCYBlotterService {
+public ProjectedBalanceDTO prepareProjectedAmountData(Long countrySkey,Long entitySkey, Long currencySkey,
+	        String timeZone, Long entityAccMapSkey, String indicator, String currency, BigDecimal minReserveBal, String bicCode, LocalDate selectedDate);
+}
+
+
+@Service
+public class FCYBlotterServiceImpl implements FCYBlotterService {
+
+@Override
+	public ProjectedBalanceDTO prepareProjectedAmountData(final Long countrySkey, final Long entitySkey, final Long currencySkey,
+	        final String timeZone, final Long entityAccMapSkey, final String indicator, final String currency, final BigDecimal minReserveBal,
+	        final String bicCode, final LocalDate selectedDate) {
+		
+	    ProjectedBalanceDTO projectedBalDTO = new ProjectedBalanceDTO();
+
+	    if (indicator.equals(ILMCoreConstants.MainAgent)) {
+	    	
+	    	List<EntityAccountMapDefinition> eamDefns= entityAccountMappingRepo
+					.findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(countrySkey, entitySkey, currencySkey,
+							ILMCoreConstants.NOSTROACCOUNT);
+	    	
+	    	List<Long> eamSkeyList= eamDefns.stream().filter(skey-> Objects.equals(skey.getProjectedAmountCalculationInd(), ILMCoreConstants.YIND))
+					.map(EntityAccountMapDefinition::getEntityAcctMapSkey).collect(Collectors.toList());
+	    	
+	    	System.out.println("eamSkeyList" + eamSkeyList);
+	    	
+	    	BigDecimal totalMinReserveBal = eamDefns.stream().
+	    			filter(skey-> Objects.equals(skey.getProjectedAmountCalculationInd(), ILMCoreConstants.YIND))
+	    			.filter(skey -> skey.getMinBalance() != null)
+					.map(EntityAccountMapDefinition::getMinBalance ).reduce(BigDecimal.ZERO, BigDecimal::add);
+	    	
+	    	BigDecimal openingBal =  accountBalanceAggrRepo
+					.findByValueDateAndOpeningClosingBalIndAndEntityAcctMapSkeyIn(selectedDate != null ? selectedDate : DateUtil.getCurrentDateTimeByZone(timeZone).toLocalDate(),
+							ILMCoreConstants.OPENINGBALANCE, eamSkeyList).parallelStream().map(bal->bal.getTotalAmnt()).reduce(BigDecimal.ZERO, BigDecimal::add);
+	    	
+	        FCYNTMainAgentDTO nonTreasuryData = this.getMainAgentTransactions(countrySkey, entitySkey, currencySkey, timeZone, selectedDate);
+
+	        BigDecimal sumOfTreasuryAmount = this.prepareKplusSumOfIncomingOutgoingAmount(String.valueOf(entitySkey), currency, entityAccMapSkey, timeZone, "System",indicator , bicCode, selectedDate)
+	                .parallelStream().map(amt -> amt.getNettAmout()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	        BigDecimal sumOfNonTreasuryAmount = nonTreasuryData.getTotalFCYNTAmount().parallelStream()
+	                .map(tNa -> tNa.getNettAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	        BigDecimal manualInput = this.getFcyManualInputByTransactionType(selectedDate, eamSkeyList).getFcyManualNettAmount();
+
+	        BigDecimal projectedAmount = openingBal.add(sumOfTreasuryAmount).add(sumOfNonTreasuryAmount)
+	                .add(manualInput).subtract(totalMinReserveBal);
+	        
+	        projectedBalDTO.setNettManualInput(manualInput);
+	        projectedBalDTO.setOpeningBalance(openingBal);
+	        projectedBalDTO.setProjectedAmount(projectedAmount);
+	        projectedBalDTO.setSumofNonTreasury(sumOfNonTreasuryAmount);
+	        projectedBalDTO.setSumOfTreasury(sumOfTreasuryAmount);
+	        projectedBalDTO.setMinReserveBal(totalMinReserveBal);
+
+	        return projectedBalDTO;
+	    } else {
+	    	
+		    List<Long> entityAccMapSkeyList = new ArrayList<>();
+		    entityAccMapSkeyList.add(entityAccMapSkey);
+		    BigDecimal openingBal = this.prepareOpeningBalForNostro(currencySkey, currencySkey, currencySkey, entityAccMapSkeyList, timeZone, selectedDate)
+		            .getOrDefault(entityAccMapSkey, BigDecimal.ZERO);
+	        FCYSubAgentDTO subAgent = this.getSubAgentTransactions(entityAccMapSkey, timeZone, selectedDate);
+	        BigDecimal sumOfSwiftAmount = subAgent.getDepartWiseAmount().parallelStream()
+	                .map(sA -> sA.getNettAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	        BigDecimal sumOfManualInput = subAgent.getDepartWiseManualInput().parallelStream()
+	                .map(sA -> sA.getFcyManualNettAmount()).reduce(BigDecimal.ZERO, BigDecimal::add);
+	        
+	        
+	        BigDecimal sumOfTreasuryAmount = this.prepareKplusSumOfIncomingOutgoingAmount(String.valueOf(entitySkey), currency, entityAccMapSkey, timeZone, "System", indicator , bicCode, selectedDate)
+	                .parallelStream().map(amt -> amt.getNettAmout()).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+	        BigDecimal projectedAmount = openingBal.add(sumOfSwiftAmount).add(sumOfTreasuryAmount).add(sumOfManualInput).subtract(minReserveBal);
+
+	        projectedBalDTO.setOpeningBalance(openingBal);
+	        projectedBalDTO.setMinReserveBal(minReserveBal);
+	        projectedBalDTO.setProjectedAmount(projectedAmount);
+	        projectedBalDTO.setSumofNonTreasury(sumOfSwiftAmount);
+	        projectedBalDTO.setSumOfTreasury(sumOfTreasuryAmount);
+	        projectedBalDTO.setNettManualInput(sumOfManualInput);
+	        return projectedBalDTO;
+	    }
+	}
+	@Override
+	public FCYNTMainAgentDTO getMainAgentTransactions(final Long countrySkey, final Long entitySkey,
+			final Long currencySkey, final String timeZone, LocalDate selectedDate) {
+		final LocalDateTime valueDtTime = DateUtil.getCurrentDateTimeByZone(timeZone);
+		final LocalDate valueDate = selectedDate != null ? selectedDate : valueDtTime.toLocalDate();
+		final List<EntityAccountMapDefinition> entityAcctMapDefs = entityAccountMappingRepo
+				.findByEntitySkeyAndCountrySkeyAndCurrencySkey(entitySkey, countrySkey, currencySkey);
+		final List<Long> notToCalcProjectedAmt = entityAcctMapDefs.stream().
+				filter(eam->  Objects.equals(eam.getProjectedAmountCalculationInd(), ILMCoreConstants.NIND)).
+				map(eamSkey->eamSkey.getEntityAcctMapSkey()).collect(Collectors.toList());
+		final EntityAccountMapDefinition mainAgent = entityAcctMapDefs.stream()//NOSONAR
+				.filter(e -> ILMCoreConstants.MainAgent.equals(e.getTypeOfNostroAgent())).findFirst().get();//NOSONAR
+		LOGGER.info("Main Agent {}", mainAgent);
+		final List<EntityAccountMapDefinition> subAgents = entityAcctMapDefs.stream()
+				.filter(e -> ILMCoreConstants.SubAgent.equals(e.getTypeOfNostroAgent())).collect(Collectors.toList());
+		LOGGER.info("Sub Agents {}", subAgents);
+		return this.prepareFCYNTMainAgentDTO(valueDate, mainAgent, subAgents,notToCalcProjectedAmt);
+	}
+
+
+private List<FCYTreasuryDataDTO> prepareKplusSumOfIncomingOutgoingAmount(final String entitySkey,
+			final String currency, final Long entityAcctMapSkey, 
+			final String timeZone, final String ind, final String typeOfagent , final String bicCode, final LocalDate selectedDate) {
+		List<FCYTreasuryDataDTO> resultRows = new ArrayList<>();
+		final String entityCode = dimDao.getEntityCode(Long.parseLong(entitySkey));
+		
+		if (entityCode.contains("CON")) {
+			FCYTreasuryDataDTO conAmounts = this.prepareEntityAmounts(ILMCoreConstants.TRSY, currency, timeZone, typeOfagent, bicCode, selectedDate);
+			resultRows.add(conAmounts);
+			FCYTreasuryDataDTO islAmounts = this.prepareEntityAmounts(ILMCoreConstants.SPTF, currency, timeZone, typeOfagent, bicCode, selectedDate);
+			resultRows.add(islAmounts);
+			resultRows.add(this.prepareProtocolAmount(timeZone, entityAcctMapSkey, 
+					Arrays.asList(ILMCoreConstants.MESSAGETYPE103, ILMCoreConstants.MESSAGETYPE202), selectedDate));
+			if(ind.contains("User")) {
+				resultRows.add(this.prepareEuroclearAmount(timeZone, entityAcctMapSkey, Arrays.asList(ILMCoreConstants.MESSAGETYPE202), selectedDate));
+				resultRows.add(this.prepareTreasuryMailAmount(timeZone, entityAcctMapSkey, Arrays.asList(ILMCoreConstants.MESSAGETYPE103, ILMCoreConstants.MESSAGETYPE202), selectedDate));
+			}
+		}
+		if (entitySkey.contains("ISL")) {
+			FCYTreasuryDataDTO islAmounts = this.prepareEntityAmounts(ILMCoreConstants.SPTF, currency, timeZone, typeOfagent, bicCode, selectedDate);
+			resultRows.add(islAmounts);
+		}
+		return resultRows;
+	}
+	
+	private FCYBlotterManualEntryDTO getFcyManualInputByTransactionType(final LocalDate valueDate, final List<Long> entityAcctMapSkeys) {
+		FCYBlotterManualEntryDTO fCYBlotterManualEntryDTO = new FCYBlotterManualEntryDTO();
+		fCYBlotterManualEntryDTO
+				.setFcyManualInwardAmount(Optional.ofNullable(fCYManualEntryRepo.SumOfTotalAmountByTransactionType(valueDate,
+						entityAcctMapSkeys, ILMCoreConstants.INWARD, ILMCoreConstants.NIndCharacter)).orElse(BigDecimal.ZERO));
+		fCYBlotterManualEntryDTO
+				.setFcyManualOutwardAmount(Optional.ofNullable(fCYManualEntryRepo.SumOfTotalAmountByTransactionType(valueDate,
+						entityAcctMapSkeys, ILMCoreConstants.OUTWARD, ILMCoreConstants.NIndCharacter)).orElse(BigDecimal.ZERO));
+		fCYBlotterManualEntryDTO.setFcyManualNettAmount(Optional
+				.ofNullable(fCYBlotterManualEntryDTO.getFcyManualInwardAmount()).orElseGet(() -> BigDecimal.ZERO)
+				.subtract(Optional.ofNullable(fCYBlotterManualEntryDTO.getFcyManualOutwardAmount().abs())
+						.orElseGet(() -> BigDecimal.ZERO)));
+
+		return fCYBlotterManualEntryDTO;
+	}
+	
+	
+	
+}
+
+
+
+public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
+ public List <EntityAccountMapDefinition> findByCountrySkeyAndEntitySkeyAndCurrencySkeyAndAccountType(Long countrySkey, Long entitySkey, Long currencySkey, String accountType);
+}
+
+
+@Transactional(transactionManager = "transactionManager",propagation=Propagation.NOT_SUPPORTED)
+public interface AccountBalanceAggrRepo extends JpaRepository<AccountBalanceAggregation, Long>{
+public List<AccountBalanceAggregation> findByValueDateAndOpeningClosingBalIndAndEntityAcctMapSkeyIn(LocalDate valueDate ,String openingClosingBalInd, List<Long> eamSkeyList);
 }
