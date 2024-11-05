@@ -1,14 +1,144 @@
+@Controller
+@RequestMapping("/")
+public class BlotterController {
+	@GetMapping(value="/ilmbalances")
+	@ResponseBody
+	@CrossOrigin("${cors.urls}")
+	public ResponseEntity<CommonResponseEntity<Map<String, List<AccountBalanceAggregation>>>> getBalancesByEntity(@RequestParam Long entitySkey,@RequestParam Long currencySkey,
+			@RequestParam String timezone, @RequestParam String indicator, @RequestParam Long entityAcctMapSkey,
+			@RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate selectedDate) {
+		System.out.println("Blotter Controller {} getBalancesByEntity : "+"entitySkey =,"+entitySkey + " , currencySkey ==" +currencySkey + ", eamSkey = "+entityAcctMapSkey);
+		Map<String, List<AccountBalanceAggregation>> aggregatedData =  blotterService.getBalancesByEntity(entitySkey,currencySkey,timezone, indicator,entityAcctMapSkey, selectedDate);
+		return new ResponseEntity<>(new CommonResponseEntity<Map<String, List<AccountBalanceAggregation>>>(1l, success, "getBalancesByEntity", aggregatedData),HttpStatus.OK);
+	}
+}	
 
-http://10.172.120.19:8013/ilm-web/genilmbalances?countrySkey=1&entitySkey=1&currencySkey=1&timezone=Asia/Kuala_Lumpur&indicator=ALL
 
 
-countrySkey=1&entitySkey=1&currencySkey=1&timezone=Asia/Kuala_Lumpur&indicator=ALL
+public interface BlotterService {
+
+	public Map<String, List<AccountBalanceAggregation>> getBalancesByEntity(Long entitySkey, Long currencySkey, String timezone, String indicator ,Long entityAcctMapSkey, LocalDate selectedDate);
+	
+}
 
 
 
-{
-    "timeSpendsInSeconds": 1,
-    "status": "success",
-    "serviceName": "getBalancesByEntity",
-    "t": {}
+@Service
+public class BlotterServiceImpl extends IlmAbstractMessageHandler implements BlotterService{
+
+	@Override
+	@FindNormEx
+	public Map<String, List<AccountBalanceAggregation>> getBalancesByEntity(Long entitySkey, Long currencySkey, String timezone, String indicator , Long entityAcctMapSkey,
+			LocalDate selectedDate) {		
+	LocalDateTime endTime = DateUtil.getCurrentDateTimeByZone(timezone);
+	Map<String, List<AccountBalanceAggregation>> accountWiseBalList = new HashMap<>();
+	if(endTime != null) {
+		LocalDate valueDt = selectedDate != null ? selectedDate : endTime.toLocalDate();
+		List<String> acctTypes = new ArrayList<>(Arrays.asList(ILMCoreConstants.MAINACCOUNT,ILMCoreConstants.KACCOUNT, 
+				ILMCoreConstants.SRRACCOUNT, ILMCoreConstants.SRRACCTSECURITIES, ILMCoreConstants.NOSTROACCOUNT));
+		LocalDateTime startTime = selectedDate != null ? LocalDateTime.of(selectedDate, LocalTime.of(0, 1)) :
+										LocalDateTime.of(endTime.toLocalDate(), LocalTime.of(0, 1));
+		List<ILMBalancesParamsDTO> paramsDTOs = getBalsParamsDTOs(acctTypes, entitySkey ,currencySkey ,entityAcctMapSkey);
+		for(ILMBalancesParamsDTO dto : paramsDTOs){
+			String acctName = dto.getAcctName();
+			Long eamSkey = dto.getEamSkey();
+			String aggrInd = dto.getAggrInd();
+			LOGGER.info("acctName  == "+dto.getAcctName()+" , eamSkey == "+ dto.getEamSkey() +" , aggrInd =="+ dto.getAggrInd());
+			AccountBalanceAggregation openingAggr = new AccountBalanceAggregation(null, eamSkey, BigDecimal.ZERO, null, valueDt, BigDecimal.ZERO, BigDecimal.ZERO);
+			if(eamSkey != null) {
+				AccountBalanceAggregation openingAggrBal = acctBalAggrRepo.findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd
+						(eamSkey, valueDt, ILMCoreConstants.OPENINGBALANCE, aggrInd);
+				if(openingAggrBal != null) {
+					openingAggr = openingAggrBal;
+				}
+				List<AccountBalanceAggregation> aggregations = new ArrayList<>();
+				if(indicator.contentEquals(ILMCoreConstants.ILM_BALANCES)) {
+					AccountBalanceAggregation aggregation = finMsgDao.getLastUpdatedAcctBalAggr(eamSkey, valueDt, aggrInd);
+					if(aggregation != null)
+						aggregations.add(aggregation);
+				}else {
+					aggregations = blotterDao.getAggrsBetweenBusinessDts(eamSkey, valueDt, startTime, endTime, aggrInd);
+				}
+				LOGGER.info("@@ aggregations == "+ aggregations.toString());
+				setAcctWiseBalList(aggregations, accountWiseBalList, eamSkey, valueDt, acctName, openingAggr);
+			}else {
+				accountWiseBalList.put(acctName, defaultAcctBalMap(eamSkey, valueDt));
+			}
+		}
+	}
+	return accountWiseBalList;
+	}
+	
+	private List<ILMBalancesParamsDTO> getBalsParamsDTOs(List<String> acctTypes, Long entitySkey ,Long currencySkey ,Long entityAcctMapSkey){		
+		List<ILMBalancesParamsDTO> paramsDTOs = new ArrayList<>(); 
+		LOGGER.info("entity map skey of selected agent : "+entityAcctMapSkey);
+		for(String acct : acctTypes) {
+			List<EntityAccountMapDefinition> definitions = null ;
+			if(entityAcctMapSkey != null && entityAcctMapSkey > 0 && acct.contentEquals(ILMCoreConstants.NOSTROACCOUNT)) {
+				definitions = entityAccountMappingRepo.findByEntityAcctMapSkey(entityAcctMapSkey);
+				LOGGER.info("inside each agent definition");
+			}else {
+				definitions = entityAccountMappingRepo.findByEntitySkeyAndCurrencySkeyAndAccountType(entitySkey, currencySkey ,acct);
+			}
+			LOGGER.info(" Acct == "+ acct +" , definitions == "+ definitions.toString());
+			if(CollectionUtils.isNotEmpty(definitions)) {
+				if (acct.contentEquals(ILMCoreConstants.NOSTROACCOUNT)) {
+					for(EntityAccountMapDefinition defn : definitions) {
+						setILMBalParamsDTO(defn.getEntityAcctMapSkey(), acct, paramsDTOs);
+					}
+//					setILMBalParamsDTO(definitions.get(0).getEntityAcctMapSkey(), acct, paramsDTOs);
+				}else {
+					setILMBalParamsDTO(definitions.get(0).getEntityAcctMapSkey(), acct, paramsDTOs);
+				}
+			}else {
+				LOGGER.info("definitions is empty");
+			}
+		}
+		LOGGER.info(" paramsDTOs == "+paramsDTOs.toString());
+		return paramsDTOs;
+	}
+	private void setAcctWiseBalList(List<AccountBalanceAggregation> aggregations, Map<String, List<AccountBalanceAggregation>> accountWiseBalList,
+												Long eamSkey, LocalDate valueDt, String acctName, AccountBalanceAggregation openingAggr) {
+		if(CollectionUtils.isNotEmpty(aggregations)) {
+			List<AccountBalanceAggregation> nostroAggrs = aggregations;
+			aggregations=getAmountsInMillions(aggregations);
+			if(acctName.contentEquals(ILMCoreConstants.NOSTROACCOUNT)) {
+				AccountBalanceManagement latestMT950Entry = openingAggr.getTrackerID() != null ? accountBalanceMgmtRepo.findByTrackerID(openingAggr.getTrackerID()) : null;
+				LOGGER.info("----------Latest MT950 entry--------");
+				LOGGER.info(latestMT950Entry);
+				LocalDate latestMT950Date = latestMT950Entry != null ? latestMT950Entry.getValueDate() : null;
+				openingAggr.setLatestMT950Date(latestMT950Date);
+				if(accountWiseBalList.containsKey(acctName) || accountWiseBalList.containsKey(acctName+" OB")) {
+					accountWiseBalList.get(acctName).addAll(nostroAggrs);
+					accountWiseBalList.get(acctName+" OB").add((Arrays.asList(openingAggr)).get(0));
+				}
+				else {
+					accountWiseBalList.put(acctName, nostroAggrs);
+					accountWiseBalList.put(acctName+" OB", (new ArrayList<AccountBalanceAggregation>(Arrays.asList(openingAggr))));
+				}
+			}else {
+				accountWiseBalList.put(acctName, aggregations);
+				accountWiseBalList.put(acctName+" OB", getAmountsInMillions(new ArrayList<AccountBalanceAggregation>(Arrays.asList(openingAggr))));
+			}
+			
+		}else {
+			if(accountWiseBalList.containsKey(acctName)) {
+				accountWiseBalList.get(acctName).add(defaultAcctBalMap(eamSkey, valueDt).get(0));
+			}
+			else {
+				accountWiseBalList.put(acctName, defaultAcctBalMap(eamSkey, valueDt));
+			}
+		}
+	}
+}	
+
+
+@Transactional(transactionManager = "transactionManager",propagation=Propagation.NOT_SUPPORTED)
+public interface AccountBalanceAggrRepo extends JpaRepository<AccountBalanceAggregation, Long>{
+	public AccountBalanceAggregation findByEntityAcctMapSkeyAndValueDateAndOpeningClosingBalIndAndAggrInd(Long entityAcctMapSkey,LocalDate valueDate, String openingClosingBalInd, String aggrInd);
+}
+
+public interface FinMessageDao {
+
+	public AccountBalanceAggregation getLastUpdatedAcctBalAggr(Long entityAcctMapSkey, LocalDate valueDt, String aggrInd);
 }
