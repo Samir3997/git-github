@@ -1,248 +1,179 @@
-http://10.172.120.19:8013/ilm-web/kacctanalydata
 
-{"analysisInd":"P","countrySkeys":[1],"currencySkeys":[1],"entitySkeys":[1],"entityName":"Conventional","fromDate":"01-11-2024","toDate":"04-11-2024","createdBy":"00142397"}
+http://10.172.120.19:8013/ilm-web/fund/position
+
+{"endDate":"04-11-2024","entitySkey":1,"rank":"2","startDate":"04-11-2024","countrySkey":1,"currencySkey":41,"nostroBankSkey":21,"entityAccountType":"Main Account"}
+
+
+
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "getKAcctAnalyticsData",
-    "t": [
-        {
-            "effectiveDate": "01-11-2024",
-            "amntUtilized": 0,
-            "trancheSize": 5000000,
-            "costPerTranche": 12,
-            "utilizationTime": null,
-            "trancheUtilized": 0,
-            "billedAmnt": 0,
-            "amntRedeemed": null,
-            "redemptionTime": null,
-            "trancheRedeemed": null,
-            "availCollateralBal": 26356554238.69,
-            "excessSrr": 26356554238.69,
-            "mt535Amount": null
+    "serviceName": "findFundPosition",
+    "t": {
+        "LARGEST_NEGATIVE": {
+            "entityAcctMapSkeyK": null,
+            "rank": null,
+            "startDate": null,
+            "endDate": null,
+            "order": null,
+            "countrySkey": null,
+            "entitySkey": null,
+            "currencySkey": null,
+            "entityAcctMapSkeyMain": null,
+            "avgPositive": null,
+            "avgNegative": 0.00,
+            "aggrs": [],
+            "allAggrs": [],
+            "nostroBankSkey": null,
+            "entityAccountType": null
         },
-        {
-            "effectiveDate": "02-11-2024",
-            "amntUtilized": 0,
-            "trancheSize": 5000000,
-            "costPerTranche": 12,
-            "utilizationTime": null,
-            "trancheUtilized": 0,
-            "billedAmnt": 0,
-            "amntRedeemed": null,
-            "redemptionTime": null,
-            "trancheRedeemed": null,
-            "availCollateralBal": null,
-            "excessSrr": null,
-            "mt535Amount": null
-        },
-        {
-            "effectiveDate": "03-11-2024",
-            "amntUtilized": 0,
-            "trancheSize": 5000000,
-            "costPerTranche": 12,
-            "utilizationTime": null,
-            "trancheUtilized": 0,
-            "billedAmnt": 0,
-            "amntRedeemed": null,
-            "redemptionTime": null,
-            "trancheRedeemed": null,
-            "availCollateralBal": null,
-            "excessSrr": null,
-            "mt535Amount": null
-        },
-        {
-            "effectiveDate": "04-11-2024",
-            "amntUtilized": 0,
-            "trancheSize": 5000000,
-            "costPerTranche": 12,
-            "utilizationTime": null,
-            "trancheUtilized": 0,
-            "billedAmnt": 0,
-            "amntRedeemed": null,
-            "redemptionTime": null,
-            "trancheRedeemed": null,
-            "availCollateralBal": 26356554238.69,
-            "excessSrr": 26356554238.69,
-            "mt535Amount": null
+        "LARGEST_POSITIVE": {
+            "entityAcctMapSkeyK": null,
+            "rank": null,
+            "startDate": null,
+            "endDate": null,
+            "order": null,
+            "countrySkey": null,
+            "entitySkey": null,
+            "currencySkey": null,
+            "entityAcctMapSkeyMain": null,
+            "avgPositive": 0.00,
+            "avgNegative": null,
+            "aggrs": [
+                {
+                    "acctBalAggrSkey": 101639,
+                    "entityAcctMapSkey": 21,
+                    "totalAmnt": 92.57865528,
+                    "businessDtTime": "05-11-2024 12:30:00 AM",
+                    "valueDate": "04-11-2024",
+                    "totalInFlowAmnt": 0,
+                    "totalOutFlowAmnt": 0,
+                    "totalInFlowAmntSecurities": null,
+                    "totalOutFlowAmntSecurities": null,
+                    "aggrInd": "OTHERS",
+                    "openingClosingBalInd": "CLOSING_BALANCE",
+                    "trackerID": 324437,
+                    "rnk": null,
+                    "srrClosingBalance": 0.0,
+                    "srrDailyPercentage": 0.0,
+                    "calculatedDailySrrPercentage": 0.0,
+                    "cashBalance": null,
+                    "securitiesBalance": null,
+                    "srrExcessBalance": null
+                }
+            ],
+            "allAggrs": [],
+            "nostroBankSkey": null,
+            "entityAccountType": null
         }
-    ]
+    }
 }
-
-
-
-
-
-
 
 @Controller
 @RequestMapping("/")
-public class KAccountAnalyticsController {
-@RequestMapping(value="/kacctanalydata", method=RequestMethod.POST)
+public class PaymentMessageController {
+@PostMapping(value="/fund/position")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<List<KAccountAnalyticsDataDTO>>> getKAcctAnalyticsData(@RequestBody RequestAnalyticsDTO filterDTO) {
-		LOGGER.info("KAccountAnalyticsController {} getKAcctAnalyticsData");
-		List<KAccountAnalyticsDataDTO> dataDtos = analyticsService.getKAcctAnalyticsData(filterDTO);
-		return new ResponseEntity<>(new CommonResponseEntity<List<KAccountAnalyticsDataDTO>>(1l, "SUCCESS", "getKAcctAnalyticsData", dataDtos),HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<Map<String, FundPositionDto>>> findFundPosition(@RequestBody FundPositionDto positionDto) {
+		Map<String, FundPositionDto> aggregations=paymentMessageService.findFundPosition(positionDto);
+		return new ResponseEntity<>(new CommonResponseEntity<Map<String, FundPositionDto>>(1l, success, "findFundPosition", aggregations),HttpStatus.OK);
 	}
 }
 
-public interface KAccountAnalyticsService {
-
-	public List<KAccountAnalyticsDataDTO> getKAcctAnalyticsData(RequestAnalyticsDTO filterDTO);
+public interface PaymentMessageService {
+	public Map<String, FundPositionDto> findFundPosition(FundPositionDto positionDto);
 }
 
 @Service
-public class KAccountAnalyticsServiceImpl implements KAccountAnalyticsService{
-
-	@Override
-	@Find(arguments= {"request Analytics DTO"},returnType="List of K Account Analytics DTO",type="JSON",comment="k_account_analytics")
+public class PaymentMessageServiceImpl extends IlmAbstractCommonService implements PaymentMessageService {
+@Override
+	@Find(arguments= {"Fund Position DTO"},returnType="map of Acct Bal Aggr",type="JSON",comment="find_fund_position")
 	@FindNormEx
-	public List<KAccountAnalyticsDataDTO> getKAcctAnalyticsData(RequestAnalyticsDTO filterDTO){
-		System.out.println("Inside getKacctAnalyticsData");
-		List<EntityAccountMapDefinition> kAcctEam = eamRepo.findByEntitySkeyAndAccountType(filterDTO.getEntitySkeys().get(0), ILMCoreConstants.KACCOUNT);
-		List<EntityAccountMapDefinition> srrAcctEam = eamRepo.findByEntitySkeyAndAccountType(filterDTO.getEntitySkeys().get(0), ILMCoreConstants.SRRACCOUNT);
-		List<KAccountAnalyticsDataDTO> dataDtos = new ArrayList<>();
-		if(CollectionUtils.isNotEmpty(kAcctEam)) {
-			LOGGER.info("Inside if ");
-			Long eamSkey = kAcctEam.get(0).getEntityAcctMapSkey();
-			Long srrEamSkey = null ;
-			LOGGER.info("srrAcctEam " + srrAcctEam.toString());
-			if (CollectionUtils.isNotEmpty(srrAcctEam)) {
-				LOGGER.info("srrAcctEam is not empty ");
-				srrEamSkey = srrAcctEam.get(0).getEntityAcctMapSkey();
-				LOGGER.info("Srr eam skey : "+srrEamSkey);
-			}
-			LOGGER.info("eamSkey : "+eamSkey);
-			if(eamSkey != null) {
-				if(filterDTO.getAnalysisInd() == 'I') {
-					dataDtos = getKAcctAnalyticsForIntraDay(filterDTO, eamSkey);
-				}else if(filterDTO.getAnalysisInd() == 'P'){
-					dataDtos = getKAcctAnalyticsForPastPeriod(filterDTO, eamSkey , srrEamSkey);
-				}
-			}
+	public Map<String, FundPositionDto> findFundPosition(FundPositionDto positionDto) {
+		Map<String, FundPositionDto> cumulativePositions = new HashMap<>();
+		List<EntityAccountMapDefinition> mainEAMDefns = new ArrayList();
+		if(positionDto.getNostroBankSkey()==null) {
+			mainEAMDefns = eamRepo.findByEntitySkeyAndAccountType(positionDto.getEntitySkey(), positionDto.getEntityAccountType());
 		}
-		return dataDtos;
-	}
-}
-
-
-public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
-
-	public List<EntityAccountMapDefinition> findByEntitySkeyAndAccountType(Long entitySkey, String accountType);
-}
-
-
-private List<KAccountAnalyticsDataDTO> getKAcctAnalyticsForIntraDay(RequestAnalyticsDTO filterDTO, Long eamSkey) {
-		List<KAccountAnalyticsDataDTO> dataDTOs = new ArrayList<>();
-		LocalDate analysisDate = filterDTO.getFromDate();
-		KAccountConfiguration reqConfig = null;
-		List<AccountBalanceManagement> balanceManagements = acctBalMgmtRepo.findByValueDateAndEntityAcctMapSkey(analysisDate, eamSkey);
-		List<AccountBalanceManagement> filteredBalMgmts = balanceManagements.stream().filter(p -> (p.getMessageType().compareTo(ILMCoreConstants.MESSAGETYPE535) != 0)).collect(Collectors.toList());
-		List<KAccountConfiguration> kAcctConfigs = kAcctConfigDao.getKAcctConfigByDims(filterDTO.getCountrySkeys(), filterDTO.getEntitySkeys(), filterDTO.getCurrencySkeys(), ILMCoreConstants.TRANCHEDEFN);
-		if(CollectionUtils.isNotEmpty(kAcctConfigs)) {
-			Optional<KAccountConfiguration> configurationOptional = kAcctConfigs.stream().filter(p -> (p.getEffectiveFrom().compareTo(analysisDate) <= 0 && p.getEffectiveTo().compareTo(analysisDate) >= 0)).findFirst();
-			if(configurationOptional.isPresent()) {
-				reqConfig = configurationOptional.get();
-				for(AccountBalanceManagement balMgmt : filteredBalMgmts) {
-					KAccountAnalyticsDataDTO analyticsDataDTO = new KAccountAnalyticsDataDTO();
-					BigDecimal amount = balMgmt.getAmount();
-					BigDecimal trancheUtilized = amount.divide(reqConfig.getTrancheSize(), 0, RoundingMode.HALF_UP);
-					BigDecimal billedAmnt = trancheUtilized.multiply(reqConfig.getCostPerTranche());
-					if(balMgmt.getAmountSign() != null && balMgmt.getAmountSign().contentEquals(ILMCoreConstants.PLUS)) {
-						analyticsDataDTO.setAmntUtilized(amount);
-						analyticsDataDTO.setUtilizationTime(DateUtil.getTimeFromTimeStamp(balMgmt.getBusinessDtTime()));
-						analyticsDataDTO.setTrancheUtilized(trancheUtilized);
-						analyticsDataDTO.setAmntRedeemed(BigDecimal.ZERO);
-						analyticsDataDTO.setRedemptionTime("-");
-						analyticsDataDTO.setTrancheRedeemed(BigDecimal.ZERO);
-						analyticsDataDTO.setBilledAmnt(billedAmnt);
-					}else if(balMgmt.getAmountSign() != null && balMgmt.getAmountSign().contentEquals(ILMCoreConstants.MINUS)){
-						analyticsDataDTO.setAmntRedeemed(amount);
-						analyticsDataDTO.setRedemptionTime(DateUtil.getTimeFromTimeStamp(balMgmt.getBusinessDtTime()));
-						analyticsDataDTO.setTrancheRedeemed(trancheUtilized);
-						analyticsDataDTO.setAmntUtilized(BigDecimal.ZERO);
-						analyticsDataDTO.setUtilizationTime("-");
-						analyticsDataDTO.setTrancheUtilized(BigDecimal.ZERO);
-						analyticsDataDTO.setBilledAmnt(BigDecimal.ZERO);
-					}
+		else {
+			mainEAMDefns = eamRepo.findByEntityAcctMapSkey(positionDto.getNostroBankSkey());
+		}
+		LocalDate startDate = positionDto.getStartDate();
+		LocalDate endDate = positionDto.getEndDate();
+		List<LocalDate> holidaysList = holidayRepo.getHolidayDates(startDate, endDate, positionDto.getCurrencySkey());
+		//List<EntityAccountMapDefinition> kEAMDefns = eamRepo.findByEntitySkeyAndAccountType(positionDto.getEntitySkey(), ILMCoreConstants.KACCOUNT);
+		if(CollectionUtils.isNotEmpty(mainEAMDefns)) {
+			FundPositionDto fundPositionDto = new FundPositionDto();
+			List<AccountBalanceAggregationDTO> aggrs = new ArrayList<>();
+			List<AccountBalanceAggregationDTO> allAggrs = new ArrayList<>();
+			positionDto.setEntityAcctMapSkeyMain(mainEAMDefns.get(0).getEntityAcctMapSkey());
+			if(Objects.nonNull(startDate) && Objects.nonNull(endDate)) {
+				if(startDate.isEqual(endDate)) {
+					aggrs = paymentMessageDao.findFundPosition(positionDto, QueryConstants.GETPOSCUMULATIVEFUNDPOSN ,holidaysList);
+				}else {
+					aggrs = paymentMessageDao.findFundPosition(positionDto, QueryConstants.GETPOSCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
+					allAggrs = paymentMessageDao.findAllFundPosition(positionDto, QueryConstants.GETALLPOSCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
 					
-					analyticsDataDTO.setTrancheSize(reqConfig.getTrancheSize());
-					analyticsDataDTO.setCostPerTranche(reqConfig.getCostPerTranche());
-					dataDTOs.add(analyticsDataDTO);
 				}
+				fundPositionDto.setAggrs(getAmountsInMillions(aggrs));
+				fundPositionDto.setAllAggrs(allAggrs);
+				int weekDays = (int) DateUtil.noOfBusinessDays(startDate,endDate);
+				int holidays = holidayRepo.getHolidays(startDate,endDate, positionDto.getCurrencySkey()).size();
+				LOGGER.info("no of holidays : "+holidays);
+				int diffInDays = weekDays - holidays ;
+				LOGGER.info("Business days : "+ diffInDays);
+				BigDecimal amnt = BigDecimal.ZERO;
+				for(int row=0 ; row < fundPositionDto.getAllAggrs().size() ; row++) {
+					amnt = amnt.add(fundPositionDto.getAllAggrs().get(row).getTotalAmnt());
+				}
+				if(diffInDays > 0) {
+					fundPositionDto.setAvgPositive(amnt.divide(BigDecimal.valueOf(diffInDays), 2 , RoundingMode.HALF_UP));
+				}
+				else {
+					fundPositionDto.setAvgPositive(null);
+				}
+				
 			}
-		}
-		return dataDTOs;	
-	}
+			cumulativePositions.put("LARGEST_POSITIVE", fundPositionDto);
+		}	
+		if(CollectionUtils.isNotEmpty(mainEAMDefns)) {
+			FundPositionDto fundPositionDto = new FundPositionDto();
+			List<AccountBalanceAggregationDTO> aggrs = new ArrayList<>();
+			List<AccountBalanceAggregationDTO> allAggrs = new ArrayList<>();
+			//Long eamSkeyK = kEAMDefns.get(0).getEntityAcctMapSkey();
+			//positionDto.setEntityAcctMapSkeyK(eamSkeyK);
+			positionDto.setEntityAcctMapSkeyMain(mainEAMDefns.get(0).getEntityAcctMapSkey());
+			if(Objects.nonNull(startDate) && Objects.nonNull(endDate)) {
+				if(startDate.isEqual(endDate)) {
+					aggrs = paymentMessageDao.findFundPositionForNegativeCumulative(positionDto, QueryConstants.GETNEGCUMULATIVEFUNDPOSN,holidaysList);
+				}else {
+					aggrs = paymentMessageDao.findFundPositionForNegativeCumulative(positionDto, QueryConstants.GETNEGCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
+					allAggrs = paymentMessageDao.findAllFundPositionForNegativeCumulative(positionDto, QueryConstants.GETALLNEGCUMULATIVEFUNDPOSNPASTPERIOD,holidaysList);
 
-	
-	private List<KAccountAnalyticsDataDTO> getKAcctAnalyticsForPastPeriod(RequestAnalyticsDTO filterDTO, Long eamSkey , Long srrEamSkey){
-		LocalDate startDate = filterDTO.getFromDate();
-		LocalDate endDate = filterDTO.getToDate();
-		List<String> messageTypes=new ArrayList<String>();
-		messageTypes.add(ILMCoreConstants.MESSAGETYPE535);
-		List<KAccountAnalyticsDataDTO> dataDTOs = new ArrayList<>();
-		int diffInDays = DateUtil.daysBetween(startDate, endDate);
-		for(int index = 0; index <= diffInDays; index++) {
-			BigDecimal amount = BigDecimal.ZERO;
-			BigDecimal excessSrrAmount = BigDecimal.ZERO;
-			BigDecimal availCollateralBal = BigDecimal.ZERO;
-			LocalDate analysisDate = startDate.plusDays(index);
-			List<AccountBalanceAggregation> aggregations = acctBalAggrRepo.findByValueDateAndEntityAcctMapSkeyOrderByBusinessDtTimeDesc(analysisDate, eamSkey);
-			List<KAccountConfiguration> kAcctConfigs = kAcctConfigDao.getKAcctConfigByDims(filterDTO.getCountrySkeys(), filterDTO.getEntitySkeys(), filterDTO.getCurrencySkeys(), ILMCoreConstants.TRANCHEDEFN);
-			amount=acctBalMgmtRepo.getTotalAmountByMessageTypeInAndEntityAcctMapSkeyAndValueDate(messageTypes, eamSkey, analysisDate);
-			if(srrEamSkey != null) {
-				excessSrrAmount=excessSrrAmountRepo.getExcessSrrAmount(srrEamSkey,analysisDate);
-			}else {
-				excessSrrAmount = null ;
-			}
-			if(DateUtil.isWeekend(analysisDate) || holidayRepo.findByHolidayDateAndCurrencySkey(analysisDate, filterDTO.getCurrencySkeys().get(0)).size() != 0) {
-				excessSrrAmount = null ;
-			}
-			if(excessSrrAmount!= null && excessSrrAmount.compareTo(BigDecimal.ZERO) < 0) {
-				excessSrrAmount = BigDecimal.ZERO ;
-			}
-			LOGGER.info(analysisDate);
-			LOGGER.info("MT535 Amount : "+amount);
-			LOGGER.info("excessSRRAmount : "+excessSrrAmount);
-			if(amount!=null && excessSrrAmount!=null ) {
-				availCollateralBal=amount.add(excessSrrAmount);
-			}
-			else if(amount == null && excessSrrAmount != null) {
-				availCollateralBal = excessSrrAmount;
-			}
-			else if(amount != null && excessSrrAmount == null) {
-				availCollateralBal = amount ;
-			}
-			else {
-				availCollateralBal = null;
-			}
-			
-			if(CollectionUtils.isNotEmpty(kAcctConfigs)) {
-				Optional<KAccountConfiguration> configurationOptional = kAcctConfigs.stream().filter(p -> (p.getEffectiveFrom().compareTo(analysisDate) <= 0 && p.getEffectiveTo().compareTo(analysisDate) >= 0)).findFirst();
-				if(configurationOptional.isPresent()) {
-					KAccountConfiguration reqConfig = configurationOptional.get();
-					if(CollectionUtils.isNotEmpty(aggregations)) {
-						KAccountAnalyticsDataDTO analyticsDataDTO = new KAccountAnalyticsDataDTO();
-						AccountBalanceAggregation balanceAggregation = aggregations.get(0);
-						BigDecimal trancheUtilized = balanceAggregation.getTotalInFlowAmnt().abs().divide(reqConfig.getTrancheSize(),0, RoundingMode.HALF_UP);
-						BigDecimal billedAmnt = trancheUtilized.multiply(reqConfig.getCostPerTranche());
-						analyticsDataDTO.setAmntUtilized(balanceAggregation.getTotalInFlowAmnt().abs());
-						analyticsDataDTO.setEffectiveDate(analysisDate);
-						analyticsDataDTO.setTrancheSize(reqConfig.getTrancheSize());
-						analyticsDataDTO.setCostPerTranche(reqConfig.getCostPerTranche());
-						analyticsDataDTO.setTrancheUtilized(trancheUtilized);
-						analyticsDataDTO.setBilledAmnt(billedAmnt);
-						analyticsDataDTO.setAvailCollateralBal(availCollateralBal);
-						analyticsDataDTO.setExcessSrr(excessSrrAmount);
-						analyticsDataDTO.setMt535Amount(amount);
-						dataDTOs.add(analyticsDataDTO);
-					}
+				}
+				fundPositionDto.setAggrs(getAmountsInMillions(aggrs));
+				fundPositionDto.setAllAggrs(allAggrs);
+				int weekDays = (int) DateUtil.noOfBusinessDays(startDate,endDate);
+				int holidays = holidayRepo.getHolidays(startDate,endDate, positionDto.getCurrencySkey()).size();
+				LOGGER.info("no of holidays : "+holidays);
+				int diffInDays = weekDays - holidays ;
+				LOGGER.info("Business days : "+ diffInDays);
+				BigDecimal amnt = BigDecimal.ZERO;
+				for(int row =0; row < fundPositionDto.getAllAggrs().size() ; row++) {
+					amnt = amnt.add(fundPositionDto.getAllAggrs().get(row).getTotalAmnt());
+				}
+				if(diffInDays > 0) {
+					fundPositionDto.setAvgNegative(amnt.divide(BigDecimal.valueOf(diffInDays), 2 , RoundingMode.HALF_UP));
+				}
+				else {
+					fundPositionDto.setAvgNegative(null);
 				}
 			}
+			//aggrs.stream().filter(p -> p.getEntityAcctMapSkey().compareTo(eamSkeyK) == 0).forEach(p -> p.setTotalAmnt(p.getTotalAmnt().negate()));
+			cumulativePositions.put("LARGEST_NEGATIVE", fundPositionDto);
 		}
-		return dataDTOs;
+		return cumulativePositions;
 	}
+}
