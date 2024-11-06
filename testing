@@ -1,115 +1,77 @@
-http://10.172.120.19:8013/ilm-web/trnPayment
+http://10.172.120.19:8013/ilm-web/singleDayhourly
 
-{"analysisType":"SingleDay","countrySkey":1,"currencySkey":1,"entitySkey":1,"fromTime":"01-10-2024 00:00:00","nHighest":"1","paymentCase":0,"toTime":"02-10-2024 00:00:00","positionType":"lowest"}
-
+{"countrySkey":1,"currencySkey":1,"entitySkey":1,"fromDate":"01-10-2024","fromTime":"01-10-2024 10:56:00","toTime":"01-10-2024 00:00:00","throughputFlag":"OutWard","entityAccountType":"Main Account","messageTypeList":["900","204","545"]}
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "getTrnNHighest",
-    "t": {
-        "sentPayments": null,
-        "recievedPayments": {},
-        "sentPastPeriodPayments": null,
-        "recievedPastPeriodPayments": null,
-        "average": null
-    }
+    "serviceName": "averageTRNPayment",
+    "t": [
+        {
+            "amount": 21085.75,
+            "dateString": "8:00 AM",
+            "ratio": 100.00,
+            "rangeAmount": null
+        }
+    ]
 }
+
 
 
 @Controller
 @RequestMapping("/")
 public class PaymentPositionController {
-
-	@PostMapping(value="/trnPayment")
+@PostMapping(value="/singleDayhourly")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<PaymentPosDTO>> getTrnNHighest(@RequestBody PaymentPosParamsDTO paymentParams){
-		LOGGER.info("PaymentPositionController {} getTrnNHighest",paymentParams.getFromTime());
-		PaymentPosDTO paymentPosDto=paymentPos.getTRNPaymentDetails(paymentParams);
-		return new ResponseEntity<>(new CommonResponseEntity<PaymentPosDTO>(1l, "SUCCESS", "getTrnNHighest", paymentPosDto),HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<List<SingleDayHorlyThroughPutDTO>>> singleDayHourlyThroughPut(@RequestBody PaymentMessageParamsDTO paramsDTO){
+		List<SingleDayHorlyThroughPutDTO> throughputHourly=paymentPos.singleDayHourly(paramsDTO);
+		LOGGER.info("PaymentPositionController {} singleDayHourlyThroughPut",paramsDTO);
+		return new ResponseEntity<>(new CommonResponseEntity<List<SingleDayHorlyThroughPutDTO>>(1l, "SUCCESS", "averageTRNPayment",throughputHourly),HttpStatus.OK);
 	}
 }
 
 public interface PaymentPositionService {
-public PaymentPosDTO getTRNPaymentDetails(PaymentPosParamsDTO paymentPosParams);
+public List<SingleDayHorlyThroughPutDTO> singleDayHourly(PaymentMessageParamsDTO paramsDTO);
 }
-
 
 @Service
 public class PaymentPositionServiceImpl implements PaymentPositionService {
 @Override
-	@Find(arguments = { "payment params DTO" }, returnType = "PaymentPositionDTo", type = "JSON")
-	@FindNormEx
-	public PaymentPosDTO getTRNPaymentDetails(PaymentPosParamsDTO paymentPosParams) {
-		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
-		List<Long> entityMapSkey = getEntitySkey(paymentPosParams);
-		// Condition for Single day PAyment and PastPeriod Payment
-		if (paymentPosParams.getAnalysisType().equalsIgnoreCase(ILMCoreConstants.SINGLE_DAY)) {
-			paymentPosDTO = singleDayTRNPayment(paymentPosParams, entityMapSkey);
-		} else {
-			paymentPosDTO = pastPeriodTRNPayment(paymentPosParams, entityMapSkey);
+	public List<SingleDayHorlyThroughPutDTO> singleDayHourly(PaymentMessageParamsDTO paramsDTO) {
+		List<EntityAccountMapDefinition> entityDefn = new ArrayList();
+		if(paramsDTO.getNostroBankSkey()==null) {
+			entityDefn = eamRepo.findByEntitySkeyAndAccountType(paramsDTO.getEntitySkey(),paramsDTO.getEntityAccountType());
 		}
-		return paymentPosDTO;
-	}
-	
-	private PaymentPosDTO singleDayTRNPayment(PaymentPosParamsDTO paymentPosParams, List<Long> entityMapSkey) {
-		Integer paymentCase = paymentPosParams.getPaymentCase();
-		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
-		Integer nHighest = paymentPosParams.getnHighest();
-		LocalDateTime toDate = paymentPosParams.getToTime();
-		LocalDateTime fromDate = paymentPosParams.getFromTime();
-		Map<String, List<String>> TRNCode = getTRNCode();
-		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(fromDate.toLocalDate(), toDate.toLocalDate(), paymentPosParams.getCurrencySkey());
-		List<AccountBalanceManagement> acctBalMgmt = new ArrayList<AccountBalanceManagement>();
-		if (paymentPosParams.getPositionType().compareTo("highest") == 0) {
-			switch (paymentCase) {
-			case 0:
-				acctBalMgmt = paymentPosDao.getSingleDayTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.recievedTRN), ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 1:
-				acctBalMgmt = paymentPosDao.getSingleDayTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.sentTRN), ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 2:
-				acctBalMgmt = paymentPosDao.getSingleDayTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.recievedTRN), ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				acctBalMgmt = paymentPosDao.getSingleDayTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.sentTRN), ILMCoreConstants.negativeSign, holidaysList);
-
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			}
-		} else {
-			switch (paymentCase) {
-			case 0:
-				acctBalMgmt = paymentPosDao.getSingleDayLowestTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.recievedTRN), ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 1:
-				acctBalMgmt = paymentPosDao.getSingleDayLowestTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.sentTRN), ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 2:
-				acctBalMgmt = paymentPosDao.getSingleDayLowestTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.recievedTRN), ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				acctBalMgmt = paymentPosDao.getSingleDayLowestTRNPayments(nHighest, toDate, fromDate, entityMapSkey,
-						TRNCode.get(ILMCoreConstants.sentTRN), ILMCoreConstants.negativeSign, holidaysList);
-
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			}
+		else {
+			entityDefn = eamRepo.findByEntityAcctMapSkey(paramsDTO.getNostroBankSkey());
 		}
-		return paymentPosDTO;
+		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(paramsDTO.getFromTime().toLocalDate(), paramsDTO.getToTime().toLocalDate(), paramsDTO.getCurrencySkey());
+		if(CollectionUtils.isEmpty(holidaysList)) {
+			holidaysList.add(LocalDate.now().plusDays(1));
+		}
+		List<SingleDayHorlyThroughPutDTO> hourlySumAmt = new ArrayList<>();
+		if (entityDefn.get(0) != null) {
+			Long entitySkey = entityDefn.get(0).getEntityAcctMapSkey();
+			BigDecimal tillAmt = BigDecimal.ZERO;
+			BigDecimal totalAmt = BigDecimal.ONE;
+			System.out.println(entitySkey);
+			if (paramsDTO.getThroughputFlag().equals(ILMCoreConstants.outwardThroughtout)) {
+				hourlySumAmt = paymentMessageDetailsRepo.getThroughPutHourlyOutWardData(paramsDTO.getFromTime(),
+						paramsDTO.getToTime(), entitySkey, holidaysList, paramsDTO.getMessageTypeList());
+			} else {
+				hourlySumAmt = paymentMessageDetailsRepo.getThroughPutHourlyInwardData(paramsDTO.getFromTime(),
+						paramsDTO.getToTime(), entitySkey ,holidaysList, paramsDTO.getMessageTypeList());
+				System.out.println("form Inward" + hourlySumAmt);
+			}
 
+		}
+		if (hourlySumAmt.size() != 0) {
+			hourlySumAmt = modifiedDto(hourlySumAmt, paramsDTO.getFromTime());
+		} else {
+			hourlySumAmt = null;
+		}
+
+		return hourlySumAmt;
 	}
-
-
 }
