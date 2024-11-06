@@ -1,173 +1,225 @@
-Payment Details:
-http://10.172.120.19:8013/ilm-web/paymentPosition
 
-{"analysisType":"SingleDay","countrySkey":1,"currencySkey":1,"entitySkey":1,"fromTime":"01-10-2024 00:00:00","nHighest":"1","paymentCase":1,"toTime":"02-10-2024 00:00:00","positionType":"lowest","paymentDisplayType":false}
+http://10.172.120.19:8013/ilm-web/fetchthroughputdata
+
+{"countrySkey":1,"currencySkey":1,"entitySkey":1,"fromDate":"01-10-2024","fromTime":"01-10-2024 10:56:00","toTime":"01-10-2024 00:00:00","throughputFlag":"OutWard","entityAccountType":"Main Account","messageTypeList":["900","204","545"]}
+
 
 {
     "timeSpendsInSeconds": 1,
     "status": "SUCCESS",
-    "serviceName": "getNHighestIntraday",
-    "t": {
-        "sentPayments": {
-            "2024-10-01T08:06:49.749": 992.5
-        },
-        "recievedPayments": null,
-        "sentPastPeriodPayments": null,
-        "recievedPastPeriodPayments": null,
-        "average": null
-    }
+    "serviceName": "getSingleDaythroughPutData",
+    "t": [
+        21085.75,
+        0.9288
+    ]
 }
+
+
 
 
 @Controller
 @RequestMapping("/")
 public class PaymentPositionController {
-@PostMapping(value="/paymentPosition")
+  @PostMapping(value="/throughputdata")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<PaymentPosDTO>> getNHighestIntraday(@RequestBody PaymentPosParamsDTO paymentParams){
-		PaymentPosDTO paymentPosDto=paymentPos.getPaymentDetails(paymentParams);
-		LOGGER.info("PaymentPositionController {} getNHighestIntraday",paymentParams.getToTime());
-		return new ResponseEntity<>(new CommonResponseEntity<PaymentPosDTO>(1l, "SUCCESS", "getNHighestIntraday", paymentPosDto),HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<BigDecimal>> getThroughPutData(@RequestBody PaymentMessageParamsDTO paramsDTO){
+		
+		BigDecimal ratio=paymentPos.getThroughPutdata(paramsDTO);
+		LOGGER.info("PaymentPositionController {} getThroughPutData",paramsDTO.getCountrySkey());
+		return new ResponseEntity<>(new CommonResponseEntity<BigDecimal>(1l, "SUCCESS", "getThroughPutData", ratio),HttpStatus.OK);
 	}
 }
 
 public interface PaymentPositionService {
+	public List<BigDecimal> singleDayThroughPutData(PaymentMessageParamsDTO paramsDTO);
+}
 
-	public PaymentPosDTO getPaymentDetails(PaymentPosParamsDTO paymentPosParams);
-	}
-	
-	
-	@Service
+@Service
 public class PaymentPositionServiceImpl implements PaymentPositionService {
 @Override
-	@Find(arguments = { "payment params DTO" }, returnType = "PaymentPositionDTo", type = "JSON")
-	@FindNormEx
-	public PaymentPosDTO getPaymentDetails(PaymentPosParamsDTO paymentPosParams) {
-		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
-		List<Long> entityMapSkey = getEntitySkey(paymentPosParams);
-		// Condition for Single day PAyment and PastPeriod Payment
-		if (paymentPosParams.getAnalysisType().equalsIgnoreCase(ILMCoreConstants.SINGLE_DAY)) {
-			paymentPosDTO = singleDayPaymentAnalysis(paymentPosParams, entityMapSkey);
-		} else if (paymentPosParams.getPaymentDisplayType()) {
-			paymentPosDTO = individualPastPeriodPaymentAnalysis(paymentPosParams, entityMapSkey);
-		} else {
-			paymentPosDTO = pastPeriodPaymentAnalysis(paymentPosParams, entityMapSkey);
+	public List<BigDecimal> singleDayThroughPutData(PaymentMessageParamsDTO paramsDTO) {
+		List<EntityAccountMapDefinition> entityDefn = new ArrayList();
+		if(paramsDTO.getNostroBankSkey()==null) {
+			entityDefn = eamRepo.findByEntitySkeyAndAccountType(paramsDTO.getEntitySkey(),paramsDTO.getEntityAccountType());
 		}
-		return paymentPosDTO;
+		else {
+			entityDefn = eamRepo.findByEntityAcctMapSkey(paramsDTO.getNostroBankSkey());
+		}
+		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(paramsDTO.getFromTime().toLocalDate(), paramsDTO.getToTime().toLocalDate(), paramsDTO.getCurrencySkey());
+		if(CollectionUtils.isEmpty(holidaysList)) {
+			holidaysList.add(LocalDate.now().plusDays(1));
+		}
+		List<BigDecimal> throughPutData = new ArrayList<BigDecimal>();
+		BigDecimal ratio;
+		BigDecimal tillAmt = BigDecimal.ZERO;
+		BigDecimal totalAmt = BigDecimal.ONE;
+		if (entityDefn.get(0) != null) {
+			Long entitySkey = entityDefn.get(0).getEntityAcctMapSkey();
+			if (paramsDTO.getThroughputFlag().equals(ILMCoreConstants.outwardThroughtout)) {
+				tillAmt = paymentMessageDetailsRepo.getThroughPutOutWardData(paramsDTO.getFromTime(),
+						paramsDTO.getToTime(), entitySkey, holidaysList, paramsDTO.getMessageTypeList());
+				totalAmt = paymentMessageDetailsRepo.getThroughPutOutWardData(paramsDTO.getToTime().plusDays(1),
+						paramsDTO.getToTime(), entitySkey, holidaysList, paramsDTO.getMessageTypeList());
+			} else {
+				tillAmt = paymentMessageDetailsRepo.getThroughPutInwardData(paramsDTO.getFromTime(),
+						paramsDTO.getToTime(), entitySkey, holidaysList, paramsDTO.getMessageTypeList());
+				totalAmt = paymentMessageDetailsRepo.getThroughPutInwardData(paramsDTO.getToTime().plusDays(1),
+						paramsDTO.getToTime(), entitySkey, holidaysList, paramsDTO.getMessageTypeList());
+			}
+			if (totalAmt == null || totalAmt.compareTo(BigDecimal.ZERO) <= 0) {
+				ratio = new BigDecimal(-1);
+				throughPutData = null;
+			} else if (tillAmt == null) {
+				tillAmt = new BigDecimal(0);
+				ratio = new BigDecimal(0);
+				throughPutData.add(tillAmt);
+				throughPutData.add(ratio);
+			} else {
+				ratio = tillAmt.divide(totalAmt.divide(new BigDecimal(100)), 4, RoundingMode.HALF_UP);
+				throughPutData.add(tillAmt);
+				throughPutData.add(ratio);
+			}
+
+		} else {
+			ratio = new BigDecimal(-2);
+			throughPutData = null;
+		}
+
+		System.out.println(throughPutData);
+		return throughPutData;
+	}
+}
+
+
+package com.maybank.ilm.dto.paymentmessagedetails;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Feature;
+
+public class PaymentMessageParamsDTO {
+	private Long countrySkey;
+	private Long entitySkey;
+	private Long currencySkey;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy",with = Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+	private LocalDate fromDate;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy",with = Feature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+	private LocalDate toDate;
+	private String dealType;
+	private Integer limit;
+	private Integer offset;								
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy H:mm:ss")
+	private LocalDateTime fromTime;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy H:mm:ss")
+	private LocalDateTime toTime;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy H:mm:ss")
+	private LocalDateTime dateInRange;
+	private String throughputFlag;
+	private String entityAccountType;
+	private List<String> messageTypeList;
+	private Long nostroBankSkey;
+
+	public LocalDateTime getDateInRange() {
+		return dateInRange;
+	}
+	public void setDateInRange(LocalDateTime dateInRange) {
+		this.dateInRange = dateInRange;
+	}
+	public String getThroughputFlag() {
+		return throughputFlag;
+	}
+	public void setThroughputFlag(String throughputKey) {
+		this.throughputFlag = throughputKey;
+	}
+	public Long getCountrySkey() {
+		return countrySkey;
+	}
+	public void setCountrySkey(Long countrySkey) {
+		this.countrySkey = countrySkey;
+	}
+	public Long getEntitySkey() {
+		return entitySkey;
+	}
+	public void setEntitySkey(Long entitySkey) {
+		this.entitySkey = entitySkey;
+	}
+	public Long getCurrencySkey() {
+		return currencySkey;
+	}
+	public void setCurrencySkey(Long currencySkey) {
+		this.currencySkey = currencySkey;
+	}
+	public LocalDate getFromDate() {
+		return fromDate;
+	}
+	public void setFromDate(LocalDate fromDate) {
+		this.fromDate = fromDate;
+	}
+	public LocalDate getToDate() {
+		return toDate;
+	}
+	public void setToDate(LocalDate toDate) {
+		this.toDate = toDate;
+	}
+	public String getDealType() {
+		return dealType;
+	}
+	public void setDealType(String dealType) {
+		this.dealType = dealType;
+	}
+	public Integer getLimit() {
+		return limit;
+	}
+	public void setLimit(Integer limit) {
+		this.limit = limit;
+	}
+	public Integer getOffset() {
+		return offset;
+	}
+	public void setOffset(Integer offset) {
+		this.offset = offset;
+	}
+	public LocalDateTime getFromTime() {
+		return fromTime;
+	}
+	public void setFromTime(LocalDateTime fromTime) {
+		this.fromTime = fromTime;
+	}
+	public LocalDateTime getToTime() {
+		return toTime;
+	}
+	public void setToTime(LocalDateTime toTime) {
+		this.toTime = toTime;
+	}
+	public String getEntityAccountType() {
+		return entityAccountType;
+	}
+	public void setEntityAccountType(String entityAccountType) {
+		this.entityAccountType = entityAccountType;
+	}
+	public List<String> getMessageTypeList() {
+		return messageTypeList;
+	}
+	public void setMessageTypeList(List<String> messageTypeList) {
+		this.messageTypeList = messageTypeList;
 	}
 	
-	private PaymentPosDTO singleDayPaymentAnalysis(PaymentPosParamsDTO paymentPosParams, List<Long> entityMapSkey) {
-		Integer paymentCase = paymentPosParams.getPaymentCase();
-		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
-		Integer nHighest = paymentPosParams.getnHighest();
-		LocalDateTime toDate = paymentPosParams.getToTime();
-		LocalDateTime fromDate = paymentPosParams.getFromTime();
-		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(fromDate.toLocalDate(), toDate.toLocalDate(), paymentPosParams.getCurrencySkey());
-		List<AccountBalanceManagement> acctBalMgmt = new ArrayList<AccountBalanceManagement>();
-		if (paymentPosParams.getPositionType().compareTo("highest") == 0) {
-			switch (paymentCase) {
-			case 0:
-				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 1:
-				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 2:
-				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				acctBalMgmt = paymentPosDao.singleDayPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			}
-		} else {
-			switch (paymentCase) {
-			case 0:
-				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 1:
-				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			case 2:
-				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPayments(collectSingleDay(acctBalMgmt));
-				acctBalMgmt = paymentPosDao.singleDayLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-
-				paymentPosDTO.setSentPayments(collectSingleDay(acctBalMgmt));
-				break;
-			}
-		}
-		return paymentPosDTO;
+	public Long getNostroBankSkey() {
+		return nostroBankSkey;
 	}
-	
-	private PaymentPosDTO pastPeriodPaymentAnalysis(PaymentPosParamsDTO paymentPosParams, List<Long> entityMapSkey) {
-		Integer paymentCase = paymentPosParams.getPaymentCase();
-		PaymentPosDTO paymentPosDTO = new PaymentPosDTO();
-		Integer nHighest = paymentPosParams.getnHighest();
-		LocalDateTime toDate = paymentPosParams.getToTime();
-		LocalDateTime fromDate = paymentPosParams.getFromTime();
-		List<LocalDate> holidaysList = holidayMasterRepo.getHolidayDates(fromDate.toLocalDate(), toDate.toLocalDate(), paymentPosParams.getCurrencySkey());
-		List<PastPosDTO> acctBalMgmt = new ArrayList<PastPosDTO>();
-		if (paymentPosParams.getPositionType().compareTo("highest") == 0) {
-			switch (paymentCase) {
-			case 0:
-				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
-				break;
-			case 1:
-				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
-				break;
-			case 2:
-				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
-				acctBalMgmt = paymentPosDao.pastPeriodPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
-
-				break;
-			}
-		} else {
-			switch (paymentCase) {
-			case 0:
-				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
-				break;
-			case 1:
-				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
-				break;
-			case 2:
-				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.plusSign, holidaysList);
-				paymentPosDTO.setRecievedPastPeriodPayments(collectfromDTO(acctBalMgmt));
-				acctBalMgmt = paymentPosDao.pastPeriodLowestPayments(nHighest, toDate, fromDate, entityMapSkey,
-						ILMCoreConstants.negativeSign, holidaysList);
-				paymentPosDTO.setSentPastPeriodPayments(collectfromDTO(acctBalMgmt));
-
-				break;
-			}
-		}
-
-		return paymentPosDTO;
-
+	public void setNostroBankSkey(Long nostroBankSkey) {
+		this.nostroBankSkey = nostroBankSkey;
 	}
+	@Override
+	public String toString() {
+		return "PaymentMessageParamsDTO [countrySkey=" + countrySkey + ", entitySkey=" + entitySkey + ", currencySkey="
+				+ currencySkey + ", fromDate=" + fromDate + ", toDate=" + toDate + ", dealType=" + dealType + ", limit="
+				+ limit + ", offset=" + offset + ", fromTime=" + fromTime + ", toTime=" + toTime + ", dateInRange="
+				+ dateInRange + ", throughputFlag=" + throughputFlag + ", entityAccountType=" + entityAccountType
+				+ ", messageTypeList=" + messageTypeList + ", nostroBankSkey=" + nostroBankSkey + "]";
+	}	
 }
