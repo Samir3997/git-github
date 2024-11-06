@@ -1,256 +1,151 @@
-http://10.172.120.19:8013/ilm-web/getentityaccmapdefns?countrySkeys=1&entitySkeys=1&currencySkeys=1
+http://10.172.120.19:8013/ilm-web/getNostroDetails
 
-
-countrySkeys=1&entitySkeys=1&currencySkeys=1
+{"countrySkey":1,"entitySkey":1,"currencySkey":41,"entityAcctMapSkey":21,"fromDate":"06-11-2024","toDate":"06-11-2024","reportType":"SD"}
 
 {
     "timeSpendsInSeconds": 1,
-    "status": "SUCCESS",
-    "serviceName": "getEntityAcctMapByDims",
+    "status": "Saved Successfully",
+    "serviceName": "NostroApiController",
     "t": [
         {
-            "entityAcctMapSkey": 1,
-            "accountNumber": "MY65BNMA1554010273",
-            "accountName": "Conv cash main account",
-            "accountType": "Main Account",
-            "countrySkey": 1,
-            "entitySkey": 1,
-            "currencySkey": 1,
-            "minBalance": null,
-            "createdBy": "00076764",
-            "entityIdentifier": "MBBEMYKL",
-            "nostroBankName": null,
-            "nostroInd": "N",
-            "typeOfNostroAgent": null,
-            "sweepingAmountCalculationInd": null,
-            "projectedAmountCalculationInd": "Y"
-        },
-        {
-            "entityAcctMapSkey": 2,
-            "accountNumber": "MY51BNMA1556010277",
-            "accountName": "Conv cash SRR account",
-            "accountType": "SRR Account",
-            "countrySkey": 1,
-            "entitySkey": 1,
-            "currencySkey": 1,
-            "minBalance": null,
-            "createdBy": "00076764",
-            "entityIdentifier": "MBBEMYKL",
-            "nostroBankName": null,
-            "nostroInd": "N",
-            "typeOfNostroAgent": null,
-            "sweepingAmountCalculationInd": null,
-            "projectedAmountCalculationInd": "Y"
-        },
-        {
-            "entityAcctMapSkey": 3,
-            "accountNumber": "MY52BNMABSR1556010277",
-            "accountName": "Conv Securities SRR account",
-            "accountType": "SRR Securities Account",
-            "countrySkey": 1,
-            "entitySkey": 1,
-            "currencySkey": 1,
-            "minBalance": null,
-            "createdBy": "00076764",
-            "entityIdentifier": "MBBEMYKL",
-            "nostroBankName": null,
-            "nostroInd": "N",
-            "typeOfNostroAgent": null,
-            "sweepingAmountCalculationInd": null,
-            "projectedAmountCalculationInd": "Y"
-        },
-        {
-            "entityAcctMapSkey": 4,
-            "accountNumber": "MY43BNMAK1554010273",
-            "accountName": "Conv K account",
-            "accountType": "K Account",
-            "countrySkey": 1,
-            "entitySkey": 1,
-            "currencySkey": 1,
-            "minBalance": null,
-            "createdBy": "00076764",
-            "entityIdentifier": "MBBEMYKL",
-            "nostroBankName": null,
-            "nostroInd": "N",
-            "typeOfNostroAgent": null,
-            "sweepingAmountCalculationInd": null,
-            "projectedAmountCalculationInd": "Y"
+            "nostroBalanceDTO": [
+                {
+                    "openingBalance": 10000.00,
+                    "runningBalance": 10000.00,
+                    "asOfDate": "2024-11-06"
+                }
+            ],
+            "errorMsg": null,
+            "nostroTransactionDTO": []
         }
     ]
 }
 
 
 
+@RestController
+public class NostroApiController {
 
-@Controller
-@RequestMapping("/")
-public class EntityAccountMapController {
-@GetMapping(value="/getentityaccmapdefns")
+	@PostMapping(value = "/getNostroDetails")
 	@ResponseBody
 	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<List<EntityAccountMapDefinition>>> getEntityAcctMapByDims(@RequestParam List<Long> countrySkeys, @RequestParam List<Long> entitySkeys, @RequestParam List<Long> currencySkeys) {
-		LOGGER.info("EntityAccountMapController {} getEntityAcctMapByDims",entitySkeys);
-		List<EntityAccountMapDefinition> definitions = mappingService.getEntityAcctMapByDims(countrySkeys, entitySkeys, currencySkeys);
-		return new ResponseEntity<>(new CommonResponseEntity<List<EntityAccountMapDefinition>>(1l, success, "getEntityAcctMapByDims", definitions),HttpStatus.OK);
+	public ResponseEntity<CommonResponseEntity<List<NostroApiCommon>>> getNostroDetails(
+			@RequestBody NostroRequestDTO nostroRequestDTO) {
+		LOGGER.info("NostroApiController {} getNostroDetailsByFilters", nostroRequestDTO.toString());
+		List<NostroApiCommon> reportList = apiResponseService.commonApiService(nostroRequestDTO);
+		return new ResponseEntity<>(
+				new CommonResponseEntity<List<NostroApiCommon>>(1l, success, "NostroApiController", reportList),
+				HttpStatus.OK);
 	}
 
 }
 
-public interface EntityAccountMappingService {
-
-	public List<EntityAccountMapDefinition> getEntityAcctMapByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys); 
 }
+
 
 @Service
-public class EntityAccountMappingServiceImpl implements EntityAccountMappingService{
-@Override
-	@Find(arguments= {"CountryId","List EntityId","ListCurrencyId"},type="JSON",comment="entity_by_dim")
-	@FindNormEx
-	public List<EntityAccountMapDefinition> getEntityAcctMapByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys){
-		return mappingDao.getEntityAcctMapByDims(countrySkeys, entitySkeys, currencySkeys);
+public class ApiResponseService {
+public List<NostroApiCommon> commonApiService(NostroRequestDTO apiDTO) {
+		Long eamSkey = apiDTO.getEntityAcctMapSkey();
+		List<NostroApiCommon> respDto = null;
+		LOGGER.info(eamSkey);
+		List<EntityAccountMapDefinition> definitions = accountMappingRepo.findByEntityAcctMapSkey(eamSkey);
+		if (!CollectionUtils.isEmpty(definitions)) {
+			String nostroAgent = definitions.get(0).getNostroBankName();
+			LOGGER.info(nostroAgent);
+			NostroApiService apiHandler = apiHandlerFactory.getType(nostroAgent);
+			if(apiHandler!= null) {
+				respDto = apiHandler.nostroApiService(apiDTO);
+			}
+		}
+
+		return respDto;
 	}
-}	
-
-public interface EntityAccountMappingDao {
-
-	public List<EntityAccountMapDefinition> getEntityAcctMapByDims(List<Long> countrySkeys, List<Long> entitySkeys, List<Long> currencySkeys);
-}	
 
 
+}
 
 
-package com.maybank.ilm.entity;
+public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
+public List<EntityAccountMapDefinition> findByEntityAcctMapSkey(Long entityAcctMapSkey);
+}
 
-import java.math.BigDecimal;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.SequenceGenerator;
-import javax.persistence.Table;
+package com.maybank.ilm.dto.Nostro;
 
-import com.maybank.ilm.core.util.ILMCoreConstants;
+import java.util.List;
 
-@Entity
-@Table(name = "PRC_ENTITY_ACCOUNT_MAP_DEFN")
-@NamedQueries({
-	@NamedQuery(name = "GETDEFNBYACCTNUM", query = "select ea from EntityAccountMapDefinition ea where ea.accountNumber =:acctNum and ea.currencySkey =:currencySkey"),
-	@NamedQuery(name = "GETDEFNBYENTITYIDANDACCTTYPE", query = "select ea from EntityAccountMapDefinition ea where ea.entityIdentifier =:entityID and ea.accountType =:acctType"),
-	@NamedQuery(name = "DELETEENTITYACCTDEFNSBYSKEYS", query = "delete from EntityAccountMapDefinition ea where ea.entityAcctMapSkey IN ( :defnSkeys )")
-})
-public class EntityAccountMapDefinition {
+public class NostroApiCommon {
+	private List<NostroTransaction> nostroTransaction;
+	private List<NostroBalanceDTO> nostroBalanceDTO;
+	private String errorMsg;
 
-	@Id
-	@Column(name = "N_ENTITY_ACCT_MAP_SKEY")
-	@SequenceGenerator(name = "entityAcctMapSkey", sequenceName = "PRC_ENTITY_ACCOUNT_MAP_SEQ", allocationSize = 1)
-	@GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "entityAcctMapSkey")
-	private Long entityAcctMapSkey;
+	public List<NostroTransaction> getNostroTransactionDTO() {
+		return nostroTransaction;
+	}
 
-	@Column(name = "V_ACCOUNT_NUMBER")
-	private String accountNumber;
+	public void setNostroTransactionDTO(List<NostroTransaction> nostroTransaction) {
+		this.nostroTransaction = nostroTransaction;
+	}
 
-	@Column(name = "V_ACCOUNT_NAME")
-	private String accountName;
+	public List<NostroBalanceDTO> getNostroBalanceDTO() {
+		return nostroBalanceDTO;
+	}
 
-	@Column(name = "V_ACCOUNT_TYPE")
-	private String accountType;
+	public void setNostroBalanceDTO(List<NostroBalanceDTO> nostroBalanceDTO) {
+		this.nostroBalanceDTO = nostroBalanceDTO;
+	}
 
-	@Column(name = "N_COUNTRY_SKEY")
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+
+	public void setErrorMsg(String errorMsg) {
+		this.errorMsg = errorMsg;
+	}
+
+	@Override
+	public String toString() {
+		return "NostroApiCommon [nostroTransaction=" + nostroTransaction + ", nostroBalanceDTO=" + nostroBalanceDTO
+				+ ", errorMsg=" + errorMsg + "]";
+	}
+	
+	
+
+}
+
+
+
+
+
+package com.maybank.ilm.dto.Nostro;
+
+import java.time.LocalDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(value = Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class NostroRequestDTO {
+
 	private Long countrySkey;
 
-	@Column(name = "N_ENTITY_SKEY")
 	private Long entitySkey;
 
-	@Column(name = "N_CURRENCY_SKEY")
 	private Long currencySkey;
 
-	@Column(name="N_MIN_BALANCE")
-	private BigDecimal minBalance;
+	private Long entityAcctMapSkey;
 
-	@Column(name = "V_CREATED_BY")
-	private String createdBy;
+	private String reportType;
 
-	@Column(name = "V_ENTITY_IDENTIFIER")
-	private String entityIdentifier;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	private LocalDate fromDate;
 
-	@Column(name="V_NOSTRO_BANK_NAME")
-	private String nostroBankName;
-
-	@Column(name="F_NOSTRO_IND")
-	private Character nostroInd;
-
-	@Column(name="V_TYPE_OF_NOSTRO_AGENT")
-	private String typeOfNostroAgent;
-
-	@Column(name="F_SWEEPING_AMOUNT_CALCULATION_IND")
-	private Character sweepingAmountCalculationInd;
-	
-	@Column(name ="F_PROJECTED_AMOUNT_CALCULATION_IND")
-	private Character projectedAmountCalculationInd;
-	
-	
-	
-
-	public Character getProjectedAmountCalculationInd() {
-		return projectedAmountCalculationInd;
-	}
-
-	public void setProjectedAmountCalculationInd(Character projectedAmountCalculationInd) {
-		this.projectedAmountCalculationInd = projectedAmountCalculationInd;
-	}
-
-	public void setNostroInd(Character nostroInd) {
-		this.nostroInd = nostroInd;
-	}
-
-	public Long getEntityAcctMapSkey() {
-		return entityAcctMapSkey;
-	}
-
-	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
-		this.entityAcctMapSkey = entityAcctMapSkey;
-	}
-
-	public String getAccountNumber() {
-		return accountNumber;
-	}
-
-	public void setAccountNumber(String accountNumber) {
-		this.accountNumber = accountNumber;
-	}
-
-	public String getAccountName() {
-		return accountName;
-	}
-
-
-	public BigDecimal getMinBalance() {
-		return minBalance;
-	}
-
-	public void setMinBalance(BigDecimal minBalance) {
-		this.minBalance = minBalance;
-	}
-
-	public Character getNostroInd() {
-		return nostroInd;
-	}
-
-	public void setAccountName(String accountName) {
-		this.accountName = accountName;
-	}
-
-	public String getAccountType() {
-		return accountType;
-	}
-
-	public void setAccountType(String accountType) {
-		this.accountType = accountType;
-	}
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+	private LocalDate toDate;
 
 	public Long getCountrySkey() {
 		return countrySkey;
@@ -276,122 +171,43 @@ public class EntityAccountMapDefinition {
 		this.currencySkey = currencySkey;
 	}
 
-	public String getCreatedBy() {
-		return createdBy;
+	public Long getEntityAcctMapSkey() {
+		return entityAcctMapSkey;
 	}
 
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
+	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
+		this.entityAcctMapSkey = entityAcctMapSkey;
 	}
 
-	public String getEntityIdentifier() {
-		return entityIdentifier;
+	public String getReportType() {
+		return reportType;
 	}
 
-	public void setEntityIdentifier(String entityIdentifier) {
-		this.entityIdentifier = entityIdentifier;
+	public void setReportType(String reportType) {
+		this.reportType = reportType;
 	}
 
-	public String getNostroBankName() {
-		return nostroBankName;
+	public LocalDate getFromDate() {
+		return fromDate;
 	}
 
-	public void setNostroBankName(String nostroBankName) {
-		this.nostroBankName = nostroBankName;
+	public void setFromDate(LocalDate fromDate) {
+		this.fromDate = fromDate;
 	}
 
-	public String getTypeOfNostroAgent() {
-		return typeOfNostroAgent;
+	public LocalDate getToDate() {
+		return toDate;
 	}
 
-	public void setTypeOfNostroAgent(String typeOfNostroAgent) {
-		this.typeOfNostroAgent = typeOfNostroAgent;
+	public void setToDate(LocalDate toDate) {
+		this.toDate = toDate;
 	}
-
-	public Character getSweepingAmountCalculationInd() {
-		return sweepingAmountCalculationInd;
-	}
-
-	public void setSweepingAmountCalculationInd(Character sweepingAmountCalculationInd) {
-		this.sweepingAmountCalculationInd = sweepingAmountCalculationInd;
-	}
-
 
 	@Override
 	public String toString() {
-		return "EntityAccountMapDefinition [entityAcctMapSkey=" + entityAcctMapSkey + ", accountNumber=" + accountNumber
-				+ ", accountName=" + accountName + ", accountType=" + accountType + ", countrySkey=" + countrySkey
-				+ ", entitySkey=" + entitySkey + ", currencySkey=" + currencySkey + ", minBalance=" + minBalance
-				+ ", createdBy=" + createdBy + ", entityIdentifier=" + entityIdentifier + ", nostroBankName="
-				+ nostroBankName + ", nostroInd=" + nostroInd + ", typeOfNostroAgent=" + typeOfNostroAgent
-				+ ", sweepingAmountCalculationInd=" + sweepingAmountCalculationInd + ", projectedAmountCalculationInd="
-				+ projectedAmountCalculationInd + "]";
+		return "NostroCommonDTO [countrySkey=" + countrySkey + ", entitySkey=" + entitySkey + ", currencySkey="
+				+ currencySkey + ", entityAcctMapSkey=" + entityAcctMapSkey + ", reportType=" + reportType
+				+ ", fromDate=" + fromDate + ", toDate=" + toDate + "]";
 	}
 
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		//		result = prime * result + ((accountNumber == null) ? 0 : accountNumber.hashCode());
-		//		result = prime * result + ((accountName == null) ? 0 : accountName.hashCode());
-		result = prime * result + ((accountType == null) ? 0 : accountType.hashCode());
-		result = prime * result + ((countrySkey == null) ? 0 : countrySkey.hashCode());
-		result = prime * result + ((entitySkey == null) ? 0 : entitySkey.hashCode());
-		result = prime * result + ((currencySkey == null) ? 0 : currencySkey.hashCode());
-		//		result = prime * result + ((createdBy == null) ? 0 : createdBy.hashCode());
-		//		result = prime * result + ((entityIdentifier == null) ? 0 : entityIdentifier.hashCode());
-		return result;	
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		EntityAccountMapDefinition other = (EntityAccountMapDefinition) obj;
-		//		if (accountName == null) {
-		//			if (other.accountName != null)
-		//				return false;
-		//		} else if (!accountName.equals(other.accountName))
-		//			return false;
-		if (accountType == null) {
-			if (other.accountType != null)
-				return false;
-		} else if (!accountType.equals(ILMCoreConstants.NOSTROACCOUNT) && !accountType.equals(other.accountType))
-			return false;
-		if (countrySkey == null) {
-			if (other.countrySkey != null)
-				return false;
-		} else if (!countrySkey.equals(other.countrySkey))
-			return false;
-		if (entitySkey == null) {
-			if (other.entitySkey != null)
-				return false;
-		} else if (!entitySkey.equals(other.entitySkey))
-			return false;
-		if (currencySkey == null) {
-			if (other.currencySkey != null)
-				return false;
-		} else if (!currencySkey.equals(other.currencySkey))
-			return false;
-		if (accountNumber == null) {
-			if (other.accountNumber != null)
-				return false;
-		} else if (other.accountType.equals(ILMCoreConstants.NOSTROACCOUNT) && !accountNumber.equals(other.accountNumber))
-			return false;
-		//		if (createdBy == null) {
-		//			if (other.createdBy != null)
-		//				return false;
-		//		} else if (!createdBy.equals(other.createdBy))
-		//			return false;
-		//		if (entityIdentifier == null) {
-		//			if (other.entityIdentifier != null)
-		//				return false;
-		//		} else if (!entityIdentifier.equals(other.entityIdentifier))
-		//			return false;
-		return true;
-	}
 }
