@@ -1,213 +1,428 @@
-http://10.172.120.19:8013/ilm-web/getNostroDetails
+package com.example.demo;
 
-{"countrySkey":1,"entitySkey":1,"currencySkey":41,"entityAcctMapSkey":21,"fromDate":"06-11-2024","toDate":"06-11-2024","reportType":"SD"}
-
-{
-    "timeSpendsInSeconds": 1,
-    "status": "Saved Successfully",
-    "serviceName": "NostroApiController",
-    "t": [
-        {
-            "nostroBalanceDTO": [
-                {
-                    "openingBalance": 10000.00,
-                    "runningBalance": 10000.00,
-                    "asOfDate": "2024-11-06"
-                }
-            ],
-            "errorMsg": null,
-            "nostroTransactionDTO": []
-        }
-    ]
-}
-
-
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-public class NostroApiController {
+@RequestMapping("/api")
+public class DemoController {
 
-	@PostMapping(value = "/getNostroDetails")
-	@ResponseBody
-	@CrossOrigin("${cors.urls}")
-	public ResponseEntity<CommonResponseEntity<List<NostroApiCommon>>> getNostroDetails(
-			@RequestBody NostroRequestDTO nostroRequestDTO) {
-		LOGGER.info("NostroApiController {} getNostroDetailsByFilters", nostroRequestDTO.toString());
-		List<NostroApiCommon> reportList = apiResponseService.commonApiService(nostroRequestDTO);
-		return new ResponseEntity<>(
-				new CommonResponseEntity<List<NostroApiCommon>>(1l, success, "NostroApiController", reportList),
-				HttpStatus.OK);
-	}
+    // GET endpoint that takes a query parameter 'name' and returns a greeting
+    @GetMapping("/greet")
+    public String greet(@RequestParam(name = "name", defaultValue = "Guest") String name) {
+        return "Hello, " + name + "!";
+    }
 
+    // POST endpoint that takes a JSON body and returns a custom message
+    @PostMapping("/message")
+    public String message(@RequestBody MessageRequest messageRequest) {
+        return "Received message: " + messageRequest.getMessage();
+    }
 }
 
+
+
+package com.example.demo;
+
+public class MessageRequest {
+    private String message;
+
+    // Default constructor, getters and setters
+    public MessageRequest() {}
+
+    public MessageRequest(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
 
+
+
+
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+
+
+
+import requests
+
+# Sending a GET request
+response = requests.get('http://localhost:8080/api/greet', params={'name': 'John'})
+print(response.text)  # Should print: "Hello, John!"
+
+# If no 'name' parameter is provided
+response = requests.get('http://localhost:8080/api/greet')
+print(response.text)  # Should print: "Hello, Guest!"
+
+
+
+
+import requests
+
+# Sending a POST request with JSON data
+data = {'message': 'Hello from Python'}
+response = requests.post('http://localhost:8080/api/message', json=data)
+print(response.text)  # Should print: "Received message: Hello from Python"
+
+
+
+<dependencies>
+    <!-- Spring Web dependency for RestTemplate -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- Spring Boot Starter for WebClient (optional alternative to RestTemplate) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+</dependencies>
+
+
+
+<dependencies>
+    <!-- Spring Web dependency for RestTemplate -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- Spring Boot Starter for WebClient (optional alternative to RestTemplate) -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+</dependencies>
+
+
+
+package com.example.demo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.util.MultiValueMap;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.impl.client.HttpClientBuilder;
+
+@RestController
+@RequestMapping("/api")
+public class PythonApiClientController {
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    // Get data from Python API
+    @GetMapping("/get-python-data")
+    public ResponseEntity<String> getPythonData() {
+        String url = "http://localhost:5000/getdata"; // Python GET API URL
+        
+        // Call the Python GET API
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+        
+        // Process and return response from Python API
+        return ResponseEntity.ok("Data from Python GET API: " + response.getBody());
+    }
+
+    // Post data to Python API
+    @PostMapping("/post-python-data")
+    public ResponseEntity<String> postPythonData(@RequestBody String data) {
+        String url = "http://localhost:5000/postdata"; // Python POST API URL
+        
+        // Create the POST request with the provided data
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(data, headers);
+
+        // Call the Python POST API
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
+
+        // Process and return response from Python API
+        return ResponseEntity.ok("Response from Python POST API: " + response.getBody());
+    }
+}
+
+
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/getdata', methods=['GET'])
+def get_data():
+    # Example GET endpoint that returns a simple JSON response
+    return jsonify({"message": "Hello from Python GET API"})
+
+@app.route('/postdata', methods=['POST'])
+def post_data():
+    data = request.json  # Get JSON data from the request body
+    # Example POST endpoint that echoes back the received data
+    return jsonify({"received_data": data}), 200
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+
+
+
+
+{
+  "data": "Hello, Python!"
+}
+
+
+
+<dependencies>
+    <!-- Spring Boot Web dependency -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    
+    <!-- Spring Data JPA for Database Access -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+    
+    <!-- H2 Database for local testing -->
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>runtime</scope>
+    </dependency>
+
+    <!-- For REST API communication -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-webflux</artifactId>
+    </dependency>
+</dependencies>
+
+
+
+# H2 Database Configuration for Local Development
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=password
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+
+# Enable H2 console for testing in the browser
+spring.h2.console.enabled=true
+
+
+
+
+package com.example.demo;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+
+@Entity
+public class MessageEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String message;
+    private String processedMessage;
+
+    // Getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getProcessedMessage() {
+        return processedMessage;
+    }
+
+    public void setProcessedMessage(String processedMessage) {
+        this.processedMessage = processedMessage;
+    }
+}
+
+
+
+
+package com.example.demo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface MessageRepository extends JpaRepository<MessageEntity, Long> {
+    // You can define custom query methods here if needed
+}
+
+
+
+package com.example.demo;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
-public class ApiResponseService {
-public List<NostroApiCommon> commonApiService(NostroRequestDTO apiDTO) {
-		Long eamSkey = apiDTO.getEntityAcctMapSkey();
-		List<NostroApiCommon> respDto = null;
-		LOGGER.info(eamSkey);
-		List<EntityAccountMapDefinition> definitions = accountMappingRepo.findByEntityAcctMapSkey(eamSkey);
-		if (!CollectionUtils.isEmpty(definitions)) {
-			String nostroAgent = definitions.get(0).getNostroBankName();
-			LOGGER.info(nostroAgent);
-			NostroApiService apiHandler = apiHandlerFactory.getType(nostroAgent);
-			if(apiHandler!= null) {
-				respDto = apiHandler.nostroApiService(apiDTO);
-			}
-		}
+public class MessageService {
 
-		return respDto;
-	}
+    @Autowired
+    private MessageRepository messageRepository;
 
+    // Process the data (can apply any logic, e.g., transformation)
+    public MessageEntity processAndSaveMessage(String message) {
+        // Processing logic (e.g., append a prefix to the message)
+        String processedMessage = "Processed: " + message;
 
-}
+        // Create a new MessageEntity object
+        MessageEntity messageEntity = new MessageEntity();
+        messageEntity.setMessage(message);
+        messageEntity.setProcessedMessage(processedMessage);
 
-
-public interface EntityAccountMappingRepo extends JpaRepository<EntityAccountMapDefinition, Long> {
-public List<EntityAccountMapDefinition> findByEntityAcctMapSkey(Long entityAcctMapSkey);
-}
-
-
-package com.maybank.ilm.dto.Nostro;
-
-import java.util.List;
-
-public class NostroApiCommon {
-	private List<NostroTransaction> nostroTransaction;
-	private List<NostroBalanceDTO> nostroBalanceDTO;
-	private String errorMsg;
-
-	public List<NostroTransaction> getNostroTransactionDTO() {
-		return nostroTransaction;
-	}
-
-	public void setNostroTransactionDTO(List<NostroTransaction> nostroTransaction) {
-		this.nostroTransaction = nostroTransaction;
-	}
-
-	public List<NostroBalanceDTO> getNostroBalanceDTO() {
-		return nostroBalanceDTO;
-	}
-
-	public void setNostroBalanceDTO(List<NostroBalanceDTO> nostroBalanceDTO) {
-		this.nostroBalanceDTO = nostroBalanceDTO;
-	}
-
-	public String getErrorMsg() {
-		return errorMsg;
-	}
-
-	public void setErrorMsg(String errorMsg) {
-		this.errorMsg = errorMsg;
-	}
-
-	@Override
-	public String toString() {
-		return "NostroApiCommon [nostroTransaction=" + nostroTransaction + ", nostroBalanceDTO=" + nostroBalanceDTO
-				+ ", errorMsg=" + errorMsg + "]";
-	}
-	
-	
-
+        // Save the entity to the database
+        return messageRepository.save(messageEntity);
+    }
 }
 
 
 
+package com.example.demo;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-package com.maybank.ilm.dto.Nostro;
+import org.springframework.http.*;
+import org.springframework.web.client.RestTemplate;
 
-import java.time.LocalDate;
+@RestController
+@RequestMapping("/api")
+public class PythonApiClientController {
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
+    @Autowired
+    private RestTemplate restTemplate;
 
-@JsonInclude(value = Include.NON_EMPTY)
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class NostroRequestDTO {
+    @Autowired
+    private MessageService messageService;
 
-	private Long countrySkey;
+    // Get data from Python API
+    @GetMapping("/get-python-data")
+    public ResponseEntity<String> getPythonData() {
+        String url = "http://localhost:5000/getdata"; // Python GET API URL
+        
+        // Call the Python GET API
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, null, String.class);
+        
+        // Process and save data to the database
+        String message = response.getBody(); // Get the message from the Python API response
+        MessageEntity savedMessage = messageService.processAndSaveMessage(message);
+        
+        // Return saved message from the database
+        return ResponseEntity.ok("Data saved to DB: " + savedMessage.getProcessedMessage());
+    }
 
-	private Long entitySkey;
+    // Post data to Python API
+    @PostMapping("/post-python-data")
+    public ResponseEntity<String> postPythonData(@RequestBody String data) {
+        String url = "http://localhost:5000/postdata"; // Python POST API URL
+        
+        // Create the POST request with the provided data
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(data, headers);
 
-	private Long currencySkey;
+        // Call the Python POST API
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class);
 
-	private Long entityAcctMapSkey;
+        // Process and save data to the database
+        String message = response.getBody(); // Get the message from the Python API response
+        MessageEntity savedMessage = messageService.processAndSaveMessage(message);
 
-	private String reportType;
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-	private LocalDate fromDate;
-
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
-	private LocalDate toDate;
-
-	public Long getCountrySkey() {
-		return countrySkey;
-	}
-
-	public void setCountrySkey(Long countrySkey) {
-		this.countrySkey = countrySkey;
-	}
-
-	public Long getEntitySkey() {
-		return entitySkey;
-	}
-
-	public void setEntitySkey(Long entitySkey) {
-		this.entitySkey = entitySkey;
-	}
-
-	public Long getCurrencySkey() {
-		return currencySkey;
-	}
-
-	public void setCurrencySkey(Long currencySkey) {
-		this.currencySkey = currencySkey;
-	}
-
-	public Long getEntityAcctMapSkey() {
-		return entityAcctMapSkey;
-	}
-
-	public void setEntityAcctMapSkey(Long entityAcctMapSkey) {
-		this.entityAcctMapSkey = entityAcctMapSkey;
-	}
-
-	public String getReportType() {
-		return reportType;
-	}
-
-	public void setReportType(String reportType) {
-		this.reportType = reportType;
-	}
-
-	public LocalDate getFromDate() {
-		return fromDate;
-	}
-
-	public void setFromDate(LocalDate fromDate) {
-		this.fromDate = fromDate;
-	}
-
-	public LocalDate getToDate() {
-		return toDate;
-	}
-
-	public void setToDate(LocalDate toDate) {
-		this.toDate = toDate;
-	}
-
-	@Override
-	public String toString() {
-		return "NostroCommonDTO [countrySkey=" + countrySkey + ", entitySkey=" + entitySkey + ", currencySkey="
-				+ currencySkey + ", entityAcctMapSkey=" + entityAcctMapSkey + ", reportType=" + reportType
-				+ ", fromDate=" + fromDate + ", toDate=" + toDate + "]";
-	}
-
+        // Return saved message from the database
+        return ResponseEntity.ok("Data saved to DB: " + savedMessage.getProcessedMessage());
+    }
 }
+
+
+
+
+SELECT * FROM message_entity;
+
+
+
+ https://jsonplaceholder.typicode.com/posts
+import requests
+
+url = "https://jsonplaceholder.typicode.com/posts"
+response = requests.get(url)
+print(response.json())  # Prints the list of posts
+
+
+https://jsonplaceholder.typicode.com/posts
+import requests
+
+url = "https://jsonplaceholder.typicode.com/posts"
+data = {
+    "title": "foo",
+    "body": "bar",
+    "userId": 1
+}
+response = requests.post(url, json=data)
+print(response.json())  # Prints the created post with ID
+
+
+https://reqres.in/api/users/1
+import requests
+
+url = "https://reqres.in/api/users/1"
+response = requests.get(url)
+print(response.json())  # Prints user data for user with ID 1
+
+
+https://reqres.in/api/users
+import requests
+
+url = "https://reqres.in/api/users"
+data = {
+    "name": "John Doe",
+    "job": "Software Developer"
+}
+response = requests.post(url, json=data)
+print(response.json())  # Prints the created user data with an ID
+
+
+
