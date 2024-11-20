@@ -384,3 +384,32 @@ By creating a service interface (ComponentDefnService) and its corresponding imp
 
 
 
+
+
+select * from component_defn where n_comp_defn_id='6131';
+select * from COMPONENT_REQUEST_MEASURES where n_comp_defn_id='6131';
+select * from COMPONENT_FILTER_DEFN  where n_comp_defn_id='6131';
+select * from COMPONENT_HIERARCHY_DEFN where n_comp_defn_id='6131';
+
+
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join component_defn cd on cd.n_comp_defn_id=crm.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+ 
+ 
+ select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+inner join COMPONENT_HIERARCHY_DEFN chd on chd.n_comp_defn_id=cd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+
+select * from PORTFOLIO_DEFN;
+select * from PORTFOLIO_REQ_MEASURES;
+select * from PORTFOLIO_FILTER_DEFN;
+
+
