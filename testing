@@ -4,7 +4,9 @@ select * from COMPONENT_FILTER_DEFN  where n_comp_defn_id='6131';
 select * from COMPONENT_HIERARCHY_DEFN where n_comp_defn_id='6131';
 
 
-
+select * from PORTFOLIO_DEFN;
+select * from PORTFOLIO_FILTER_DEFN;
+select * from PORTFOLIO_REQ_MEASURES;
 
 
 
