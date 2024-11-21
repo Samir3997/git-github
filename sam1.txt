@@ -253,3 +253,6 @@ server.port=8081
 
 
 http://localhost:8081/api/search?type=component&formula=Formula%201
+
+
+org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'componentPortfolioController': Unsatisfied dependency expressed through field 'componentPortfolioService'; nested exception is org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'componentPortfolioServiceImpl': Unsatisfied dependency expressed through field 'componentRepository'; nested exception is org.springframework.beans.factory.NoSuchBeanDefinitionException: No qualifying bean of type 'com.maybank.cac.dao.ComponentRepository' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {@org.springframework.beans.factory.annotation.Autowired(required=true)}
