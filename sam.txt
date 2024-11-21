@@ -1,72 +1,15 @@
- .   ____          _            __ _ _
- /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
-( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
- \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
-  '  |____| .__|_| |_|_| |_\__, | / / / /
- =========|_|==============|___/=/_/_/_/
- :: Spring Boot ::               (v2.7.18)
+Description:
 
-2024-11-22 00:01:08.848  INFO 11652 --- [           main] c.m.cac.chatbox.ChatboxApplication       : Starting ChatboxApplication using Java 1.8.0_241 on MWKNVDI3036LABS with PID 11652 (C:\Users\80009623\Downloads\chatbox\target\classes started by 80009623 in C:\Users\80009623\Downloads\chatbox)
-2024-11-22 00:01:08.852  INFO 11652 --- [           main] c.m.cac.chatbox.ChatboxApplication       : No active profile set, falling back to 1 default profile: "default"
-2024-11-22 00:01:09.476  INFO 11652 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2024-11-22 00:01:09.492  INFO 11652 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 6 ms. Found 0 JPA repository interfaces.
-2024-11-22 00:01:09.947  INFO 11652 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8081 (http)
-2024-11-22 00:01:09.955  INFO 11652 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2024-11-22 00:01:09.955  INFO 11652 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.83]
-2024-11-22 00:01:10.196  INFO 11652 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2024-11-22 00:01:10.197  INFO 11652 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1302 ms
-2024-11-22 00:01:10.384  INFO 11652 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2024-11-22 00:01:10.769  INFO 11652 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2024-11-22 00:01:10.810  INFO 11652 --- [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2024-11-22 00:01:10.857  INFO 11652 --- [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 5.6.15.Final
-2024-11-22 00:01:11.100  INFO 11652 --- [           main] o.hibernate.annotations.common.Version   : HCANN000001: Hibernate Commons Annotations {5.1.2.Final}
-2024-11-22 00:01:11.229  INFO 11652 --- [           main] org.hibernate.dialect.Dialect            : HHH000400: Using dialect: org.hibernate.dialect.Oracle12cDialect
-2024-11-22 00:01:11.520  INFO 11652 --- [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000490: Using JtaPlatform implementation: [org.hibernate.engine.transaction.jta.platform.internal.NoJtaPlatform]
-2024-11-22 00:01:11.534  INFO 11652 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2024-11-22 00:01:11.574  WARN 11652 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2024-11-22 00:01:11.906  INFO 11652 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8081 (http) with context path ''
-2024-11-22 00:01:11.915  INFO 11652 --- [           main] c.m.cac.chatbox.ChatboxApplication       : Started ChatboxApplication in 3.519 seconds (JVM running for 4.327)
-2024-11-22 00:02:00.227  INFO 11652 --- [nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2024-11-22 00:02:00.228  INFO 11652 --- [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2024-11-22 00:02:00.229  INFO 11652 --- [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+Field componentPortfolioService in com.maybank.cac.controller.ComponentPortfolioController required a bean of type 'com.maybank.cac.service.ComponentPortfolioService' that could not be found.
+
+The injection point has the following annotations:
+	- @org.springframework.beans.factory.annotation.Autowired(required=true)
 
 
+Action:
 
+Consider defining a bean of type 'com.maybank.cac.service.ComponentPortfolioService' in your configuration.
 
+2024-11-22 00:22:59.802 ERROR 7428 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener@4681c175] to prepare test instance [com.maybank.cac.chatbox.ChatboxApplicationTests@631c6d11]
 
-
-
-
-
-
-
-
-
-
-
-
-
-package com.maybank.cac.controller;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.maybank.cac.service.ComponentPortfolioService;
-
-@RestController
-@RequestMapping("/api")
-public class ComponentPortfolioController {
-	 @Autowired
-	    private ComponentPortfolioService componentPortfolioService;
-
-	    @GetMapping("/search")
-	    public List<?> search(@RequestParam String type, @RequestParam(required = false) String formula) {
-	        return componentPortfolioService.getComponentOrPortfolio(type, formula);
-	    }
-
-}
+java.lang.IllegalStateException: Failed to load ApplicationContext
