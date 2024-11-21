@@ -1,4 +1,225 @@
-<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+package com.maybank.cac.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.maybank.cac.service.ComponentPortfolioService;
+
+@RestController
+@RequestMapping("/api")
+public class ComponentPortfolioController {
+	 @Autowired
+	    private ComponentPortfolioService componentPortfolioService;
+
+	    @GetMapping("/search")
+	    public List<?> search(@RequestParam String type, @RequestParam(required = false) String formula) {
+	        return componentPortfolioService.getComponentOrPortfolio(type, formula);
+	    }
+
+}
+
+
+
+
+
+
+package com.maybank.cac.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import com.maybank.cac.dto.ComponentDto;
+
+@Repository
+public interface ComponentRepository {
+	@Query("SELECT new com.example.demo.dto.ComponentDto(cd.vCompDefnNme, cd.vCompDefnId, cd.nCompDefnId) " +
+            "FROM ComponentDefn cd " +
+            "JOIN ComponentRequestMeasures crm ON crm.nCompDefnId = cd.nCompDefnId " +
+            "WHERE crm.vCompReqMeasureFormula LIKE %:formula%")
+    List<ComponentDto> findComponentByFormula(@Param("formula") String formula);
+
+    @Query("SELECT new com.example.demo.dto.ComponentDto(cd.vCompDefnNme, cd.vCompDefnId, cd.nCompDefnId) " +
+            "FROM ComponentDefn cd " +
+            "JOIN ComponentFilterDefn cfd ON cfd.nCompDefnId = cd.nCompDefnId " +
+            "JOIN ComponentRequestMeasures crm ON crm.nCompDefnId = cfd.nCompDefnId " +
+            "WHERE crm.vCompReqMeasureFormula LIKE %:formula%")
+    List<ComponentDto> findComponentWithFilterByFormula(@Param("formula") String formula);
+
+    @Query("SELECT new com.example.demo.dto.ComponentDto(cd.vCompDefnNme, cd.vCompDefnId, cd.nCompDefnId) " +
+            "FROM ComponentDefn cd " +
+            "JOIN ComponentFilterDefn cfd ON cfd.nCompDefnId = cd.nCompDefnId " +
+            "JOIN ComponentRequestMeasures crm ON crm.nCompDefnId = cfd.nCompDefnId " +
+            "JOIN ComponentHierarchyDefn chd ON chd.nCompDefnId = cd.nCompDefnId " +
+            "WHERE crm.vCompReqMeasureFormula LIKE %:formula%")
+    List<ComponentDto> findComponentWithHierarchyByFormula(@Param("formula") String formula);
+
+}
+
+
+
+
+package com.maybank.cac.dao;
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import com.maybank.cac.dto.PortfolioDto;
+
+@Repository
+public interface PortfolioRepository {
+
+	    @Query("SELECT new com.example.demo.dto.PortfolioDto(pd.vPortfolioDefnNme, pd.vPortfolioDefnId, pd.nPortfolioDefnId) " +
+	            "FROM PortfolioDefn pd " +
+	            "JOIN PortfolioRequestMeasures prm ON prm.nPortfolioDefnId = pd.nPortfolioDefnId")
+	    List<PortfolioDto> findPortfolioWithMeasures();
+
+	    @Query("SELECT new com.example.demo.dto.PortfolioDto(pd.vPortfolioDefnNme, pd.vPortfolioDefnId, pd.nPortfolioDefnId) " +
+	            "FROM PortfolioDefn pd " +
+	            "JOIN PortfolioFilterDefn pfd ON pfd.nPortfolioDefnId = pd.nPortfolioDefnId")
+	    List<PortfolioDto> findPortfolioWithFilters();
+
+}
+
+
+
+
+
+package com.maybank.cac.dto;
+
+public class ComponentDto {
+	private String vCompDefnNme;
+	private String vCompDefnId;
+	private Long nCompDefnId;
+
+	public ComponentDto(String vCompDefnNme, String vCompDefnId, Long nCompDefnId) {
+		this.vCompDefnNme = vCompDefnNme;
+		this.vCompDefnId = vCompDefnId;
+		this.nCompDefnId = nCompDefnId;
+	}
+
+	public String getvCompDefnNme() {
+		return vCompDefnNme;
+	}
+
+	public void setvCompDefnNme(String vCompDefnNme) {
+		this.vCompDefnNme = vCompDefnNme;
+	}
+
+	public String getvCompDefnId() {
+		return vCompDefnId;
+	}
+
+	public void setvCompDefnId(String vCompDefnId) {
+		this.vCompDefnId = vCompDefnId;
+	}
+
+	public Long getnCompDefnId() {
+		return nCompDefnId;
+	}
+
+	public void setnCompDefnId(Long nCompDefnId) {
+		this.nCompDefnId = nCompDefnId;
+	}
+}
+
+
+
+
+
+package com.maybank.cac.dto;
+
+public class PortfolioDto {
+	private String vPortfolioDefnNme;
+	private String vPortfolioDefnId;
+	private Long nPortfolioDefnId;
+
+	public PortfolioDto(String vPortfolioDefnNme, String vPortfolioDefnId, Long nPortfolioDefnId) {
+		this.vPortfolioDefnNme = vPortfolioDefnNme;
+		this.vPortfolioDefnId = vPortfolioDefnId;
+		this.nPortfolioDefnId = nPortfolioDefnId;
+	}
+
+	public String getvPortfolioDefnNme() {
+		return vPortfolioDefnNme;
+	}
+
+	public void setvPortfolioDefnNme(String vPortfolioDefnNme) {
+		this.vPortfolioDefnNme = vPortfolioDefnNme;
+	}
+
+	public String getvPortfolioDefnId() {
+		return vPortfolioDefnId;
+	}
+
+	public void setvPortfolioDefnId(String vPortfolioDefnId) {
+		this.vPortfolioDefnId = vPortfolioDefnId;
+	}
+
+	public Long getnPortfolioDefnId() {
+		return nPortfolioDefnId;
+	}
+
+	public void setnPortfolioDefnId(Long nPortfolioDefnId) {
+		this.nPortfolioDefnId = nPortfolioDefnId;
+	}
+}
+
+
+
+
+
+package com.maybank.cac.service;
+
+import java.util.List;
+
+public interface ComponentPortfolioService {
+	 List<?> getComponentOrPortfolio(String type, String formula);
+
+}
+
+
+
+
+package com.maybank.cac.service;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.maybank.cac.dao.ComponentRepository;
+import com.maybank.cac.dao.PortfolioRepository;
+
+public class ComponentPortfolioServiceImpl implements ComponentPortfolioService{
+	@Autowired
+    private ComponentRepository componentRepository;
+
+    @Autowired
+    private PortfolioRepository portfolioRepository;
+
+    @Override
+    public List<?> getComponentOrPortfolio(String type, String formula) {
+        if ("component".equalsIgnoreCase(type)) {
+            if (formula != null && !formula.isEmpty()) {
+                return componentRepository.findComponentWithHierarchyByFormula(formula);
+            } else {
+                return componentRepository.findComponentByFormula(formula);
+            }
+        } else if ("portfolio".equalsIgnoreCase(type)) {
+            if (formula != null && !formula.isEmpty()) {
+                return portfolioRepository.findPortfolioWithMeasures();
+            } 
+        }
+        return null;
+    }
+
+}
