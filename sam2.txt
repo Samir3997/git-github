@@ -1,95 +1,74 @@
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.TimeZone;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
-public class DateUtilTest {
+@Repository
+public interface ComponentRepository {
 
-    @Test
-    void testValidateValueDate_ValidDateBeforeCurrentDate() {
-        // Given
-        String dateStr = "230827"; // Date in yyMMdd format (August 27, 2023)
-        
-        // When
-        Boolean result = validateValueDate(dateStr);
+    @Query(value = "SELECT cd.V_COMP_DEFN_NME as vCompDefnNme, " +
+                   "cd.V_COMP_DEFN_ID as vCompDefnId, " +
+                   "cd.N_COMP_DEFN_ID as nCompDefnId " +
+                   "FROM COMPONENT_DEFN cd " +
+                   "JOIN COMPONENT_REQUEST_MEASURES crm ON crm.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
+                   "WHERE crm.V_COMP_REQ_MEASURE_FORMULA LIKE %:formula%",
+           nativeQuery = true)
+    List<ComponentDto> findComponentByFormula(@Param("formula") String formula);
 
-        // Then
-        assertTrue(result, "Date should be before the current date.");
-    }
+    @Query(value = "SELECT cd.V_COMP_DEFN_NME as vCompDefnNme, " +
+                   "cd.V_COMP_DEFN_ID as vCompDefnId, " +
+                   "cd.N_COMP_DEFN_ID as nCompDefnId " +
+                   "FROM COMPONENT_DEFN cd " +
+                   "JOIN COMPONENT_FILTER_DEFN cfd ON cfd.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
+                   "JOIN COMPONENT_REQUEST_MEASURES crm ON crm.N_COMP_DEFN_ID = cfd.N_COMP_DEFN_ID " +
+                   "WHERE crm.V_COMP_REQ_MEASURE_FORMULA LIKE %:formula%",
+           nativeQuery = true)
+    List<ComponentDto> findComponentWithFilterByFormula(@Param("formula") String formula);
 
-    @Test
-    void testValidateValueDate_ValidDateEqualToCurrentDate() {
-        // Given
-        String dateStr = LocalDate.now().format(DateTimeFormatter.ofPattern("yyMMdd"));
-        
-        // When
-        Boolean result = validateValueDate(dateStr);
+    @Query(value = "SELECT cd.V_COMP_DEFN_NME as vCompDefnNme, " +
+                   "cd.V_COMP_DEFN_ID as vCompDefnId, " +
+                   "cd.N_COMP_DEFN_ID as nCompDefnId " +
+                   "FROM COMPONENT_DEFN cd " +
+                   "JOIN COMPONENT_FILTER_DEFN cfd ON cfd.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
+                   "JOIN COMPONENT_REQUEST_MEASURES crm ON crm.N_COMP_DEFN_ID = cfd.N_COMP_DEFN_ID " +
+                   "JOIN COMPONENT_HIERARCHY_DEFN chd ON chd.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
+                   "WHERE crm.V_COMP_REQ_MEASURE_FORMULA LIKE %:formula%",
+           nativeQuery = true)
+    List<ComponentDto> findComponentWithHierarchyByFormula(@Param("formula") String formula);
+}
 
-        // Then
-        assertFalse(result, "Date should not be before the current date.");
-    }
 
-    @Test
-    void testValidateValueDate_ValidDateAfterCurrentDate() {
-        // Given
-        LocalDate futureDate = LocalDate.now().plusDays(1);
-        String dateStr = futureDate.format(DateTimeFormatter.ofPattern("yyMMdd"));
 
-        // When
-        Boolean result = validateValueDate(dateStr);
 
-        // Then
-        assertFalse(result, "Date should not be before the current date.");
-    }
 
-    @Test
-    void testValidateValueDate_InvalidDateFormat() {
-        // Given
-        String invalidDateStr = "2023-08-27"; // Invalid format
 
-        // When
-        Boolean result = validateValueDate(invalidDateStr);
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
-        // Then
-        assertNull(result, "Invalid date should return null.");
-    }
+@Repository
+public interface PortfolioRepository {
 
-    private Boolean validateValueDate(String valueDt) {
-        LocalDate valueDate = getDateFromString(valueDt);
-        return findDtBeforeCurrenctDt(valueDate);
-    }
+    @Query(value = "SELECT pd.V_PORTFOLIO_DEFN_NME as vPortfolioDefnNme, " +
+                   "pd.V_PORTFOLIO_DEFN_ID as vPortfolioDefnId, " +
+                   "pd.N_PORTFOLIO_DEFN_ID as nPortfolioDefnId " +
+                   "FROM PORTFOLIO_DEFN pd",
+           nativeQuery = true)
+    List<PortfolioDto> findAllPortfolios();
 
-    private static LocalDate getDateFromString(String dateString) {
-        LocalDate localDate = null;
-        try {
-            DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
-            localDate = LocalDate.parse(dateString, stringformatter);
-        } catch (Exception exception) {
-            // Handle exception as per your requirement
-        }
-        return localDate;
-    }
+    @Query(value = "SELECT pd.V_PORTFOLIO_DEFN_NME as vPortfolioDefnNme, " +
+                   "pd.V_PORTFOLIO_DEFN_ID as vPortfolioDefnId, " +
+                   "pd.N_PORTFOLIO_DEFN_ID as nPortfolioDefnId " +
+                   "FROM PORTFOLIO_DEFN pd " +
+                   "JOIN PORTFOLIO_REQUEST_MEASURES prm ON prm.N_PORTFOLIO_DEFN_ID = pd.N_PORTFOLIO_DEFN_ID",
+           nativeQuery = true)
+    List<PortfolioDto> findPortfolioWithMeasures();
 
-    private static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
-        Boolean pastDt = Boolean.FALSE;
-        LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-        if (currentDtTime != null && localDate != null) {
-            LocalDate currentDt = currentDtTime.toLocalDate();
-            if (localDate.isBefore(currentDt)) {
-                pastDt = Boolean.TRUE;
-            }
-        }
-        return pastDt;
-    }
-
-    private static LocalDateTime getCurrentDateTimeByZone(String zone) {
-        ZoneId zid = null;
-        if (zone != null) {
-            zid = ZoneId.of(zone);
-        }
-        return zid != null ? LocalDateTime.now(zid) : null;
-    }
+    @Query(value = "SELECT pd.V_PORTFOLIO_DEFN_NME as vPortfolioDefnNme, " +
+                   "pd.V_PORTFOLIO_DEFN_ID as vPortfolioDefnId, " +
+                   "pd.N_PORTFOLIO_DEFN_ID as nPortfolioDefnId " +
+                   "FROM PORTFOLIO_DEFN pd " +
+                   "JOIN PORTFOLIO_FILTER_DEFN pfd ON pfd.N_PORTFOLIO_DEFN_ID = pd.N_PORTFOLIO_DEFN_ID",
+           nativeQuery = true)
+    List<PortfolioDto> findPortfolioWithFilters();
 }
