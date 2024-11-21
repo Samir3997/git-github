@@ -1,38 +1,36 @@
-	private Boolean validateValueDate(String valueDt) {
-		LocalDate valueDate = DateUtil.getDateFromString(valueDt);
-		return DateUtil.findDtBeforeCurrenctDt(valueDate);
-	}
+<dependency>
+    <groupId>com.oracle.database.jdbc</groupId>
+    <artifactId>ojdbc8</artifactId>
+    <version>19.19.0.0</version>
+</dependency>
 
 
 
-	public static LocalDate getDateFromString(String dateString) {
-		LocalDate localDate = null;
-		try {
-			DateTimeFormatter stringformatter = DateTimeFormatter.ofPattern("yyMMdd");
-			localDate = LocalDate.parse(dateString, stringformatter);
-		} catch (Exception exception) {
-			logger.info("Exception in class:DateUtil getDateFromSkey" + exception);
-		}
-		return localDate;
-	}
+mvn install:install-file -Dfile=path/to/ojdbc8.jar -DgroupId=com.oracle.database.jdbc \
+-DartifactId=ojdbc8 -Dversion=19.19.0.0 -Dpackaging=jar
 
 
-public static Boolean findDtBeforeCurrenctDt(LocalDate localDate) {
-		Boolean pastDt = Boolean.FALSE;
-		LocalDateTime currentDtTime = getCurrentDateTimeByZone(TimeZone.getDefault().getID());
-		if(currentDtTime != null && localDate != null) {
-			LocalDate currentDt = currentDtTime.toLocalDate();
-			if(localDate.isBefore(currentDt)) {
-				pastDt = Boolean.TRUE;
-			}
-		}
-		return pastDt;
-	}
 
-public static LocalDateTime getCurrentDateTimeByZone(String zone) {
-		ZoneId zid = null;
-		if (zone != null) {
-			zid = ZoneId.of(zone);
-		}
-		return zid != null ? LocalDateTime.now(zid) : null;
-	}
+# Oracle DB configuration
+spring.datasource.url=jdbc:oracle:thin:@//<oracle-host>:<oracle-port>/<oracle-sid>
+spring.datasource.username=my_new_app
+spring.datasource.password=my_password
+spring.datasource.driver-class-name=oracle.jdbc.OracleDriver
+
+# JPA/Hibernate settings
+spring.jpa.hibernate.ddl-auto=none  # Use 'none' to avoid automatic schema creation
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.Oracle12cDialect
+
+# Show SQL queries in console (Optional)
+spring.jpa.show-sql=true
+
+
+
+
+spring.datasource.url=jdbc:oracle:thin:@//localhost:1521/ORCLCDB
+
+
+
+<packaging>war</packaging>
+
+
