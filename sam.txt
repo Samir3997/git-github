@@ -1,15 +1,1 @@
-Description:
-
-Field componentPortfolioService in com.maybank.cac.controller.ComponentPortfolioController required a bean of type 'com.maybank.cac.service.ComponentPortfolioService' that could not be found.
-
-The injection point has the following annotations:
-	- @org.springframework.beans.factory.annotation.Autowired(required=true)
-
-
-Action:
-
-Consider defining a bean of type 'com.maybank.cac.service.ComponentPortfolioService' in your configuration.
-
-2024-11-22 00:22:59.802 ERROR 7428 --- [           main] o.s.test.context.TestContextManager      : Caught exception while allowing TestExecutionListener [org.springframework.test.context.web.ServletTestExecutionListener@4681c175] to prepare test instance [com.maybank.cac.chatbox.ChatboxApplicationTests@631c6d11]
-
-java.lang.IllegalStateException: Failed to load ApplicationContext
+ <Resource auth="Container" driverClassName="oracle.jdbc.driver.OracleDriver" maxActive="20" maxIdle="10" name="jdbc/CCUIDB" password="CARISMA_CAC_QA#123" singleton="false" type="javax.sql.DataSource" url="jdbc:oracle:thin:@172.31.120.61:1521:ODCQA" username="CARISMA_CAC_QA"/>  
