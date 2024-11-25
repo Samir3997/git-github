@@ -1,16 +1,1 @@
-***************************
-APPLICATION FAILED TO START
-***************************
-
-Description:
-
-Field repository in com.maybank.cac.service.ComponentDefnService required a bean of type 'com.maybank.cac.dao.ComponentDefnRepository' that could not be found.
-
-The injection point has the following annotations:
-	- @org.springframework.beans.factory.annotation.Autowired(required=true)
-
-
-Action:
-
-Consider defining a bean of type 'com.maybank.cac.dao.ComponentDefnRepository' in your configuration.
-
+@EnableJpaRepositories(basePackages = "com.maybank.cac.dao")
