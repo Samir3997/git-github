@@ -1,1 +1,37 @@
-@EnableJpaRepositories(basePackages = "com.maybank.cac.dao")
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join component_defn cd on cd.n_comp_defn_id=crm.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+ 
+ 
+ select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+inner join COMPONENT_HIERARCHY_DEFN chd on chd.n_comp_defn_id=cd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+ 
+ 
+ 
+ 
+ 
+ 
+ select pd.V_PORT_DEFN_NME,pd.V_PORT_DEFN_ID,pd.N_PORT_DEFN_ID from PORTFOLIO_REQ_MEASURES prm
+inner join PORTFOLIO_DEFN pd on pd.N_PORT_DEFN_ID=prm.N_PORT_DEFN_ID
+ where prm.V_PORTFOLIO_MEASURE like '%FCT_CONSOLIDATED_ACCT_SUMMARY.V_ACCT_TYPE%';
+ 
+ select pd.V_PORT_DEFN_NME,pd.V_PORT_DEFN_ID,pd.N_PORT_DEFN_ID from PORTFOLIO_REQ_MEASURES prm
+inner join PORTFOLIO_FILTER_DEFN  pfd on  pfd.N_PORT_DEFN_ID=prm.N_PORT_DEFN_ID
+inner join PORTFOLIO_DEFN pd on pd.N_PORT_DEFN_ID=pfd.N_PORT_DEFN_ID
+ where  prm.V_PORTFOLIO_MEASURE like '%FCT_CONSOLIDATED_ACCT_SUMMARY.V_ACCT_TYPE%';
+ 
+ i have 7 query, 4 for component(component_defn,COMPONENT_REQUEST_MEASURES,COMPONENT_FILTER_DEFN,COMPONENT_HIERARCHY_DEFN) and 3 for 
+ portfolio(PORTFOLIO_DEFN,PORTFOLIO_FILTER_DEFN,PORTFOLIO_REQ_MEASURES). My requirement is 
+ write spring boot with jpa 
+ write  dto instead of creating entity for the selected column
+ So from frontend when the type is component then execute 3 query correspond to component dynamic based on the table involved,
+ similar way if type is portfolio,then  execute 2 query correspond to portfolio dynamic based on the table involved,
+ So write spring boot with jpa application, dont use entiy for specifc table,insted create dto for the selected column.here where condition is like input from ui to backend
