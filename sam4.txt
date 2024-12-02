@@ -1,1 +1,1 @@
-Type mismatch: cannot convert from Mono<Map> to Mono<Map<String,Object>>
+http://10.170.116.116:5000/receive_data
