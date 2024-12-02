@@ -1,37 +1,88 @@
-select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
-inner join component_defn cd on cd.n_comp_defn_id=crm.n_comp_defn_id
- where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+package com.maybank.cac.controller;
 
-select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
-inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
-inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
- where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
- 
- 
- select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
-inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
-inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
-inner join COMPONENT_HIERARCHY_DEFN chd on chd.n_comp_defn_id=cd.n_comp_defn_id
- where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
- 
- 
- 
- 
- 
- 
- select pd.V_PORT_DEFN_NME,pd.V_PORT_DEFN_ID,pd.N_PORT_DEFN_ID from PORTFOLIO_REQ_MEASURES prm
-inner join PORTFOLIO_DEFN pd on pd.N_PORT_DEFN_ID=prm.N_PORT_DEFN_ID
- where prm.V_PORTFOLIO_MEASURE like '%FCT_CONSOLIDATED_ACCT_SUMMARY.V_ACCT_TYPE%';
- 
- select pd.V_PORT_DEFN_NME,pd.V_PORT_DEFN_ID,pd.N_PORT_DEFN_ID from PORTFOLIO_REQ_MEASURES prm
-inner join PORTFOLIO_FILTER_DEFN  pfd on  pfd.N_PORT_DEFN_ID=prm.N_PORT_DEFN_ID
-inner join PORTFOLIO_DEFN pd on pd.N_PORT_DEFN_ID=pfd.N_PORT_DEFN_ID
- where  prm.V_PORTFOLIO_MEASURE like '%FCT_CONSOLIDATED_ACCT_SUMMARY.V_ACCT_TYPE%';
- 
- i have 7 query, 4 for component(component_defn,COMPONENT_REQUEST_MEASURES,COMPONENT_FILTER_DEFN,COMPONENT_HIERARCHY_DEFN) and 3 for 
- portfolio(PORTFOLIO_DEFN,PORTFOLIO_FILTER_DEFN,PORTFOLIO_REQ_MEASURES). My requirement is 
- write spring boot with jpa 
- write  dto instead of creating entity for the selected column
- So from frontend when the type is component then execute 3 query correspond to component dynamic based on the table involved,
- similar way if type is portfolio,then  execute 2 query correspond to portfolio dynamic based on the table involved,
- So write spring boot with jpa application, dont use entiy for specifc table,insted create dto for the selected column.here where condition is like input from ui to backend
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import reactor.core.publisher.Mono;
+
+@RestController
+@RequestMapping("/api") // Match the naming convention used in frontend
+public class FlaskIntegrationController {
+
+    private final WebClient webClient;
+
+    public FlaskIntegrationController() {
+        // Configure WebClient to call Flask endpoints
+        this.webClient = WebClient.builder()
+                .baseUrl("http://10.170.116.116:5000") // Flask server base URL
+                .build();
+    }
+
+    // Endpoint to handle requests from React frontend
+    @PostMapping("/process-request")
+    public Mono<Map<String, Object>> processAndForward(@RequestBody Map<String, Object> uiRequest) {
+        // Step 1: Process the received request from React
+        Map<String, Object> processedRequest = new HashMap<>(uiRequest);
+
+        // Add any additional data if required
+        processedRequest.put("additionalData", "Processed by Spring Boot");
+
+        // Step 2: Forward the processed request to Flask
+        return webClient.post()
+                .uri("/receive_data") // Flask endpoint
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(processedRequest)
+                .retrieve()
+                .bodyToMono(Map.class) // Expect a Map response from Flask
+                .map(flaskResponse -> {
+                    // Step 3: Modify response from Flask before sending it to React if needed
+                    flaskResponse.put("additionalInfo", "Handled by Spring Boot");
+                    return flaskResponse;
+                });
+    }
+}
+
+
+import React, { useState } from "react";
+
+const App = () => {
+  const [response, setResponse] = useState(null);
+
+  const sendRequest = async () => {
+    const requestBody = {
+      Data: "Tot",
+    };
+
+    try {
+      const res = await fetch("http://localhost:8080/api/process-request", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+      const data = await res.json();
+      setResponse(data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={sendRequest}>Send Request</button>
+      {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
+    </div>
+  );
+};
+
+export default App;
+
+
