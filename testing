@@ -67,3 +67,59 @@ public class FlaskIntegrationController {
 
 
 http://localhost:8080/spring/process
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# Endpoint to handle the request and send the response
+@app.route('/process_request', methods=['POST'])
+def process_request():
+    try:
+        # Parse the incoming request
+        request_data = request.json
+
+        # Validate the request contains the expected data
+        if request_data.get("Data") != "Tot":
+            return jsonify({"error": "Invalid data"}), 400
+
+        # Prepare the response
+        response_data = {
+            "message": "Data received",
+            "status": [
+                "total",
+                "total income in reporting currency",
+                "total income quarter to date in base currency",
+                "total income quarter to date in reporting currency",
+                "total income year to date in base currency"
+            ]
+        }
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        # Handle any unexpected exceptions
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == '__main__':
+    # Run the Flask app on port 5000
+    app.run(debug=True, host='0.0.0.0', port=5000)
+
