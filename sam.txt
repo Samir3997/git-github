@@ -1,14 +1,1 @@
-Subject: Request for Asset Submission Clarification
-
-Dear [Payroll Team],
-
-I hope this email finds you well. I am writing to inform you that I have received an offer letter for a permanent position with the client company, and my employment is transitioning accordingly. As part of this transition, I am being asked to submit the company assets assigned to me.
-
-However, I would like to clarify that I will continue to use the same assets in my new role with the client company. Therefore, I kindly request that the asset submission process be deferred, as I will not need to return the assets.
-
-Please let me know if you require any further information or documentation regarding this transition.
-
-Thank you for your understanding and assistance.
-
-Best regards,
-[Your Full Name]
+I have taken the backup of the new mailbox. Now, you can proceed with transferring the new PST to the old mailbox
