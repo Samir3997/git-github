@@ -40,3 +40,26 @@ public class FlaskIntegrationController {
                 .bodyToMono(String.class); // Expect a String response from Flask
     }
 }
+
+
+
+{
+    "Data":"Tot"
+}
+
+
+
+
+
+
+
+{
+    "message": "Data received",
+    "status": [
+        "total",
+        "total income in reporting currency",
+        "total income quarter to date in base currency",
+        "total income quarter to date in reporting currency",
+        "total income year to date in base currency"
+    ]
+}
