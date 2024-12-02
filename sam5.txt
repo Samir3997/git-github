@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/api") // Match the naming convention used in frontend
+@RequestMapping("/api")
 public class FlaskIntegrationController {
 
     private final WebClient webClient;
@@ -21,68 +21,64 @@ public class FlaskIntegrationController {
     public FlaskIntegrationController() {
         // Configure WebClient to call Flask endpoints
         this.webClient = WebClient.builder()
-                .baseUrl("http://10.170.116.116:5000") // Flask server base URL
+                .baseUrl("http://localhost:5000") // Flask server base URL
                 .build();
     }
 
-    // Endpoint to handle requests from React frontend
+    // Endpoint to receive a request from React and forward to Flask
     @PostMapping("/process-request")
-    public Mono<Map<String, Object>> processAndForward(@RequestBody Map<String, Object> uiRequest) {
-        // Step 1: Process the received request from React
-        Map<String, Object> processedRequest = new HashMap<>(uiRequest);
-
-        // Add any additional data if required
+    public Mono<Map<String, Object>> processAndForward(@RequestBody Map<String, Object> requestFromUI) {
+        // Step 1: Process the received request
+        Map<String, Object> processedRequest = new HashMap<>(requestFromUI);
         processedRequest.put("additionalData", "Processed by Spring Boot");
 
         // Step 2: Forward the processed request to Flask
         return webClient.post()
-                .uri("/receive_data") // Flask endpoint
+                .uri("/process_request") // Flask endpoint to receive the processed request
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(processedRequest)
                 .retrieve()
-                .bodyToMono(Map.class) // Expect a Map response from Flask
-                .map(flaskResponse -> {
-                    // Step 3: Modify response from Flask before sending it to React if needed
-                    flaskResponse.put("additionalInfo", "Handled by Spring Boot");
-                    return flaskResponse;
-                });
+                .bodyToMono(Map.class); // Expect a JSON response from Flask
     }
 }
 
 
-import React, { useState } from "react";
-
-const App = () => {
-  const [response, setResponse] = useState(null);
-
-  const sendRequest = async () => {
-    const requestBody = {
-      Data: "Tot",
-    };
-
-    try {
-      const res = await fetch("http://localhost:8080/api/process-request", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-      const data = await res.json();
-      setResponse(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
-  return (
-    <div>
-      <button onClick={sendRequest}>Send Request</button>
-      {response && <pre>{JSON.stringify(response, null, 2)}</pre>}
-    </div>
-  );
-};
-
-export default App;
 
 
+
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# Endpoint to process the request from Spring Boot
+@app.route('/process_request', methods=['POST'])
+def process_request():
+    try:
+        # Parse the incoming request
+        data = request.json
+
+        # Validate input
+        if data.get("Data") != "Tot":
+            return jsonify({"error": "Invalid data"}), 400
+
+        # Prepare the response
+        response_data = {
+            "message": "Data received",
+            "status": [
+                "total",
+                "total income in reporting currency",
+                "total income quarter to date in base currency",
+                "total income quarter to date in reporting currency",
+                "total income year to date in base currency"
+            ]
+        }
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
