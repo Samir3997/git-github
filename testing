@@ -63,3 +63,7 @@ public class FlaskIntegrationController {
         "total income year to date in base currency"
     ]
 }
+
+
+
+http://localhost:8080/spring/process
