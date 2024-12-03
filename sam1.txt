@@ -25,3 +25,7 @@ public class DynamicQueryController {
         return ResponseEntity.ok(service.fetchData(type, "%" + condition + "%"));
     }
 }
+
+
+
+http://localhost:8080/api/dynamic-query?type=someType&condition=someCondition
