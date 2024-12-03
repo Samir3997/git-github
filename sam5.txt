@@ -1,56 +1,27 @@
-@PostMapping("/process-request")
-public Mono<Map<String, Object>> processAndForward(@RequestBody Map<String, Object> requestFromUI) {
-    // Step 1: Process the received request
-    Map<String, Object> processedRequest = new HashMap<>(requestFromUI);
-    processedRequest.put("additionalData", "Processed by Spring Boot");
-
-    // Step 2: Forward the processed request to Flask
-    return webClient.post()
-            .uri("/process_request") // Flask endpoint to receive the processed request
-            .contentType(MediaType.APPLICATION_JSON)
-            .bodyValue(processedRequest)
-            .retrieve()
-            .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {}); // Fix type mismatch issue
-}
+select * from component_defn ;
+select * from component_filter_defn ;
+select * from component_request_measures ;
+select * from component_hierarchy_defn ;
 
 
 
 
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join component_defn cd on cd.n_comp_defn_id=crm.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+ 
+ 
+ select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+inner join COMPONENT_HIERARCHY_DEFN chd on chd.n_comp_defn_id=cd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
 
 
 
-from flask import Flask, request, jsonify
 
-app = Flask(__name__)
-
-# Endpoint to process the request from Spring Boot
-@app.route('/process_request', methods=['POST'])
-def process_request():
-    try:
-        # Parse the incoming request
-        data = request.json
-
-        # Validate input
-        if data.get("Data") != "Tot":
-            return jsonify({"error": "Invalid data"}), 400
-
-        # Prepare the response
-        response_data = {
-            "message": "Data received",
-            "status": [
-                "total",
-                "total income in reporting currency",
-                "total income quarter to date in base currency",
-                "total income quarter to date in reporting currency",
-                "total income year to date in base currency"
-            ]
-        }
-
-        return jsonify(response_data)
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
