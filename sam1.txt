@@ -1,31 +1,106 @@
-package com.maybank.cac.controller;
+ILM SVN and Environmental Details
 
-import java.util.List;
+SVN Code URLs:
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+Trunk & Branch : https://172.30.2.120:8090/svn/ILM_1.X/ILM_2.0/trunk
 
-import com.maybank.cac.service.DynamicQueryService;
+Temp-Branch    : https://172.30.2.120:8090/svn/ODC_DOCUMENTS/trunk/ILM_TEMP
 
-@RestController
-@RequestMapping("/api/dynamic-query")
-public class DynamicQueryController {
-	@Autowired
-    private  DynamicQueryService service;
+Docs           : https://172.30.2.120:8090/svn/ODC_DOCUMENTS/trunk/Artichokes
 
 
-    @GetMapping
-    public ResponseEntity<List<?>> getDynamicQueryResults(
-            @RequestParam String type,
-            @RequestParam String condition) {
-        return ResponseEntity.ok(service.fetchData(type, "%" + condition + "%"));
-    }
-}
+DB Details:
+
+<Resource auth="Container" driverClassName="oracle.jdbc.driver.OracleDriver" maxActive="20" maxIdle="10" maxWait="-1" name="jdbc/CCUIDB" password="CARISMA_BSM1_DEV#123" type="javax.sql.DataSource" url="jdbc:oracle:thin:@172.31.100.122:1521:MLSPRINT" username="CARISMA_BSM1_DEV"/>
+
+Dev DB  :  <Resource auth="Container" driverClassName="oracle.jdbc.driver.OracleDriver" maxActive="20" maxIdle="10" maxWait="-1" name="jdbc/CCUIDB" password="CARISMA_BSM2_DEV#123" type="javax.sql.DataSource" url="jdbc:oracle:thin:@172.31.100.122:1521:MLSPRINT" username="CARISMA_BSM2_DEV"/>
+
+
+QA DB  : Username: CRSM_BSM2_QA , Password: CRSM_BSM2_QA#123 , HostName: 192.168.47.9 , Port: 1521 , SID: ODCQA
+
+
+QA Urls:
+
+ILM UI       : http://172.31.101.113:8002/ILMUI/
+
+ILM-GATEWAY  : http://172.31.101.113:8001/ilm-gateway/swagger-ui.html
+
+ILM-WEB      : http://172.31.101.113:8002/ilm-web/swagger-ui.html
+
+
+SETUPS:
+
+
+QA Setup Details:
+
+                http://172.31.101.113:8002/ILMUI/home/blotter
 
 
 
-http://localhost:8080/api/dynamic-query?type=someType&condition=someCondition
+                QA DB  : Username: CRSM_BSM2_QA , Password: CRSM_BSM2_QA#123 , HostName: 192.168.47.9 , Port: 1521 , SID: ODCQA
+
+
+
+                Weblogic URL:
+
+                QA : http://172.31.101.113:7002/console/login/LoginForm.jsp  (Username: weblogic Password: P@ssw0rd)
+
+               
+
+                WinScp & Putty Details:
+
+                QA : HostName: 172.31.101.113 (Username: wladmin  Password: P@ssw0rd)
+
+                Logs Path :  /app/Oracle/Middleware/Oracle_Home/user_projects/domains/QACARISMA_BSM/servers
+				
+				app/domains/QACARISMA_BSM/server
+
+
+DEV Setup Details:
+
+Dev DB  :  <Resource auth="Container" driverClassName="oracle.jdbc.driver.OracleDriver" maxActive="20" maxIdle="10" maxWait="-1" name="jdbc/CCUIDB" password="CARISMA_BSM2_DEV#123" type="javax.sql.DataSource" url="jdbc:oracle:thin:@172.31.100.122:1521:MLSPRINT" username="CARISMA_BSM2_DEV"/>
+
+Singapore Setup SVN Code URLs:
+
+Trunk & Branch both same : https://172.30.2.120:8090/svn/ILM_1.X/ILM_2.0/branches/dev_fix_ilm_sg
+
+
+DB Details:
+
+Singapore Setup Dev DB  :    <Resource auth="Container" driverClassName="oracle.jdbc.driver.OracleDriver" maxActive="20" maxIdle="10" maxWait="-1" name="jdbc/CCUIDB" password="SCHEMA23" type="javax.sql.DataSource" url="jdbc:oracle:thin:@10.170.119.115:1521:LABS19C3" username="SCHEMA23"/>
+
+
+Singapore Setup DB  : Username: SCHEMA22 , Password: SCHEMA22 , HostName: 10.170.119.115 , Port: 1521 , SID: LABS19C3
+
+
+Singapore Setup Urls:
+
+ILM UI       : http://192.168.63.140:7003/ILMUI/
+
+ILM-GATEWAY  : http://192.168.63.140:7004/ilm-gateway/swagger-ui.html
+
+ILM-WEB      : http://192.168.63.140:7003/ilm-web/swagger-ui.html
+
+SETUPS:
+
+
+Singapore Setup Details:
+
+
+
+                http://192.168.63.140:7003/ILMUI/home/genBlotter
+
+                Weblogic URL:
+
+                Singapore Setup : http://192.168.63.140:7001/console/login/LoginForm.jsp (Username: weblogic Password: Mbblabs@123)
+
+               
+
+                WinScp & Putty Details:
+
+                Singapore Setup : HostName: 192.168.63.140 (Username: wladmin  Password: M@ybank123)
+
+                Logs Path :  /app/Oracle/Middleware/Oracle_Home/user_projects/domains/MBBLABS_One/servers
+				
+
+
