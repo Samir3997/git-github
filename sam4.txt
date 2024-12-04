@@ -1,1 +1,9 @@
-http://10.170.116.116:5000/receive_data
+Query query = em
+				.createNativeQuery("SELECT cd.v_comp_defn_nme AS vCompDefnName, " + "cd.v_comp_defn_id AS vCompDefnId, "
+						+ "cd.n_comp_defn_id AS nCompDefnId " + "FROM COMPONENT_REQUEST_MEASURES crm "
+						+ "INNER JOIN component_defn cd ON cd.n_comp_defn_id = crm.n_comp_defn_id "
+						+ "WHERE crm.v_comp_req_measure_formula LIKE :condition");
+
+		query.setParameter("condition", "%" + condition + "%");
+
+		return collectQueryToDTO(query);
