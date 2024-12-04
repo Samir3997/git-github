@@ -181,3 +181,33 @@ inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
 inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
 inner join COMPONENT_HIERARCHY_DEFN chd on chd.n_comp_defn_id=cd.n_comp_defn_id
  where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+
+
+
+
+
+
+
+
+
+
+
+SELECT DISTINCT cd.v_comp_defn_nme, cd.n_comp_defn_id
+FROM component_defn cd
+LEFT JOIN component_request_measures crm ON cd.n_comp_defn_id = crm.n_comp_defn_id
+LEFT JOIN component_filter_defn cfd ON cd.n_comp_defn_id = cfd.n_comp_defn_id
+LEFT JOIN component_hierarchy_defn chd ON cd.n_comp_defn_id = chd.n_comp_defn_id
+WHERE 1=1
+    AND (
+        crm.v_comp_req_measure_formula LIKE '%SUM({ Accrued Interest Amount })%'
+        OR crm.v_comp_req_measure_formula LIKE '%SUM({ Balance })%'
+    )
+    AND (
+        cfd.v_filter_nme LIKE '%Extraction Date%'
+        OR cfd.v_filter_nme LIKE '%Processing Date%'
+    )
+    AND (
+        chd.v_hierarchy_nme LIKE '%Account Number%'
+        OR chd.v_hierarchy_nme LIKE '%Branch Code%'
+    )
+
