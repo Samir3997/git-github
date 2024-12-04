@@ -1,1 +1,21 @@
+SELECT DISTINCT
+    cd.v_comp_defn_nme,
+    cd.n_comp_defn_id
+FROM
+    component_defn cd
+    LEFT JOIN component_request_measures crm ON cd.n_comp_defn_id = crm.n_comp_defn_id
+    LEFT JOIN component_filter_defn cfd ON cd.n_comp_defn_id = cfd.n_comp_defn_id
+    LEFT JOIN component_hierarchy_defn chd ON cd.n_comp_defn_id = chd.n_comp_defn_id
+WHERE
+    1 = 1
+    -- Conditions based on user selection
+    AND (
+        :is_request_measures = 0 OR crm.v_comp_req_measure_formula LIKE :request_measure_formula
+    )
+    AND (
+        :is_filter_defn = 0 OR cfd.v_filter_nme LIKE :filter_name
+    )
+    AND (
+        :is_hierarchy_defn = 0 OR chd.v_hierarchy_nme LIKE :hierarchy_name
+    );
 
