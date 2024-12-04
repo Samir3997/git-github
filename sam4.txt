@@ -1,9 +1,50 @@
-Query query = em
-				.createNativeQuery("SELECT cd.v_comp_defn_nme AS vCompDefnName, " + "cd.v_comp_defn_id AS vCompDefnId, "
-						+ "cd.n_comp_defn_id AS nCompDefnId " + "FROM COMPONENT_REQUEST_MEASURES crm "
-						+ "INNER JOIN component_defn cd ON cd.n_comp_defn_id = crm.n_comp_defn_id "
-						+ "WHERE crm.v_comp_req_measure_formula LIKE :condition");
+"select * from component_defn ;
+select * from component_filter_defn ;
+select * from component_request_measures ;
+select * from component_hierarchy_defn ;" i have these 4 tables where component_defn is the root table. 
+SO from UI if user types I want Total exposure of the current date for country MY.
+So here exposure is column in component_request_measures  and date is like some column in component_filter_defn  and country is like some column in 
+component_hierarchy_defn .
+So below is the column for reference
+v_comp_req_measure_formula(component_request_measures  table)=SUM({ Accrued Interest Amount })
+V_FILTER_NME(component_filter_defn table)=Extraction Date
+V_HIERARCHY_NME(component_hierarchy_defn table)=Account Number.
+So here the root table is "component_defn cd which contain one column cd.n_comp_defn_id which is primary column and foreign column in
+other above 3 table"
+So total i have 4 table.My requirment is i want cd.v_comp_defn_nme,cd.v_comp_defn_id based on user input.
+User having 3 option in ui can see,like component_request_measures,component_filter_defn,component_hierarchy_defn.
+1)If user only select component_request_measures and its perticular column then we fetch cd.v_comp_defn_nme,cd.v_comp_defn_id based on 
+component_defn and  component_request_measures(So here both table will join and v_comp_req_measure_formula will be the condition)
+1)If user select component_request_measures,component_filter_defn and both tables perticular column then we fetch cd.v_comp_defn_nme,cd.v_comp_defn_id based on 
+component_defn and  component_request_measures and component_filter_defn(So here three table will join and v_comp_req_measure_formula and V_FILTER_NME will be the condition)
 
-		query.setParameter("condition", "%" + condition + "%");
+similar way for below combination i need query, so its better if we can accumulate below scenario in one query
 
-		return collectQueryToDTO(query);
+1) component_defn and  component_request_measures
+2)component_defn and component_filter_defn
+3)component_defn and component_hierarchy_defn
+4)component_defn ,component_request_measures,component_filter_defn
+5)component_defn ,component_request_measures,component_hierarchy_defn
+6)component_defn ,component_request_measures,component_hierarchy_defn
+7)component_defn ,component_request_measures,component_filter_defn,component_hierarchy_defn
+
+
+
+
+
+
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join component_defn cd on cd.n_comp_defn_id=crm.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+
+select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
+ 
+ 
+ select cd.v_comp_defn_nme,cd.v_comp_defn_id,cd.n_comp_defn_id from COMPONENT_REQUEST_MEASURES crm
+inner join COMPONENT_FILTER_DEFN  cfd on  cfd.n_comp_defn_id=crm.n_comp_defn_id
+inner join component_defn cd on cd.n_comp_defn_id=cfd.n_comp_defn_id
+inner join COMPONENT_HIERARCHY_DEFN chd on chd.n_comp_defn_id=cd.n_comp_defn_id
+ where crm.v_comp_req_measure_formula like '%SUM(FCT_CONSOLIDATED_ACCT_SUMMARY.N_EOP_PRIN_BAL)*1%';
