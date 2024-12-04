@@ -47,3 +47,8 @@ WHERE
         OR cfd.n_comp_defn_id IS NOT NULL
         OR chd.n_comp_defn_id IS NOT NULL
     );
+
+
+v_comp_req_measure_formula=SUM({ Accrued Interest Amount })
+V_FILTER_NME=Extraction Date
+V_HIERARCHY_NME=Account Number
