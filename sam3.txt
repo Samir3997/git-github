@@ -1,48 +1,108 @@
-package com.maybank.cac.service;
+package com.maybank.cac.controller;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import com.maybank.cac.dao.ComponentRepository;
-import com.maybank.cac.dao.PortfolioRepository;
-import com.maybank.cac.dto.ComponentDto;
+import reactor.core.publisher.Mono;
 
-@Service
-public class ComponentPortfolioServiceImpl implements ComponentPortfolioService {
-    @Autowired
-    private ComponentRepository componentRepository;
+@RestController
+@RequestMapping("/api")
+@CrossOrigin("*")
+public class FlaskIntegrationController {
 
-    @Autowired
-    private PortfolioRepository portfolioRepository;
+    private final WebClient webClient;
 
-    @Override
-    public List<?> getComponentOrPortfolio(String type, String formula) {
-        if ("component".equalsIgnoreCase(type)) {
-            List<ComponentDto> results = new ArrayList<>();
-
-            // Execute the first query: findComponentByFormula
-            List<ComponentDto> componentsByFormula = componentRepository.findComponentByFormula(formula);
-            results.addAll(componentsByFormula);
-
-            // Execute the second query: findComponentWithFilterByFormula
-            List<ComponentDto> componentsWithFilter = componentRepository.findComponentWithFilterByFormula(formula);
-            results.addAll(componentsWithFilter);
-
-            // Execute the third query: findComponentWithHierarchyByFormula
-            List<ComponentDto> componentsWithHierarchy = componentRepository.findComponentWithHierarchyByFormula(formula);
-            results.addAll(componentsWithHierarchy);
-
-            return results;
-        } else if ("portfolio".equalsIgnoreCase(type)) {
-            if (formula != null && !formula.isEmpty()) {
-                return portfolioRepository.findPortfolioWithMeasures();
-            } else {
-                return portfolioRepository.findPortfolioWithFilters();
-            }
-        }
-        return null;
+    public FlaskIntegrationController() {
+        // Configure WebClient to call Flask endpoints
+        this.webClient = WebClient.builder()
+                .baseUrl("http://localhost:5000") // Flask server base URL
+                .build();
     }
+
+    // Endpoint to receive a request from React and forward to Flask
+    @PostMapping("/autoCompleteSuggestion")
+    public Mono<Map<String, Object>> autoCompleteSuggestion(@RequestBody Map<String, Object> requestFromUI) {
+        // Step 1: Process the received request
+        Map<String, Object> processedRequest = new HashMap<>(requestFromUI);
+        processedRequest.put("additionalData", "Processed by Spring Boot");
+
+        // Step 2: Forward the processed request to Flask
+        return webClient.post()
+                .uri("/receive_data") // Flask endpoint to receive the processed request
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(processedRequest)
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {}); 
+    }
+    
+    @PostMapping("/userSearchRequest")
+    public Mono<Map<String, Object>> userSearchRequest(@RequestBody Map<String, Object> requestFromUI) {
+    	// Step 1: Process the received request
+    	Map<String, Object> processedRequest = new HashMap<>(requestFromUI);
+    	processedRequest.put("additionalData", "Processed by Spring Boot");
+    	
+    	// Step 2: Forward the processed request to Flask
+    	return webClient.post()
+    			.uri("/submit") // Flask endpoint to receive the processed request
+    			.contentType(MediaType.APPLICATION_JSON)
+    			.bodyValue(processedRequest)
+    			.retrieve()
+    			.bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {}); 
+    }
+    
+    
 }
+
+
+
+
+
+
+
+
+
+
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+# Endpoint to process the request from Spring Boot
+@app.route('/process_request', methods=['POST'])
+def process_request():
+    try:
+        # Parse the incoming request
+        data = request.json
+
+        # Validate input
+        if data.get("Data") != "Tot":
+            return jsonify({"error": "Invalid data"}), 400
+
+        # Prepare the response
+        response_data = {
+            "message": "Data received",
+            "status": [
+                "total",
+                "total income in reporting currency",
+                "total income quarter to date in base currency",
+                "total income quarter to date in reporting currency",
+                "total income year to date in base currency"
+            ]
+        }
+
+        return jsonify(response_data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5000)
