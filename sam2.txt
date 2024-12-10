@@ -1,1 +1,1 @@
-This sequence diagram illustrates the flow of a request to modify a chained component within an application, involving the interaction between the user, controller, and other components. It shows the methods called and the data exchanged during the process.
+This sequence diagram illustrates the flow of a request to modify a component within an application, involving the interaction between the user, controller, and other components. It shows the methods called and the data exchanged during the process.
