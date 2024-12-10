@@ -1,5 +1,4 @@
-The first sequence diagram depicts the flow of a search request for chained components. It shows how the user interacts with the controller, which in turn processes the request and returns a view with the search results.
-
-The second sequence diagram illustrates the process of adding a chained component. It shows how the user interacts with the controller, which then interacts with various components to create and add the chained component to the system.
-
-The third sequence diagram depicts the flow of a search request for portfolios. It shows how the user interacts with the controller, which in turn processes the request and returns a view with the search results.
+Web Tier: Handles user interaction through HTTP requests and leverages LDAP for authentication.
+App Tier: Contains the application logic, including components, portfolios, and job execution.
+Processing Tier: Interacts with the database (Oracle DB) for data storage and retrieval.
+The architecture utilizes various services like Customer Search, Dimension Service, and Batchload, along with common utilities and entities for efficient operation.
