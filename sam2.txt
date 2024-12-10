@@ -1,1 +1,1 @@
-he sequence diagram illustrates the flow of a request to add a component or portfolio within an application, involving the interaction between the user, controller, and other components.
+The class diagram illustrates the relationship between classes involved in managing components and portfolios within an application, highlighting their attributes and methods.
