@@ -1,74 +1,45 @@
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import java.util.List;
+Overall Architecture
 
-@Repository
-public interface ComponentRepository {
+The diagram depicts a layered architecture, a common approach for building scalable and maintainable applications. It's divided into three primary tiers:
 
-    @Query(value = "SELECT cd.V_COMP_DEFN_NME as vCompDefnNme, " +
-                   "cd.V_COMP_DEFN_ID as vCompDefnId, " +
-                   "cd.N_COMP_DEFN_ID as nCompDefnId " +
-                   "FROM COMPONENT_DEFN cd " +
-                   "JOIN COMPONENT_REQUEST_MEASURES crm ON crm.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
-                   "WHERE crm.V_COMP_REQ_MEASURE_FORMULA LIKE %:formula%",
-           nativeQuery = true)
-    List<ComponentDto> findComponentByFormula(@Param("formula") String formula);
+Web Tier: Handles the presentation layer, responsible for user interaction.
+App Tier: Contains the application logic, including business rules and data processing.
+Processing Tier: Interacts with the database and performs data operations.
+Web Tier
 
-    @Query(value = "SELECT cd.V_COMP_DEFN_NME as vCompDefnNme, " +
-                   "cd.V_COMP_DEFN_ID as vCompDefnId, " +
-                   "cd.N_COMP_DEFN_ID as nCompDefnId " +
-                   "FROM COMPONENT_DEFN cd " +
-                   "JOIN COMPONENT_FILTER_DEFN cfd ON cfd.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
-                   "JOIN COMPONENT_REQUEST_MEASURES crm ON crm.N_COMP_DEFN_ID = cfd.N_COMP_DEFN_ID " +
-                   "WHERE crm.V_COMP_REQ_MEASURE_FORMULA LIKE %:formula%",
-           nativeQuery = true)
-    List<ComponentDto> findComponentWithFilterByFormula(@Param("formula") String formula);
+HTTPS: The application uses the HTTPS protocol for secure communication between the client and the server.
+HTTP Server: The web server receives incoming requests from clients.
+LDAP: The application utilizes Lightweight Directory Access Protocol for authentication and authorization.
+Services: This layer exposes various services, such as Customer Search, Dimension Service, Closed Accounts, Holiday Calendar, Exchange Rate Service, and Batchload.
+App Tier
 
-    @Query(value = "SELECT cd.V_COMP_DEFN_NME as vCompDefnNme, " +
-                   "cd.V_COMP_DEFN_ID as vCompDefnId, " +
-                   "cd.N_COMP_DEFN_ID as nCompDefnId " +
-                   "FROM COMPONENT_DEFN cd " +
-                   "JOIN COMPONENT_FILTER_DEFN cfd ON cfd.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
-                   "JOIN COMPONENT_REQUEST_MEASURES crm ON crm.N_COMP_DEFN_ID = cfd.N_COMP_DEFN_ID " +
-                   "JOIN COMPONENT_HIERARCHY_DEFN chd ON chd.N_COMP_DEFN_ID = cd.N_COMP_DEFN_ID " +
-                   "WHERE crm.V_COMP_REQ_MEASURE_FORMULA LIKE %:formula%",
-           nativeQuery = true)
-    List<ComponentDto> findComponentWithHierarchyByFormula(@Param("formula") String formula);
-}
+Web Logic: The application uses WebLogic as the application server to host and manage the application components.
+App Dependencies: The application relies on common utilities and entities for its functionality.
+Job Execution: This layer handles background tasks and scheduled jobs.
+Processing Tier
 
+Controller: The controller acts as the central point for handling incoming requests and routing them to appropriate services.
+Service Layer: This layer contains the core business logic and data processing functionalities.
+DAO (Data Access Object): The DAO layer interacts with the database to retrieve and store data.
+Database
 
+Oracle DB: The application uses an Oracle database to store and manage its data.
+Key Components
 
+CAC: Component Access Control
+Portfolio: A collection of components
+Chained Component: A component that triggers other components
+Component Creation, Execution, and Search: These components handle the lifecycle of application components.
+Flow
 
+A client sends a request to the HTTP server.
+The request is routed to the appropriate controller based on the request type.
+The controller delegates the request to the corresponding service layer component.
+The service layer component processes the request, which might involve data retrieval from the database using the DAO layer.
+The processed data is returned to the controller.
+The controller formats the response and sends it back to the client.
+Additional Notes
 
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
-import java.util.List;
-
-@Repository
-public interface PortfolioRepository {
-
-    @Query(value = "SELECT pd.V_PORTFOLIO_DEFN_NME as vPortfolioDefnNme, " +
-                   "pd.V_PORTFOLIO_DEFN_ID as vPortfolioDefnId, " +
-                   "pd.N_PORTFOLIO_DEFN_ID as nPortfolioDefnId " +
-                   "FROM PORTFOLIO_DEFN pd",
-           nativeQuery = true)
-    List<PortfolioDto> findAllPortfolios();
-
-    @Query(value = "SELECT pd.V_PORTFOLIO_DEFN_NME as vPortfolioDefnNme, " +
-                   "pd.V_PORTFOLIO_DEFN_ID as vPortfolioDefnId, " +
-                   "pd.N_PORTFOLIO_DEFN_ID as nPortfolioDefnId " +
-                   "FROM PORTFOLIO_DEFN pd " +
-                   "JOIN PORTFOLIO_REQUEST_MEASURES prm ON prm.N_PORTFOLIO_DEFN_ID = pd.N_PORTFOLIO_DEFN_ID",
-           nativeQuery = true)
-    List<PortfolioDto> findPortfolioWithMeasures();
-
-    @Query(value = "SELECT pd.V_PORTFOLIO_DEFN_NME as vPortfolioDefnNme, " +
-                   "pd.V_PORTFOLIO_DEFN_ID as vPortfolioDefnId, " +
-                   "pd.N_PORTFOLIO_DEFN_ID as nPortfolioDefnId " +
-                   "FROM PORTFOLIO_DEFN pd " +
-                   "JOIN PORTFOLIO_FILTER_DEFN pfd ON pfd.N_PORTFOLIO_DEFN_ID = pd.N_PORTFOLIO_DEFN_ID",
-           nativeQuery = true)
-    List<PortfolioDto> findPortfolioWithFilters();
-}
+The diagram doesn't explicitly show the communication protocols between the tiers.
+The specific implementation details of the components and their interactions might vary depending on the actual application.
+Let me know if you have any further questions or want to delve into a specific part of the architecture in more detail!
