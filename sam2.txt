@@ -1,1 +1,5 @@
-This sequence diagram illustrates the flow of a request to create a new portfolio within an application, involving the interaction between the user, controller, and other components. It shows the methods called and the data exchanged during the process.
+The first sequence diagram depicts the flow of a search request for chained components. It shows how the user interacts with the controller, which in turn processes the request and returns a view with the search results.
+
+The second sequence diagram illustrates the process of adding a chained component. It shows how the user interacts with the controller, which then interacts with various components to create and add the chained component to the system.
+
+The third sequence diagram depicts the flow of a search request for portfolios. It shows how the user interacts with the controller, which in turn processes the request and returns a view with the search results.
