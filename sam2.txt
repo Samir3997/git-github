@@ -1,1 +1,1 @@
-This class diagram illustrates the relationship between classes involved in managing measures within an application, highlighting their attributes and methods. It particularly focuses on the MaintainMeasureService class and its interactions with the MeasureController and MeasureDAO classes.
+This sequence diagram illustrates the flow of a request to add a component within an application, involving the interaction between the user, controller, and other components. It shows the methods called and the data exchanged during the process.
