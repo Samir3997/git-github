@@ -1,1 +1,1 @@
-This sequence diagram provides a clear overview of how the different components interact to handle a new subscription request, from the initial user input to the final database update and response generation.
+This sequence diagram illustrates the flow of a request to update a portfolio within an application, involving the interaction between the user, controller, and other components. It shows the methods called and the data exchanged during the process.
