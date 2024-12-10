@@ -1,1 +1,1 @@
-The class diagram illustrates the relationships between classes involved in managing components and portfolios within an application, highlighting their attributes and methods.
+This class diagram illustrates the relationship between classes involved in managing components within an application, highlighting their attributes and methods. It particularly focuses on the MaintainComponentService class and its interactions with the ComponentRESTService and ComponentDAO classes
