@@ -91,3 +91,24 @@ if (!groupByColumns.isEmpty()) {
 }
 
 // ... rest of the code ...
+
+
+
+
+if (groupBuilder.length() != 0) {
+    query.append(SPACE);
+    query.append(GROUP_BY);
+    query.append(SPACE);
+
+    // Use a regular expression to extract column names from the query
+    Pattern onPattern = Pattern.compile("ON \\(([^=]+)=");
+    Matcher onMatcher = onPattern.matcher(query.toString());
+
+    while (onMatcher.find()) {
+        String leftColumn = onMatcher.group(1).trim();
+        query.append(leftColumn);
+        if (onMatcher.find()) {
+            query.append(", ");
+        }
+    }
+}
