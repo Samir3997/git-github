@@ -20,8 +20,7 @@ if(groupBulder.length()!=0) {
 		                query.append(", ");
 		            }
 		        }
-				/*query.append(groupBulder.toString().charAt(groupBulder.toString().length()-1)==','
-						?StringUtils.chop(groupBulder.toString()):groupBulder.toString());*/
+			
 			}
 		}
 		return componentDAO.validateMeasureFormula(query.toString());
@@ -38,3 +37,57 @@ SELECT MIN(DIM_COUNTRY.D_MIS_DATE) ,MIN(DIM_CUSTOMER.D_MIS_DATE) ,MIN(DIM_INDUST
 FCT_CONSOLIDATED_ACCT_SUMMARY.N_ACCT_SKEY,
     FCT_CONSOLIDATED_ACCT_SUMMARY.N_COUNTRY_SKEY,
     FCT_CONSOLIDATED_ACCT_SUMMARY.N_INDUSTRY_SKEY
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ... existing code ...
+
+Pattern onPattern = Pattern.compile("ON \\(([^=]+)=");
+Matcher onMatcher = onPattern.matcher(query.toString());
+
+while (onMatcher.find()) {
+    String leftColumn = onMatcher.group(1).trim();
+    groupByColumns.add(leftColumn);
+}
+
+// Now, append the group by clause if necessary
+if (!groupByColumns.isEmpty()) {
+    query.append(SPACE);
+    query.append(GROUP_BY);
+    query.append(SPACE);
+
+    Iterator<String> iterator = groupByColumns.iterator();
+    while (iterator.hasNext()) {
+        query.append(iterator.next());
+        if (iterator.hasNext()) {
+            query.append(", ");
+        }
+    }
+}
+
+// ... rest of the code ...
