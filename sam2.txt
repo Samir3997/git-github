@@ -112,3 +112,25 @@ if (groupBuilder.length() != 0) {
         }
     }
 }
+
+
+
+
+if(groupBulder.length()!=0) {
+				query.append(SPACE);
+				query.append(GROUP_BY);
+				query.append(SPACE);
+		        Pattern pattern = Pattern.compile("ON \\(([^=]+)=");
+		        Matcher onMatcher = pattern.matcher(query.toString());
+		        while (onMatcher.find()) {
+		            String leftColumn = onMatcher.group(1).trim();
+		            query.append(leftColumn);
+		            if (onMatcher.find()) {
+		                query.append(", ");
+		            }
+		        }
+				/*query.append(groupBulder.toString().charAt(groupBulder.toString().length()-1)==','
+						?StringUtils.chop(groupBulder.toString()):groupBulder.toString());*/
+			}
+		}
+		return componentDAO.validateMeasureFormula(query.toString());
