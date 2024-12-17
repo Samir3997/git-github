@@ -1,45 +1,40 @@
-here StringBuilder= "SELECT MIN(DIM_COUNTRY.D_MIS_DATE) ,MIN(DIM_CUSTOMER.D_MIS_DATE) ,MIN(DIM_INDUSTRY.D_MIS_DATE)  FROM FCT_CONSOLIDATED_ACCT_SUMMARY LEFT OUTER JOIN DIM_COUNTRY ON (FCT_CONSOLIDATED_ACCT_SUMMARY.N_COUNTRY_SKEY=DIM_COUNTRY.N_COUNTRY_SKEY) LEFT OUTER JOIN DIM_CUSTOMER ON (FCT_CONSOLIDATED_ACCT_SUMMARY.N_CUST_SKEY=DIM_CUSTOMER.N_CUST_SKEY) LEFT OUTER JOIN DIM_INDUSTRY ON (FCT_CONSOLIDATED_ACCT_SUMMARY.N_INDUSTRY_SKEY=DIM_INDUSTRY.N_INDUSTRY_SKEY) WHERE 1=0 GROUP BY"
- in the above StringBuilder, i want to add group by taking FCT_CONSOLIDATED_ACCT_SUMMARY.N_ACCT_SKEY,FCT_CONSOLIDATED_ACCT_SUMMARY.N_LINE_SKEY
- ,FCT_CONSOLIDATED_ACCT_SUMMARY.N_BRANCH_SKEY which is after "ON" condition,once fetch the given condition, append it into above StringBuilder groupby
- 
- 
- 
- 
- if(groupBulder.length()!=0) {
+if(groupBulder.length()!=0) {
 				query.append(SPACE);
 				query.append(GROUP_BY);
 				query.append(SPACE);
-				
-				query.append(groupBulder.toString().charAt(groupBulder.toString().length()-1)==','
-						?StringUtils.chop(groupBulder.toString()):groupBulder.toString());
+				String regex = "ON\\\\s+([A-Za-z0-9_\\\\.]+)\\\\s*=\\\\s*([A-Za-z0-9_\\\\.]+)";
+		        Pattern pattern = Pattern.compile(regex);
+		        Matcher matcher = pattern.matcher(query);
+		        Set<String> groupByColumns = new LinkedHashSet<>();
+		        while (matcher.find()) {
+		            String leftColumn = matcher.group(1);
+		            if (!groupByColumns.contains(leftColumn)) {
+		                groupByColumns.add(leftColumn);
+		            }
+		        }
+		        Iterator<String> iterator = groupByColumns.iterator();
+		        while (iterator.hasNext()) {
+		            query.append(iterator.next());
+		            if (iterator.hasNext()) {
+		            	
+		                query.append(", ");
+		            }
+		        }
+				/*query.append(groupBulder.toString().charAt(groupBulder.toString().length()-1)==','
+						?StringUtils.chop(groupBulder.toString()):groupBulder.toString());*/
 			}
 		}
 		return componentDAO.validateMeasureFormula(query.toString());
 
-so here "query.append(groupBulder.toString().charAt(groupBulder.toString().length()-1)==','
-						?StringUtils.chop(groupBulder.toString()):groupBulder.toString());" remove this and after "query.append(SPACE);"
-						this add corresponding group by table with column, dont hardcode the group by table and column,
-						so the final query will be as below by adding group by details
-						
-						"SELECT 
-    MIN(DIM_ACCOUNT.D_MIS_DATE),
-    MIN(DIM_FACILITY.D_MIS_DATE),
-    MIN(DIM_INDUSTRY.D_MIS_DATE)
-FROM 
-    FCT_CONSOLIDATED_ACCT_SUMMARY
-INNER JOIN 
-    DIM_ACCOUNT 
-    ON FCT_CONSOLIDATED_ACCT_SUMMARY.N_ACCT_SKEY = DIM_ACCOUNT.N_ACCT_SKEY
-LEFT OUTER JOIN 
-    DIM_FACILITY 
-    ON FCT_CONSOLIDATED_ACCT_SUMMARY.N_LINE_SKEY = DIM_FACILITY.N_LINE_SKEY
-LEFT OUTER JOIN 
-    DIM_INDUSTRY 
-    ON FCT_CONSOLIDATED_ACCT_SUMMARY.N_INDUSTRY_SKEY = DIM_INDUSTRY.N_INDUSTRY_SKEY
-WHERE 
-    1 = 0
-GROUP BY 
-    FCT_CONSOLIDATED_ACCT_SUMMARY.N_ACCT_SKEY,
+
+
+
+SELECT MIN(DIM_COUNTRY.D_MIS_DATE) ,MIN(DIM_CUSTOMER.D_MIS_DATE) ,MIN(DIM_INDUSTRY.D_MIS_DATE)  FROM FCT_CONSOLIDATED_ACCT_SUMMARY LEFT OUTER JOIN DIM_COUNTRY ON (FCT_CONSOLIDATED_ACCT_SUMMARY.N_COUNTRY_SKEY=DIM_COUNTRY.N_COUNTRY_SKEY) LEFT OUTER JOIN DIM_CUSTOMER ON (FCT_CONSOLIDATED_ACCT_SUMMARY.N_CUST_SKEY=DIM_CUSTOMER.N_CUST_SKEY) LEFT OUTER JOIN DIM_INDUSTRY ON (FCT_CONSOLIDATED_ACCT_SUMMARY.N_INDUSTRY_SKEY=DIM_INDUSTRY.N_INDUSTRY_SKEY) WHERE 1=0 GROUP BY
+
+
+
+
+
+FCT_CONSOLIDATED_ACCT_SUMMARY.N_ACCT_SKEY,
     FCT_CONSOLIDATED_ACCT_SUMMARY.N_COUNTRY_SKEY,
-    FCT_CONSOLIDATED_ACCT_SUMMARY.N_INDUSTRY_SKEY;
-"
+    FCT_CONSOLIDATED_ACCT_SUMMARY.N_INDUSTRY_SKEY
