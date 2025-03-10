@@ -1,1 +1,1 @@
-<Resource auth="Container" driverClassName="oracle.jdbc.driver.OracleDriver" maxActive="20" maxIdle="10" name="jdbc/CCUIDB" password="SCHEMA16" singleton="false" type="javax.sql.DataSource" url="jdbc:oracle:thin:@10.170.119.115:1521:LABS19C3" username="SCHEMA16"/>  
+DIM_CUSTOMER,DIM_ACCOUNT,DIM_DATES,DIM_PRODUCT,DIM_MARKET_SEGMENT,DIM_BUSINESS_SEGMENT
