@@ -1,3 +1,6 @@
 DIM_CUSTOMER,DIM_ACCOUNT,DIM_DATES,DIM_PRODUCT,DIM_MARKET_SEGMENT,DIM_BUSINESS_SEGMENT
 
 I want total number of akpk  indicator for 123721 GCIF code aggregated by akpk indicator
+
+
+I want total outstanding end of period balance between 01-Jan-2024 and 31-Jan-2024 for all GCIFs aggregated based on Credit Status
