@@ -6,3 +6,6 @@ I want total number of akpk  indicator for 123721 GCIF code aggregated by akpk i
 I want total outstanding end of period balance between 01-Jan-2024 and 31-Jan-2024 for all GCIFs aggregated based on Credit Status
 
 https://github.maybank.com/MBBLABS/MLPL_CC_CommonUAMWebUtils/commits/preprod_fix_1.9.1.x/
+
+CARCC1-4291 Set email in the session in CommonUAMWebUtils
+
