@@ -9,3 +9,95 @@ https://github.maybank.com/MBBLABS/MLPL_CC_CommonUAMWebUtils/commits/preprod_fix
 
 CARCC1-4291 Set email in the session in CommonUAMWebUtils
 
+
+
+{
+"Data": "I want total outstanding end of period balance between 01-Jan-2024 and 31-Jan-2024 for all GCIFs aggregated based on Credit Status",
+"type": "component"
+}
+
+
+
+{
+    "filter": [
+        {
+            "actualFormula": [],
+            "condition": "BETWEEN",
+            "filter": 1,
+            "logicalFormula": [
+                "DATASET",
+                "OF DATE",
+                "AA DATE",
+                "MISDATE",
+                "TAG DATE",
+                "MIS DATE",
+                "PD RATES",
+                "END DATE",
+                "DATE VAL",
+                "LOAD DATE"
+            ],
+            "userInputColumn": [
+                "date"
+            ],
+            "value1": "2024-01-01",
+            "value2": "2024-01-31"
+        }
+    ],
+    "hierarchy": [
+        {
+            "actualFormula": [],
+            "hierarchy": 1,
+            "logicalFormula": [
+                "GCIF",
+                "GCIF_CODE",
+                "GCIF CODE",
+                "OWNER GCIF",
+                "PARTY GCIF",
+                "ENTITY GCIF",
+                "GCIF NUMBER",
+                "CUSTOMER GCIF",
+                "GCIF IDENTIFIER",
+                "LIMIT GCIF CODE"
+            ],
+            "userInputColumn": "GCIFs"
+        },
+        {
+            "actualFormula": [],
+            "hierarchy": 2,
+            "logicalFormula": [
+                "CREDIT STATUS CODE",
+                "CREDIT STATUS RANK",
+                "CREDIT STATUS NAME",
+                "CREDIT STATUS ORDER",
+                "COHORT STATUS",
+                "MARITAL STATUS",
+                "OVERRIDE CREDIT STATUS",
+                "CREDIT SUB STATUS NAME",
+                "CUSTOMER CREDIT STATUS",
+                "CREDIT SUB STATUS CODE"
+            ],
+            "userInputColumn": "Credit Status"
+        }
+    ],
+    "measure": [
+        {
+            "actualFormula": [],
+            "function": "sum",
+            "logicalFormula": [
+                "END OF PERIOD BALANCE",
+                "PAY LEG END OF PERIOD BALANCE",
+                "FUND BALANCE",
+                "EOP BALANCE",
+                "OS BALANCE",
+                "RACE"
+            ],
+            "measure": 1,
+            "userInputColumn": "outstanding end of period balance"
+        }
+    ],
+    "missingNode": "filter1/filter2",
+    "responseType": "intermediate",
+    "type": "component"
+}
+
+
