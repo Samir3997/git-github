@@ -1,3 +1,32 @@
-1)Script verification/comparision and new Script Addition to 2.O (3 days)
-2)2.O setup related application git clone and setup in local. (2 days)
-3)Support to IAM team to run the application. (3 hour)
+As CAC user, I should be able to see the schema to which I am connected to after logging in so that I can ascertain that I am connected to right schema
+
+After providing the login details and logging in to CAC, the schema to which user is connected should be displayed on the dashboard header
+
+It should display "Connected: <SCHEMA Name>". For example: Connected: Malaysia, Connected: Singapore, Connected: Group.
+
+Verify:
+
+Login to CAC by providing credentials
+Check the header after successful login
+Verify that the schema to which system is connected to is displayed
+Example: Connected: Malaysia
+
+
+defaultHeader.jsp
+________________
+<c:set var="schemaConncted" value="${sessionScope['countrySchema']}"/>
+<li class="lastlogin">Connected: ${schemaConncted}&nbsp;</li>
+
+
+CustomAuthenticationProvider.java
+_____________________________________
+@Autowired
+	CacOusCountryRepo cacOusCountryRepo
+protected Map<String, String> countryCodeMapping;
+countryCodeMapping= cacOusCountryRepo.findAll().parallelStream()
+					 .collect(Collectors.toMap(CACOuCountry::getOuCountryCode, CACOuCountry::getOuCountryName));
+ request.getSession().setAttribute("countrySchema", getCountrySchema(selectedSchema));
+private String getCountrySchema(String selectedSchema) {
+		return countryCodeMapping!= null ?countryCodeMapping.get(selectedSchema): "Country Not Defined.";
+
+	}
