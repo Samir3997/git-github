@@ -30,3 +30,12 @@ private String getCountrySchema(String selectedSchema) {
 		return countryCodeMapping!= null ?countryCodeMapping.get(selectedSchema): "Country Not Defined.";
 
 	}
+
+Backend:
+CReate new method "getCountrySchema" in CustomAuthenticationProvider.java which will convert the schema code into a readable schema name using the mapping.
+
+Retrieve the selected schema from the login flow and Set into  session attribute:
+Frontend:
+in defaultHeader.jsp,  
+retrieve the session variable.
+Add the connected schema info in the header list item
